@@ -9,4 +9,6 @@ import java.nio.charset.StandardCharsets;
  */
 public class AppConfig {
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
+	public static final String POPattern = "msgctxt \"([0-9-]+)\"\\n*?msgid \"{1,2}?\\n?([\\s\\S]*?)\"\\n*?msgstr \"{1,2}?\\n?([\\s\\S]*?)\"\\n{2,}";
+
 }

@@ -2,6 +2,7 @@ package org.metalscraps.eso.lang.kr;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.metalscraps.eso.lang.kr.bean.PO;
 
 import javax.swing.*;
 import java.io.File;
@@ -17,46 +18,6 @@ import java.util.regex.Pattern;
  * Whya5448@gmail.com
  */
 public class ToLangMain {
-
-	private class PO implements Comparable {
-		PO(String id, String source, String target) {
-
-            source = source.replaceAll("\"\n\"", "");
-            target = target.replaceAll("\"\n\"", "");
-
-			this.id = id;
-			this.source = source;
-			String[] ids = id.split("-");
-			id1 = Integer.parseInt(ids[0]);
-			id2 = Integer.parseInt(ids[1]);
-			id3 = Integer.parseInt(ids[2]);
-			if(target.equals("")) this.target = source;
-			else this.target = target;
-
-			if(this.id.equals("41714900-0-307")) {
-				this.target = "";
-				this.source = "";
-			}
-
-		}
-		String id, source, target;
-		Integer id1, id2, id3;
-
-		@Override
-		public String toString() { return id+"/"+source+"/"+target; }
-		String toCSV(boolean t) { return "\""+id+"\",\""+(t?source:"")+"\",\""+target+"\""; }
-
-		@Override
-		public int compareTo(Object o) {
-			PO x = (PO) o;
-			PO t = this;
-			if(t.id1.equals(x.id1)) {
-				if(t.id2.equals(x.id2)) return t.id3.compareTo(x.id3);
-				else return t.id2.compareTo(x.id2);
-			} else return t.id1.compareTo(x.id1);
-
-		}
-	}
 
 	private final Charset charset = StandardCharsets.UTF_8;
 	private final String sep = System.getProperty("file.separator");
@@ -123,7 +84,7 @@ public class ToLangMain {
 						.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
 						.replaceAll("\\\\\\\\", "\\\\") // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
 						;
-				;
+
 				Pattern pp = Pattern.compile("msgctxt \"([0-9-]+)", Pattern.MULTILINE);
 				Matcher mm = pp.matcher(source);
 				while(mm.find()) listId.add(mm.group(1));
