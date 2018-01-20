@@ -1,6 +1,7 @@
 package org.metalscraps.eso.lang.kr;
 
 import org.apache.commons.io.FileUtils;
+import org.metalscraps.eso.lang.kr.Utils.Utils;
 
 import javax.swing.*;
 import java.io.File;
@@ -76,22 +77,6 @@ public class ZarielMain {
 		return sourceMap;
 	}
 
-	private String replaceFromMap(StringBuilder sb, Map<String, String> replacements) {
-		for (Map.Entry<String, String> entry : replacements.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
-			int start = sb.indexOf(key, 0);
-			while (start > -1) {
-				int end = start + key.length();
-				int nextSearchStart = start + value.length();
-				sb.replace(start, end, value);
-				start = sb.indexOf(key, nextSearchStart);
-			}
-		}
-		return sb.toString();
-	}
-
 	private void process() {
 
 		final JFileChooser fc = new JFileChooser();
@@ -132,10 +117,13 @@ public class ZarielMain {
 		StringBuilder result = new StringBuilder();
 		for(Map.Entry<String, LuaClass> x : hMatch.entrySet()) result.append("[\"").append(x.getKey()).append("\"]={[").append(x.getValue().first).append("]=").append(x.getValue().second).append(",},");
 
-		// 한자-한글 매핑
-		String sResult = replaceFromMap(result, fontMap);
+		// 한자-한글 매핑, Call By Ref
+		System.out.println(result);
+		Utils.replaceStringFromMap(result, fontMap);
+		System.out.println(result);
+		if(true) System.exit(0);
 
-		sLuaSource = sLuaSource.replace("},}", "},"+sResult+"}");
+		sLuaSource = sLuaSource.replace("},}", "},"+result.toString()+"}");
 		StringBuilder sssbbb = new StringBuilder(sLuaSource);
 		String key = ",},";
 		String value = ",},\n";

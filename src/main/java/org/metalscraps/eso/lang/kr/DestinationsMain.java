@@ -4,6 +4,7 @@ import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,31 +42,38 @@ public class DestinationsMain {
 
 	private void start() {
 
+		final String pathOfPO = "C:/Users/admin/Documents/Elder Scrolls Online/live/works/EsoExtractData v0.31/PO_0113";
+		final String pathOfDesti = "C:/Users/admin/Documents/Elder Scrolls Online/live/AddOns/Destinations/data/KR";
+
 		HashMap<String, Destinations> sourceList = new HashMap<>();
 		HashMap<String, PO> zanataList = new HashMap<>();
 
 		try {
 
 			// 자나타 매핑된 PO.
-			File t_questName = new File("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31\\PO_0113/journey.po2");
+			FileNames[] fileNames = {
+					FileNames.journey,
+					FileNames.journeyOther
+			};
 
 			// 데스티네이션 EN 복사해서 KR 폴더 생성.
-			File s_questName = new File("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\AddOns\\Destinations\\data\\KR/DestinationsQuests_kr.lua");
+			File s_questName = new File(pathOfDesti+"/DestinationsQuests_kr.lua");
 
-			String destinationQuetsSource = FileUtils.readFileToString(s_questName, AppConfig.CHARSET);
-			String zanataQuetsSource = FileUtils.readFileToString(t_questName, AppConfig.CHARSET);
+			String destinationQuestSource = FileUtils.readFileToString(s_questName, AppConfig.CHARSET);
 
 			String destiPattern = "\\[(\\d+)] = \\{\"(.*)\"}";
 
 			// Desti
 			Pattern p = Pattern.compile(destiPattern, Pattern.MULTILINE);
-			Matcher m = p.matcher(destinationQuetsSource);
+			Matcher m = p.matcher(destinationQuestSource);
 			while (m.find()) sourceList.put(m.group(1), this.new Destinations(Integer.parseInt(m.group(1)), m.group(2)));
 
 			// Zanata
-			p = Pattern.compile(AppConfig.POPattern, Pattern.MULTILINE);
-			m = p.matcher(zanataQuetsSource);
-			while (m.find()) zanataList.put(m.group(2), new PO(m.group(1), m.group(2), m.group(3)));
+			for(FileNames fn : fileNames) {
+				String zanataQuetsSource = FileUtils.readFileToString(new File(pathOfPO+fn.toStringPO()), AppConfig.CHARSET);
+				m = AppConfig.POPattern.matcher(zanataQuetsSource);
+				while (m.find()) zanataList.put(m.group(2), new PO(m.group(1), m.group(2), m.group(3)));
+			}
 
 			for(Destinations desti : sourceList.values()) {
 				PO po = zanataList.get(desti.getQuestName());
@@ -78,7 +86,7 @@ public class DestinationsMain {
 			for(Destinations desti : list) sb.append("\t[").append(desti.getId()).append("] = {\"").append(desti.getQuestName()).append("\"},\n");
 
 			String index = "QuestTableStore = {";
-			String res = destinationQuetsSource.substring(0, destinationQuetsSource.lastIndexOf(index)) + index + "\n" + sb.toString() + "}";
+			String res = destinationQuestSource.substring(0, destinationQuestSource.lastIndexOf(index)) + index + "\n" + sb.toString() + "}";
 			FileUtils.write(s_questName.getAbsoluteFile(), res, AppConfig.CHARSET);
 
 		} catch (Exception e) {

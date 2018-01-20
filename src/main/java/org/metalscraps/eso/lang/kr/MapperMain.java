@@ -1,13 +1,15 @@
 package org.metalscraps.eso.lang.kr;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.apache.commons.io.FileUtils;
+import org.metalscraps.eso.lang.kr.Utils.Utils;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -16,113 +18,101 @@ import java.util.*;
  */
 public class MapperMain {
 
-	static HashMap<String, String> map = new HashMap<>();
-	static HashMap<Integer, StringBuilder> resList = new HashMap<>();
+	private HashMap<Integer, StringBuilder> threadResultMap = new HashMap<>();
 
+	public void start() {
+		try {
+			int cores = Runtime.getRuntime().availableProcessors();
 
-	private static final String pattern = "msgctxt \"([0-9-]+)\"\\n*?msgid \"{1,2}?\\n?([\\s\\S]*?)\"\\n*?msgstr \"{1,2}?\\n?([\\s\\S]*?)\"\\n{2,}";
+			final JFileChooser fc = new JFileChooser();
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			fc.setCurrentDirectory(FileUtils.getFile("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31"));
+			//fc.setCurrentDirectory(FileUtils.getFile(FileUtils.getUserDirectoryPath() + sep + "desktop" + sep + "po"));
+			fc.setFileFilter(new FileFilter() {
+				@Override
+				public boolean accept(File f) {
+					return f.isDirectory();
+				}
 
+				@Override
+				public String getDescription() {
+					return null;
+				}
+			});
 
-	public static void main(String[] args) throws Exception {
+			if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) System.exit(JFileChooser.CANCEL_OPTION);
 
-		int cores = Runtime.getRuntime().availableProcessors();
+			Collection<File> fileList = FileUtils.listFiles(fc.getSelectedFile(), new String[]{"po"}, false);
 
-		for(int i=0; i<11172; i++) {
-			// 한자=>한글
-			//map.put(new String(Character.toChars(0x6E00+i)), new String(Character.toChars(0xAC00+i)));
+			for (File ff : fileList) {
 
-			// 한글=>한자
-			map.put(new String(Character.toChars(0xAC00+i)), new String(Character.toChars(0x6E00+i)));
+				// 파일명
+				System.out.println(ff);
+
+				// 스레드 결과값 초기화
+				threadResultMap.clear();
+
+				// 파일 불러옴.
+				StringBuilder source = new StringBuilder(FileUtils.readFileToString(ff, AppConfig.CHARSET));
+				int length = source.length(), length_each = length / cores;
+
+				// 파일별로 매핑하게 바꾼 이상 쓰레드 나눌 필요가 있는지? 테스트 해보기. 언젠간?
+				ArrayList<StringBuilder> textList = new ArrayList<>();
+				for (int i = 0; i < cores; i++) {
+					StringBuilder sb;
+
+					// 마지막 코어 텍스트 끝까지.
+					if (i == cores - 1) sb = new StringBuilder(source.substring(length_each * i));
+
+					// 그 외 코어 나눈대로 할당.
+					else sb = new StringBuilder(source.substring(length_each * i, length_each * (i + 1)));
+					textList.add(sb);
+				}
+
+				// 작업물 나눴으므로 초기화.
+				source = new StringBuilder(length);
+
+				int i = 0;
+				for (StringBuilder sbb : textList) new Thread(new ReplaceMain().setStringBuilder(sbb).setOrder(++i).setMap(threadResultMap)).start();
+
+				while (true) {
+					if (threadResultMap.size() == cores) break;
+					try { Thread.sleep(3000); } catch (InterruptedException e) { e.printStackTrace(); }
+				}
+
+				for (i = 1; i <= cores; i++) source.append(threadResultMap.get(i));
+
+				try {
+					FileUtils.write(new File(ff.getAbsolutePath() + "2"), source, AppConfig.CHARSET);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+	}
 
-		System.out.println(map);
-
-		final JFileChooser fc = new JFileChooser();
-		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		//fc.setCurrentDirectory(FileUtils.getFile(FileUtils.getUserDirectoryPath() + sep + "desktop" + sep + "po"));
-		fc.setFileFilter(new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return f.isDirectory(); // || FilenameUtils.getExtension(f.getName()).equals("csv");
-			}
-
-			@Override
-			public String getDescription() { return null; }
-		});
-
-		fc.setCurrentDirectory(FileUtils.getFile("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31"));
-		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) System.exit(JFileChooser.CANCEL_OPTION);
-
-		Collection<File> fileList = FileUtils.listFiles(fc.getSelectedFile(), new String[]{"po"}, false);
-
-		for(File ff : fileList) {
-			resList.clear();
-			System.out.println(ff);
-			StringBuilder sb = new StringBuilder(FileUtils.readFileToString(ff, AppConfig.CHARSET));
-			int length = sb.length();
-			int length_each = length/cores;
-
-			ArrayList<StringBuilder> arrayList = new ArrayList<>();
-			for(int i=0; i<cores; i++) {
-				StringBuilder sb_each;
-				if(i == cores-1) sb_each = new StringBuilder(sb.substring(length_each*i));
-				else sb_each = new StringBuilder(sb.substring(length_each*i, length_each*(i+1)));
-				arrayList.add(sb_each);
-			}
-
-			// 작업물 나눴으므로 초기화.
-			sb = new StringBuilder(length);
-
-			int i = 0;
-			for(StringBuilder sbb : arrayList) {
-				ReplaceMain rm = new ReplaceMain();
-				rm.sb = sbb;
-				rm.order = ++i;
-				new Thread(rm).start();
-			}
-
-			while(true) {
-				if(resList.size() == cores) break;
-				try { Thread.sleep(3000); } catch (InterruptedException e) { e.printStackTrace(); }
-			}
-
-			for(i=1; i<=cores; i++) sb.append(resList.get(i).toString());
-
-			try {
-				FileUtils.write(new File(ff.getAbsolutePath()+"2"), sb, StandardCharsets.UTF_8);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-
+	public static void main(String[] args) {
+		new MapperMain().start();
 	}
 
 	/**
 	 * Created by 안병길 on 2018-01-13.
 	 * Whya5448@gmail.com
 	 */
+
+	@Data
+	@Accessors(chain = true)
 	public static class ReplaceMain implements Runnable {
 
-		StringBuilder sb;
-		public int order;
+		private StringBuilder stringBuilder;
+		private int order;
+		private Map<Integer, StringBuilder> map;
 
 		@Override
-		public void run() {
-
-			for (Map.Entry<String, String> entry : map.entrySet()) {
-				String key = entry.getKey();
-				String value = entry.getValue();
-
-				int start = sb.indexOf(key, 0);
-				while (start > -1) {
-					int end = start + key.length();
-					int nextSearchStart = start + value.length();
-					sb.replace(start, end, value);
-					start = sb.indexOf(key, nextSearchStart);
-				}
-			}
-			resList.put(order, sb);
-		}
+		public void run() { map.put(order, Utils.replaceStringFromMap(stringBuilder, Utils.koToCnMap)); }
 	}
 }
