@@ -25,7 +25,6 @@ hs_err_pid*
 .gitignore
 .gradle/
 .idea/
-gradle/
 out/
 src/main/resources/
 src/test/
