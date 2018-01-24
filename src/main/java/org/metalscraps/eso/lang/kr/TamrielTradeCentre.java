@@ -86,6 +86,8 @@ class TamrielTradeCentre {
 				start = englishSource.indexOf(key, nextSearchStart);
 			}
 
+			englishSource.replace(0, 71, "function TamrielTradeCentre:LoadItemLookUpTable()\nself.ItemLookUpTable");
+
 			FileUtils.writeStringToFile(koreanTable, englishSource.toString(), Charset.forName("UTF-8"));
 			FileUtils.writeStringToFile(new File(koreanTable.getPath()+".no.comment"), englishSource.toString().replaceAll(AppConfig.englishTitlePattern, "$1"), Charset.forName("UTF-8"));
 
