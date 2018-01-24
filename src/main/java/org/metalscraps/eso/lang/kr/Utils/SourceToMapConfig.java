@@ -20,6 +20,7 @@ public class SourceToMapConfig {
 	private boolean
 			processText = true,
 			processItemName = true,
-			addFileNameToTitle = false;
+			addFileNameToTitle = false,
+			toLowerCase = false;
 	private Pattern pattern = null;
 }

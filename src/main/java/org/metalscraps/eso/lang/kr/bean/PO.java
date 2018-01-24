@@ -2,6 +2,7 @@ package org.metalscraps.eso.lang.kr.bean;
 
 import com.sun.istack.internal.Nullable;
 import lombok.Data;
+import org.metalscraps.eso.lang.kr.config.AppConfig;
 
 /**
  * Created by 안병길 on 2018-01-18.
@@ -10,13 +11,15 @@ import lombok.Data;
 
 @Data
 public class PO implements Comparable {
-	public PO(String id, String source, String target) {
+
+	public PO(String id, String source, String target, String fileName) {
 		source = source.replaceAll("\"\n\"", "");
 		target = target.replaceAll("\"\n\"", "");
 
 		this.id = id;
 		this.source = source;
 		this.target = target;
+		this.fileName = fileName;
 
 		String[] ids = id.split("-");
 		id1 = Integer.parseInt(ids[0]);
@@ -27,7 +30,9 @@ public class PO implements Comparable {
 		else if(source.equals("")) this.source = target;
 	}
 
-	private String id, source, target;
+	public PO(String id, String source, String target) { this(id, source, target, null); }
+
+	private String id, source, target, fileName;
 	private Integer id1, id2, id3;
 
 	public void wrap(@Nullable String prefix, @Nullable String suffix) {
@@ -39,8 +44,12 @@ public class PO implements Comparable {
 	}
 
 	@Override
-	public String toString() { return toCSV(true); }
-	public String toCSV(boolean t) { return "\""+id+"\",\""+(t?source:"")+"\",\""+target+"\"\n"; }
+	public String toString() { return toCSV(new ToCSVConfig(false, false, false)); }
+	public String toCSV(ToCSVConfig toCSVConfig) {
+		String target = this.target;
+		if(toCSVConfig.isRemoveEnglishComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
+		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_":"")+target+"\"\n";
+	}
 
 	@Override
 	public int compareTo(Object o) {
@@ -52,4 +61,5 @@ public class PO implements Comparable {
 		} else return t.id1.compareTo(x.id1);
 
 	}
+
 }

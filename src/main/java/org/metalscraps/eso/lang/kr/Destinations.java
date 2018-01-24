@@ -1,5 +1,6 @@
 package org.metalscraps.eso.lang.kr;
 
+import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
 import org.metalscraps.eso.lang.kr.bean.PO;
@@ -16,10 +17,10 @@ import java.util.regex.Matcher;
  */
 
 
-public class DestinationsMain {
+@AllArgsConstructor
+public class Destinations {
 
-	private final String pathOfPO = "C:/Users/admin/Documents/Elder Scrolls Online/live/works/EsoExtractData v0.31/PO_0124/";
-	private final String pathOfDesti = "C:/Users/admin/Documents/Elder Scrolls Online/live/AddOns/Destinations/data/KR";
+	private final AppWorkConfig appWorkConfig;
 
 	private void work(FileNames[] fileNames, File target){
 
@@ -29,7 +30,7 @@ public class DestinationsMain {
 			StringBuilder destinationQuestSource = new StringBuilder(FileUtils.readFileToString(target, AppConfig.CHARSET));
 
 			for (FileNames fn : fileNames) {
-				String zanataQuetsSource = FileUtils.readFileToString(new File(pathOfPO + fn.toStringPO2()), AppConfig.CHARSET);
+				String zanataQuetsSource = FileUtils.readFileToString(new File(appWorkConfig.getPODirectory() +"/"+ fn.toStringPO2()), AppConfig.CHARSET);
 				Matcher m = AppConfig.POPattern.matcher(zanataQuetsSource);
 				while (m.find()) {
 					PO p = new PO(m.group(1), m.group(2), m.group(3));
@@ -49,14 +50,10 @@ public class DestinationsMain {
 		}
 	}
 
-	private void start() {
+	void start() {
 
-		work(new FileNames[] { FileNames.journey, FileNames.journeyOther } , new File(pathOfDesti+"/DestinationsQuests_kr.lua"));
-		work(new FileNames[] { FileNames.npcName } , new File(pathOfDesti+"/DestinationsQuestgivers_kr.lua"));
+		work(new FileNames[] { FileNames.journey, FileNames.journeyOther } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuests_kr.lua"));
+		work(new FileNames[] { FileNames.npcName } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuestgivers_kr.lua"));
 
-	}
-
-	public static void main(String[] args) {
-		new DestinationsMain().start();
 	}
 }

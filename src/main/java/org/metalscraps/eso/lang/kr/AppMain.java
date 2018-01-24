@@ -1,5 +1,8 @@
 package org.metalscraps.eso.lang.kr;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 import java.util.Scanner;
 
 /**
@@ -8,9 +11,9 @@ import java.util.Scanner;
  */
 public class AppMain {
 
-	private Scanner sc;
-
-	AppMain() {
+	private final Scanner sc;
+	private final AppWorkConfig appWorkConfig = new AppWorkConfig();
+	private AppMain() {
 		sc = new Scanner(System.in);
 	}
 
@@ -18,17 +21,75 @@ public class AppMain {
 		new AppMain().start();
 	}
 
-	private void start() {
+	private void showMessage() {
 		System.out.println("1. Zanata PO 다운로드");
 		System.out.println("2. PO 폰트 매핑/변환");
-		System.out.println("3. ㅇㅇㅇㅇㅇ");
-		System.out.println("4. ㄷㄷㄷㄷㄷ");
-		System.out.println("5. ㄹㄹㄹㄹㄹ");
-		this.getCommand();
+		System.out.println("3. CSV 생성");
+		System.out.println("4. 기존 번역물 합치기");
+		System.out.println("5. 다!");
+		System.out.print("6. 작업폴더 변경 ");
+		System.out.println(appWorkConfig.getBaseDirectory());
+		System.out.print("7. PO 폴더 변경 ");
+		System.out.println(appWorkConfig.getPODirectory());
+		System.out.println("9. 종료");
+		System.out.println("11. TTC");
+		System.out.println("12. Destinations");
+	}
+
+	private void start() {
+
+		LangManager lm = new LangManager(appWorkConfig);
+
+		JFileChooser jFileChooser = new JFileChooser();
+		File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
+
+		jFileChooser.setFileFilter(new FileFilter() {
+			@Override
+			public boolean accept(File f) { return f.isDirectory(); }
+			@Override
+			public String getDescription() { return "작업 폴더 설정"; }
+		});
+		jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		jFileChooser.setMultiSelectionEnabled(false);
+		jFileChooser.setCurrentDirectory(workDir);
+		appWorkConfig.setBaseDirectory(workDir);
+		appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
+		workDir.mkdirs();
+
+
+		while(true) {
+			showMessage();
+			switch(this.getCommand()) {
+				case 1: lm.getPO(); break;
+				case 2: lm.Mapping(); break;
+				case 3: lm.makeCSV(); break;
+				case 4: lm.makeLang(); break;
+				case 5:
+					lm.getPO();
+					lm.Mapping();
+					lm.makeCSV();
+					lm.makeLang();
+					break;
+				case 6:
+					if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) continue;
+					appWorkConfig.setBaseDirectory(jFileChooser.getSelectedFile());
+					appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
+					break;
+				case 7:
+					if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) continue;
+					appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
+					break;
+				case 9: System.exit(0);
+				case 11: new TamrielTradeCentre(appWorkConfig).start();
+				case 12: new Destinations(appWorkConfig).start();
+			}
+		}
+
+
 	}
 
 	private int getCommand() {
-		System.out.print("선택 : ");
+		System.out.print("명령:");
 		String comm = sc.nextLine();
 		try {
 			return Integer.parseInt(comm);
@@ -38,4 +99,5 @@ public class AppMain {
 			return getCommand();
 		}
 	}
+
 }

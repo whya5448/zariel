@@ -1,6 +1,7 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 
@@ -62,9 +63,15 @@ public class Utils {
 	}
 
 	public static Map<String, PO> sourceToMap(SourceToMapConfig config) {
+
 		HashMap<String, PO> poMap = new HashMap<>();
+		String fileName = FilenameUtils.getBaseName(config.getFile().getName());
+
 		try {
+
 			String source = FileUtils.readFileToString(config.getFile(), AppConfig.CHARSET);
+
+			if(config.isToLowerCase()) source = source.toLowerCase();
 
 			if(config.isProcessText()) {
 				if(config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+",""); // 아이템 명 뒤의 기호 수정
@@ -74,7 +81,8 @@ public class Utils {
 			}
 
 			Matcher m = config.getPattern().matcher(source);
-			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3)));
+			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName));
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
