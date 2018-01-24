@@ -1,5 +1,6 @@
 package org.metalscraps.eso.lang.kr.bean;
 
+import com.sun.istack.internal.Nullable;
 import lombok.Data;
 
 /**
@@ -29,9 +30,17 @@ public class PO implements Comparable {
 	private String id, source, target;
 	private Integer id1, id2, id3;
 
+	public void wrap(@Nullable String prefix, @Nullable String suffix) {
+		if (prefix == null) prefix = "";
+		if (suffix == null) suffix = "";
+
+		if(!source.equals("")) source = prefix + source + suffix;
+		if(!target.equals("")) target = prefix + target + suffix;
+	}
+
 	@Override
 	public String toString() { return toCSV(true); }
-	public String toCSV(boolean t) { return "\""+id+"\",\""+(t?source:"")+"\",\""+target+"\""; }
+	public String toCSV(boolean t) { return "\""+id+"\",\""+(t?source:"")+"\",\""+target+"\"\n"; }
 
 	@Override
 	public int compareTo(Object o) {

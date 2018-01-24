@@ -8,8 +8,9 @@ import org.metalscraps.eso.lang.kr.config.AppConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Created by 안병길 on 2018-01-14.
@@ -27,33 +28,7 @@ public class MergeMain {
 					new File("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31/new.csv")
 			};
 
-			for(File f : ff) {
-				map.putAll(
-						Utils.sourceToMap(new SourceToMapConfig().setFile(f).setPattern(AppConfig.CSVPattern))
-				);
-				/*
-
-				try {
-
-					String source = FileUtils.readFileToString(f, AppConfig.CHARSET).replaceAll("\\^[\\w]+","");
-					Matcher m = AppConfig.CSVPattern.matcher(source);
-
-					while(m.find()) {
-						if(m.group(1).equals("265851556-0-4666")) {
-							System.out.println("====================");
-							System.out.println(m.group(0));
-							System.out.println(m.group(1));
-							System.out.println(m.group(2));
-							System.out.println(m.group(3));
-						}
-						map.put(m.group(1), new PO(m.group(1), m.group(2), m.group(3)));
-					}
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				*/
-			}
+			for(File f : ff) map.putAll( Utils.sourceToMap(new SourceToMapConfig().setFile(f).setPattern(AppConfig.CSVPattern)) );
 
 			System.out.println("정렬");
 			ArrayList<PO> arrayList = new ArrayList<>(map.values());
@@ -61,7 +36,7 @@ public class MergeMain {
 
 			System.out.println("빌딩");
 			StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-			for(PO p : arrayList) sb.append(p.toCSV(false)).append("\n");
+			for(PO p : arrayList) sb.append(p.toCSV(false));
 
 			System.out.println("출력");
 			try {

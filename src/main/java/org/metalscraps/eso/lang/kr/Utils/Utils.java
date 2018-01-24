@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by 안병길 on 2018-01-20.
@@ -43,11 +42,12 @@ public class Utils {
 		return replaceStringFromMap(new StringBuilder(string), map).toString();
 	}
 
-	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, String> map) {
+	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
 
-		for (Map.Entry<String, String> entry : map.entrySet()) {
+		for (Map.Entry<String, ?> entry : map.entrySet()) {
 			String key = entry.getKey();
-			String value = entry.getValue();
+			Object rawValue = entry.getValue();
+			String value = rawValue instanceof PO ? ((PO) rawValue).getTarget() : rawValue instanceof String ? (String) rawValue : key;
 
 			int start = stringBuilder.indexOf(key, 0);
 			while (start > -1) {

@@ -74,4 +74,5 @@ public enum FileNames {
 	@Override
 	public String toString() { return this.name; }
 	public String toStringPO() { return this.name + ".po"; }
+	public String toStringPO2() { return this.name + ".po2"; }
 }

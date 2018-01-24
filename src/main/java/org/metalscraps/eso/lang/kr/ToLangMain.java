@@ -10,7 +10,9 @@ import org.metalscraps.eso.lang.kr.config.AppConfig;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Created by 안병길 on 2017-12-31.
@@ -31,12 +33,11 @@ public class ToLangMain {
 
 		final JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		fc.setCurrentDirectory(FileUtils.getFile(FileUtils.getUserDirectoryPath() + sep + "desktop" + sep + "po"));
-		//fc.setCurrentDirectory(FileUtils.getFile("C:/dev/po"));
-		//if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) System.exit(JFileChooser.CANCEL_OPTION);
+		fc.setCurrentDirectory(new File("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31"));
+		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) System.exit(JFileChooser.CANCEL_OPTION);
 
 		File fx = fc.getSelectedFile();
-		fx = FileUtils.getFile("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31\\PO_0120");
+		//fx = FileUtils.getFile("C:\\Users\\admin\\Documents\\Elder Scrolls Online\\live\\works\\EsoExtractData v0.31\\PO_0120");
 
 		Collection<File> fileList = FileUtils.listFiles(fx, new String[]{"po2"}, false);
 		for(File ff : fileList) {
@@ -50,7 +51,7 @@ public class ToLangMain {
 			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
 			// 41714900-0-345|249936564-0-5081|265851556-0-4666
 
-			sourceList.addAll( Utils.sourceToMap(new SourceToMapConfig().setFile(ff)).values() );
+			sourceList.addAll( Utils.sourceToMap(new SourceToMapConfig().setFile(ff).setPattern(AppConfig.POPattern)).values() );
 			System.out.println(ff);
 
 		}
@@ -59,7 +60,7 @@ public class ToLangMain {
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
 		Collections.sort(sourceList);
 
-		for(PO p : sourceList) sb.append(p.toCSV(false)).append("\n");
+		for(PO p : sourceList) sb.append(p.toCSV(false));
 		try {
 			FileUtils.writeStringToFile(new File(fx.getAbsolutePath()+sep+"/new.csv"), sb.toString(), AppConfig.CHARSET);
 		} catch (IOException e) {
