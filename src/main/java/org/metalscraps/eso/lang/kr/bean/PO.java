@@ -12,6 +12,12 @@ import org.metalscraps.eso.lang.kr.config.AppConfig;
 @Data
 public class PO implements Comparable {
 
+	public enum POWrapType {
+		WRAP_ALL,
+		WRAP_SOURCE,
+		WRAP_TARGET
+	}
+
 	public PO(String id, String source, String target, String fileName) {
 		source = source.replaceAll("\"\n\"", "");
 		target = target.replaceAll("\"\n\"", "");
@@ -35,12 +41,18 @@ public class PO implements Comparable {
 	private String id, source, target, fileName;
 	private Integer id1, id2, id3;
 
-	public void wrap(@Nullable String prefix, @Nullable String suffix) {
+	public PO wrap(@Nullable String prefix, @Nullable String suffix, POWrapType wrapType) {
+
 		if (prefix == null) prefix = "";
 		if (suffix == null) suffix = "";
 
-		if(!source.equals("")) source = prefix + source + suffix;
-		if(!target.equals("")) target = prefix + target + suffix;
+		if(wrapType == POWrapType.WRAP_ALL) {
+			if(!source.equals("")) source = prefix + source + suffix;
+			if(!target.equals("")) target = prefix + target + suffix;
+		} else if(wrapType == POWrapType.WRAP_SOURCE && !source.equals("")) source = prefix + source + suffix;
+		else if(wrapType == POWrapType.WRAP_TARGET && !target.equals("")) target = prefix + target + suffix;
+
+		return this;
 	}
 
 	@Override

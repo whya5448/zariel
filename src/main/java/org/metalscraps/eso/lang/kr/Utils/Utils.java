@@ -78,10 +78,12 @@ public class Utils {
 				source = source.replaceAll("msgid \"\\\\+\"\n","msgid \"\"") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
 						.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
 						.replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
+
+				if(config.isRemoveComment()) source = source.replaceAll(AppConfig.englishTitlePattern, "$1");
 			}
 
 			Matcher m = config.getPattern().matcher(source);
-			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName));
+			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
 
 		} catch (IOException e) {
 			e.printStackTrace();
