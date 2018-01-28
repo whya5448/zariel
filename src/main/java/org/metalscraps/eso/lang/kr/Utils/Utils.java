@@ -22,9 +22,9 @@ public class Utils {
 	}
 
 	public static String KOToCN(String string) {
-		char[] chars = string.toCharArray();
-		for(int i=0; i < chars.length; i++) if (chars[i] >= 0xAC00 && chars[i] <= 0xEA00) chars[i] = (char)(chars[i] - 0x3E00);
-		return String.valueOf(chars);
+		char[] c = string.toCharArray();
+		for(int i=0; i < c.length; i++) if (c[i] >= 0xAC00 && c[i] <= 0xEA00) c[i] -= 0x3E00;
+		return new String(c);
 	};
 
 	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
