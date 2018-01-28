@@ -71,10 +71,7 @@ class TamrielTradeCentre {
 									.append(",},");
 			}
 
-
-			// 한자-한글 매핑, Call By Ref
-			Utils.replaceStringFromMap(sb, Utils.koToCnMap);
-			englishSource.append(sb).append("}\nend");
+			englishSource.append(Utils.KOToCN(sb.toString())).append("}\nend");
 
 			String key = ",},";
 			String value = ",},\n";
