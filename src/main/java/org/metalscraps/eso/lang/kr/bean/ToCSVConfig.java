@@ -14,5 +14,5 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ToCSVConfig {
-	boolean writeSource = false, writeFileName = false, removeEnglishComment = false;
+	boolean writeSource = false, writeFileName = false, removeComment = false;
 }

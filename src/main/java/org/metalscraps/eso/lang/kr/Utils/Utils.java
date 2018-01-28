@@ -16,32 +16,16 @@ import java.util.regex.Matcher;
  */
 public class Utils {
 
-	public static final HashMap <String, String> koToCnMap;
-	public static final HashMap <String, String> cnToKoMap;
-
-	static {
-
-		koToCnMap = new HashMap<>();
-		cnToKoMap = new HashMap<>();
-		String ko, cn;
-
-		for(int i=0; i<11172; i++) {
-
-			ko = new String(Character.toChars(0xAC00+i));
-			cn = new String(Character.toChars(0x6E00+i));
-
-			// 한글=>한자
-			koToCnMap.put(ko, cn);
-
-			// 한자=>한글
-			cnToKoMap.put(cn, ko);
-		}
-	}
-
 	@SuppressWarnings("unused")
 	public static String replaceStringFromMap(String string, Map map) {
 		return replaceStringFromMap(new StringBuilder(string), map).toString();
 	}
+
+	public static String KOToCN(String string) {
+		char[] c = string.toCharArray();
+		for(int i=0; i < c.length; i++) if (c[i] >= 0xAC00 && c[i] <= 0xEA00) c[i] -= 0x3E00;
+		return new String(c);
+	};
 
 	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
 
@@ -78,10 +62,12 @@ public class Utils {
 				source = source.replaceAll("msgid \"\\\\+\"\n","msgid \"\"") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
 						.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
 						.replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
+
+				if(config.isRemoveComment()) source = source.replaceAll(AppConfig.englishTitlePattern, "$1");
 			}
 
 			Matcher m = config.getPattern().matcher(source);
-			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName));
+			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
 
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -1,8 +1,6 @@
 package org.metalscraps.eso.lang.kr;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.experimental.Accessors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -56,8 +54,7 @@ public class LangManager {
 				System.out.println(" "+st.until(ed, ChronoUnit.SECONDS) + "초");
 			}
 
-			LocalTime totalEd = LocalTime.now();
-			System.out.println("총 " + totalSt.until(totalEd, ChronoUnit.SECONDS) + "초");
+			System.out.println("총 " + totalSt.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
 
 		} catch (Exception e) { e.printStackTrace(); }
 
@@ -65,77 +62,15 @@ public class LangManager {
 
 	public void Mapping() {
 
-		HashMap<Integer, StringBuilder> threadResultMap = new HashMap<>();
-		int cores = Runtime.getRuntime().availableProcessors();
 		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
 
 		try {
-
-			for (File file : fileList) {
-
-				// 파일명
-				System.out.println(file);
-
-				// 스레드 결과값 초기화
-				threadResultMap.clear();
-
-				// 파일 불러옴.
-				StringBuilder source = new StringBuilder(FileUtils.readFileToString(file, AppConfig.CHARSET));
-
-				int length = source.length(), lengthEach = length / cores;
-
-				// 파일별로 매핑하게 바꾼 이상 쓰레드 나눌 필요가 있는지? 테스트 해보기. 언젠간?
-				ArrayList<StringBuilder> textList = new ArrayList<>();
-				for (int i = 0; i < cores; i++) {
-					StringBuilder sb;
-
-					// 마지막 코어 텍스트 끝까지.
-					if (i == cores - 1) sb = new StringBuilder(source.substring(lengthEach * i));
-
-						// 그 외 코어 나눈대로 할당.
-					else sb = new StringBuilder(source.substring(lengthEach * i, lengthEach * (i + 1)));
-					textList.add(sb);
-				}
-
-				// 작업물 나눴으므로 초기화.
-				source = new StringBuilder(length);
-
-				int i = 0;
-				for (StringBuilder sbb : textList) new Thread(new ReplaceMain().setStringBuilder(sbb).setOrder(++i).setMap(threadResultMap)).start();
-
-				// 모든 쓰레드 작업 완료까지 3초씩 대기.
-				while (true) {
-					if (threadResultMap.size() == cores) break;
-					try { Thread.sleep(3000); } catch (InterruptedException e) { e.printStackTrace(); }
-				}
-
-				for (i = 1; i <= cores; i++) source.append(threadResultMap.get(i));
-
-				FileUtils.write(new File(file.getAbsolutePath() + "2"), source, AppConfig.CHARSET);
-
-			}
-
+			for (File file : fileList) FileUtils.write(new File(file.getAbsolutePath() + "2"), Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * Created by 안병길 on 2018-01-13.
-	 * Whya5448@gmail.com
-	 */
-
-	@Data
-	@Accessors(chain = true)
-	private static class ReplaceMain implements Runnable {
-
-		private StringBuilder stringBuilder;
-		private int order;
-		private Map<Integer, StringBuilder> map;
-
-		@Override
-		public void run() { map.put(order, Utils.replaceStringFromMap(stringBuilder, Utils.koToCnMap)); }
-	}
 
 	public void makeCSV() {
 
@@ -161,7 +96,7 @@ public class LangManager {
 		Collections.sort(sourceList);
 		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig());
 		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithFileName_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setWriteFileName(true));
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithOutEnglishTitle_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setRemoveEnglishComment(true));
+		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithOutEnglishTitle_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setRemoveComment(true));
 
 	}
 
@@ -199,18 +134,20 @@ public class LangManager {
 			fileLinkedList.add(jFileChooser.getSelectedFile());
 		}
 
-		if(fileLinkedList.size() == 0) System.exit(JFileChooser.CANCEL_OPTION);
+		if(fileLinkedList.size() == 0) return;
 
+		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
 		for(File file : fileLinkedList) {
 			System.out.println(file);
-			map.putAll( Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.CSVPattern)) );
+			map.putAll( Utils.sourceToMap(sourceToMapConfig.setFile(file)));
 		}
 
 		ArrayList<PO> arrayList = new ArrayList<>(map.values());
 		Collections.sort(arrayList);
 
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-		for(PO p : arrayList) sb.append(p.toCSV(new ToCSVConfig()));
+		ToCSVConfig toCSVConfig = new ToCSVConfig();
+		for(PO p : arrayList) sb.append(p.toCSV(toCSVConfig));
 
 		try {
 
@@ -219,6 +156,25 @@ public class LangManager {
 			ProcessBuilder pb = new ProcessBuilder()
 					.directory(appWorkConfig.getBaseDirectory())
 					.command(appWorkConfig.getBaseDirectory()+"/EsoExtractData.exe\" -x "+fileLinkedList.getLast().getName()+".merged.csv -p")
+					.redirectError(ProcessBuilder.Redirect.INHERIT)
+					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+			pb.start().waitFor();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+		toCSVConfig.setRemoveComment(true);
+		for(PO p : arrayList) sb.append(p.toCSV(toCSVConfig));
+
+		try {
+
+			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory()+"/"+fileLinkedList.getLast().getName()+".merged.no.comment.csv"), sb.toString(), AppConfig.CHARSET);
+
+			ProcessBuilder pb = new ProcessBuilder()
+					.directory(appWorkConfig.getBaseDirectory())
+					.command(appWorkConfig.getBaseDirectory()+"/EsoExtractData.exe\" -x "+fileLinkedList.getLast().getName()+".merged.no.comment.csv -p")
 					.redirectError(ProcessBuilder.Redirect.INHERIT)
 					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			pb.start().waitFor();

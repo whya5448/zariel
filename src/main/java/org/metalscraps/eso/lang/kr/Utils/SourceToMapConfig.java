@@ -2,6 +2,7 @@ package org.metalscraps.eso.lang.kr.Utils;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.metalscraps.eso.lang.kr.bean.PO;
 
 import java.io.File;
 import java.util.regex.Pattern;
@@ -21,6 +22,9 @@ public class SourceToMapConfig {
 			processText = true,
 			processItemName = true,
 			addFileNameToTitle = false,
-			toLowerCase = false;
+			toLowerCase = false,
+			removeComment;
+	private String prefix, suffix;
 	private Pattern pattern = null;
+	private PO.POWrapType poWrapType = PO.POWrapType.WRAP_ALL;
 }
