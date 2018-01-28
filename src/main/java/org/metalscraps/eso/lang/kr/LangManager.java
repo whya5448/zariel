@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.metalscraps.eso.lang.kr.Utils.GoogleTranslate;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
 import org.metalscraps.eso.lang.kr.bean.PO;
@@ -29,6 +30,7 @@ import java.util.*;
 public class LangManager {
 
 	private final ArrayList<PO> sourceList = new ArrayList<>();
+	private final ArrayList<PO> transList = new ArrayList<>();
 	private final AppWorkConfig appWorkConfig;
 
 	public void getPO() {
@@ -110,6 +112,58 @@ public class LangManager {
 		}
 	}
 
+	private void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
+		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+		for(PO p : poList) sb.append(p.toCSV(toCSVConfig));
+		try {
+			FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void translateGoogle(){
+		File file = new File("C:\\Users\\my\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0128\\achievement.po");
+		transList.addAll( Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values() );
+		System.out.println("target : "+file);
+		GoogleTranslate transUtil = new GoogleTranslate();
+
+		int count = 0;
+		String convert = "";
+		for(PO p : transList){
+
+			if(p.getSource().equals(p.getTarget())){
+				convert = transUtil.Translate(p.getTarget(), true);
+				System.out.println("non converted data. convert with google translate ["+convert+"]");
+				p.setTarget(convert);
+			}
+
+			//for test
+			count++;
+			if(count > 10){
+				break;
+			}
+		}
+	}
+
+	public void translateToCSV(){
+		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig(), this.transList);
+	}
+
+	public void csvMapping(){
+		File file = new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv");
+		System.out.println(file);
+
+		try {
+			FileUtils.write(file, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+
 	public void makeLang() {
 
 		// EsoExtractData.exe depot/eso.mnf export -a 0
@@ -182,6 +236,5 @@ public class LangManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 }
