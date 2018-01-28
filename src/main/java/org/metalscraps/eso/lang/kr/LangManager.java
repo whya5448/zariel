@@ -123,26 +123,47 @@ public class LangManager {
 	}
 
 	public void translateGoogle(){
-		File file = new File("C:\\Users\\my\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0128\\achievement.po");
-		transList.addAll( Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values() );
-		System.out.println("target : "+file);
-		GoogleTranslate transUtil = new GoogleTranslate();
+		try {
+			File file = new File("C:\\Users\\my\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0128\\achievement.po");
+			ArrayList<PO> fileItems = new ArrayList<>();
+			fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+			System.out.println("target : " + file);
 
-		int count = 0;
-		String convert = "";
-		for(PO p : transList){
+			int requestCount = 0;
 
-			if(p.getSource().equals(p.getTarget())){
-				convert = transUtil.Translate(p.getTarget(), true);
-				System.out.println("non converted data. convert with google translate ["+convert+"]");
-				p.setTarget(convert);
+			ArrayList<PO> skippedItem = new ArrayList<>();
+			ArrayList<PO> translatedItem = new ArrayList<>();
+
+			ArrayList<Thread> workerList = new ArrayList<Thread>();
+			GoogleTranslate worker = new GoogleTranslate();
+			for (PO oneItem : fileItems) {
+				if (oneItem.getSource().equals(oneItem.getTarget())) {
+					worker.addJob(oneItem);
+					Thread transWork = new Thread(worker);
+					transWork.start();
+					workerList.add(transWork);
+					requestCount++;
+				} else {
+					skippedItem.add(oneItem);
+				}
+
+				if(requestCount > 10){
+					System.out.println("wait for Google translate....");
+					for (Thread t : workerList) {
+						t.join();
+					}
+					requestCount = 0;
+				}
 			}
 
-			//for test
-			count++;
-			if(count > 10){
-				break;
-			}
+			this.transList.addAll(skippedItem);
+			this.transList.addAll(worker.getResult());
+
+			System.out.println("Convert job done! file data count ["+fileItems.size()+"] translist cound ["+this.transList.size()+"]");
+
+
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
 	}
 
