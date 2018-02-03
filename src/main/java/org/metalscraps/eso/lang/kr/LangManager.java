@@ -96,20 +96,10 @@ public class LangManager {
 		System.out.println(AppConfig.POPattern);
 
 		Collections.sort(sourceList);
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig());
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithFileName_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setWriteFileName(true));
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithOutEnglishTitle_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setRemoveComment(true));
+		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig(), sourceList);
+		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithFileName_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setWriteFileName(true), sourceList);
+		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithOutEnglishTitle_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setRemoveComment(true), sourceList);
 
-	}
-
-	private void makeFile(File file, ToCSVConfig toCSVConfig) {
-		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-		for(PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
-		try {
-			FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
@@ -124,7 +114,7 @@ public class LangManager {
 
 	public void translateGoogle(){
 		try {
-			File file = new File("C:\\Users\\my\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0128\\achievement.po");
+			File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
 			ArrayList<PO> fileItems = new ArrayList<>();
 			fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
 			System.out.println("target : " + file);
@@ -134,7 +124,7 @@ public class LangManager {
 			ArrayList<PO> skippedItem = new ArrayList<>();
 			ArrayList<PO> translatedItem = new ArrayList<>();
 
-			ArrayList<Thread> workerList = new ArrayList<Thread>();
+			ArrayList<Thread> workerList = new ArrayList<>();
 			GoogleTranslate worker = new GoogleTranslate();
 			for (PO oneItem : fileItems) {
 				if (oneItem.getSource().equals(oneItem.getTarget())) {
@@ -167,21 +157,19 @@ public class LangManager {
 		}
 	}
 
-	public void translateToCSV(){
+	public void translateToCSV() {
 		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig(), this.transList);
 	}
 
-	public void csvMapping(){
+	public void csvMapping() {
 		File file = new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv");
 		System.out.println(file);
 
 		try {
 			FileUtils.write(file, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 
