@@ -90,4 +90,8 @@ public class PO implements Comparable {
 		return this.target;
 	}
 
+	public String getId(){return this.id;}
+
+	public String getFileName() { return this.fileName;}
+
 }

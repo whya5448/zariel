@@ -35,8 +35,8 @@ public class AppMain {
 		System.out.println("11. TTC");
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
-		System.out.println("101. 구글 번역 -> csv(beta)");
-		System.out.println("102. csv -> 폰트 변환(beta)");
+		System.out.println("101. PO -> html 변환");
+
 	}
 
 	private void start() {
@@ -86,8 +86,10 @@ public class AppMain {
 				case 11: new TamrielTradeCentre(appWorkConfig).start();
 				case 12: new Destinations(appWorkConfig).start();
 				case 100: lm.translateGoogle(); break;
-				case 101: lm.translateToCSV(); break;
-				case 102: lm.csvMapping(); break;
+				case 101: lm.htmlConvert(); break;
+
+
+
 			}
 		}
 

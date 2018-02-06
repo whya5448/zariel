@@ -22,7 +22,7 @@ public class GoogleTranslate implements Runnable{
     public void run(){
         int localIndex = this.getIndex();
         PO localPO = this.getPO(localIndex);
-        localPO.setTarget(this.Translate(localPO.getSource(), true));
+        localPO.setTarget(this.Translate(localPO.getSource(), false));
         this.setPO(localIndex, localPO);
     }
 
@@ -30,6 +30,10 @@ public class GoogleTranslate implements Runnable{
     public void addJob(PO job){
         //System.out.println("job add : "+ job.getTarget());
         this.jobList.add(job);
+    }
+
+    public void clearJob(){
+        this.jobList.clear();
     }
 
     private synchronized int getIndex(){
@@ -67,7 +71,7 @@ public class GoogleTranslate implements Runnable{
 
             ret = this.replaceTag(ret, "decode");
 
-            ret = ret+" - G ";
+            ret = ret+"-G-";
             if(addOriginText){
                 ret = ret + "("+origin+")";
             }
@@ -80,6 +84,18 @@ public class GoogleTranslate implements Runnable{
         return ret;
     }
 
+    public void HtmlConvertAll(){
+
+        for(PO p : jobList) {
+            String orig = p.getSource();
+            orig = this.replaceTag(orig, "encode");
+            p.setSource(orig);
+
+            String target = p.getSource();
+            target = this.replaceTag(target, "encode");
+            p.setTarget(target);
+        }
+    }
 
     private String ReplaceString(String Expression, String Pattern, String Rep)
     {

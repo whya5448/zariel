@@ -122,67 +122,101 @@ public class LangManager {
 		}
 	}
 
-	public void translateGoogle(){
+	private void makePOFile(String filename ,ArrayList<PO> poList) {
+
+		StringBuilder sb = new StringBuilder("");
+		System.out.println("po file making... file : "+appWorkConfig.getPODirectory()+"\\"+filename);
+		File file = new File( appWorkConfig.getPODirectory()+"\\"+filename);
+		for(PO p : poList) {
+			sb.append("#: "+p.getId()+"\nmsgctxt \""+p.getId()+"\"\nmsgid \""+p.getSource()+"\"\nmsgstr \""+p.getTarget()+"\"\n\n");
+		}
+
 		try {
-			File file = new File("C:\\Users\\my\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0128\\achievement.po");
+			FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void translateGoogle(){
+			Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+			ArrayList<PO> LtransList = new ArrayList<>();
+			for(File file : fileList) {
+				ArrayList<PO> fileItems = new ArrayList<>();
+				fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+				System.out.println("target : " + file);
+
+				int requestCount = 0;
+
+				ArrayList<PO> skippedItem = new ArrayList<>();
+				ArrayList<PO> translatedItem = new ArrayList<>();
+
+				ArrayList<Thread> workerList = new ArrayList<Thread>();
+				GoogleTranslate worker = new GoogleTranslate();
+				for (PO oneItem : fileItems) {
+					if (oneItem.getSource().equals(oneItem.getTarget())) {
+						worker.addJob(oneItem);
+						Thread transWork = new Thread(worker);
+						transWork.start();
+						workerList.add(transWork);
+						requestCount++;
+					} else {
+						skippedItem.add(oneItem);
+					}
+
+					if (requestCount > 3) {
+						System.out.println("wait for Google translate....");
+						for (Thread t : workerList) {
+							try {
+								t.join();
+							}catch (Exception ex){
+								ex.printStackTrace();
+							}
+						}
+						requestCount = 0;
+					}
+
+					for (Thread t : workerList) {
+						try {
+							t.join();
+						}catch (Exception ex){
+							ex.printStackTrace();
+						}
+					}
+				}
+
+				LtransList.addAll(skippedItem);
+				LtransList.addAll(worker.getResult());
+
+				String outputNmae = LtransList.get(1).getFileName()+"_conv.po";
+				this.makePOFile(outputNmae, LtransList);
+				LtransList.clear();
+			}
+	}
+
+
+	public void htmlConvert(){
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+		ArrayList<PO> LtransList = new ArrayList<>();
+		GoogleTranslate worker = new GoogleTranslate();
+
+		for(File file : fileList) {
 			ArrayList<PO> fileItems = new ArrayList<>();
 			fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
 			System.out.println("target : " + file);
 
-			int requestCount = 0;
-
-			ArrayList<PO> skippedItem = new ArrayList<>();
-			ArrayList<PO> translatedItem = new ArrayList<>();
-
-			ArrayList<Thread> workerList = new ArrayList<Thread>();
-			GoogleTranslate worker = new GoogleTranslate();
 			for (PO oneItem : fileItems) {
-				if (oneItem.getSource().equals(oneItem.getTarget())) {
-					worker.addJob(oneItem);
-					Thread transWork = new Thread(worker);
-					transWork.start();
-					workerList.add(transWork);
-					requestCount++;
-				} else {
-					skippedItem.add(oneItem);
-				}
-
-				if(requestCount > 10){
-					System.out.println("wait for Google translate....");
-					for (Thread t : workerList) {
-						t.join();
-					}
-					requestCount = 0;
-				}
+				worker.addJob(oneItem);
 			}
+			worker.HtmlConvertAll();
 
-			this.transList.addAll(skippedItem);
-			this.transList.addAll(worker.getResult());
-
-			System.out.println("Convert job done! file data count ["+fileItems.size()+"] translist cound ["+this.transList.size()+"]");
-
-
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-	}
-
-	public void translateToCSV(){
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig(), this.transList);
-	}
-
-	public void csvMapping(){
-		File file = new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv");
-		System.out.println(file);
-
-		try {
-			FileUtils.write(file, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
-
-		} catch (Exception e) {
-			e.printStackTrace();
+			String outputNmae = fileItems.get(1).getFileName()+"_html.po";
+			this.makePOFile(outputNmae, worker.getResult());
+			worker.clearJob();
 		}
 
 	}
+
 
 
 	public void makeLang() {
