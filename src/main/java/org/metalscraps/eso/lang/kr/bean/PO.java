@@ -1,7 +1,10 @@
 package org.metalscraps.eso.lang.kr.bean;
 
 import com.sun.istack.internal.Nullable;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 
 /**
@@ -38,6 +41,7 @@ public class PO implements Comparable {
 
 	public PO(String id, String source, String target) { this(id, source, target, null); }
 
+	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private String id, source, target, fileName;
 	private Integer id1, id2, id3;
 

@@ -46,6 +46,18 @@ public class Utils {
 		return stringBuilder;
 	}
 
+	public static void replaceStringBuilder(StringBuilder sb, String[] key, String[] value) {
+	    for(int i = 0; i >= key.length; i++) {
+            int start = sb.indexOf(key[i], 0);
+            while (start > -1) {
+                int end = start + key[i].length();
+                int nextSearchStart = start + value[i].length();
+                sb.replace(start, end, value[i]);
+                start = sb.indexOf(key[i], nextSearchStart);
+            }
+        }
+	}
+
 	public static Map<String, PO> sourceToMap(SourceToMapConfig config) {
 
 		HashMap<String, PO> poMap = new HashMap<>();
