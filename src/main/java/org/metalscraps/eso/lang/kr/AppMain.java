@@ -35,7 +35,6 @@ public class AppMain {
 		System.out.println("11. TTC");
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
-		System.out.println("101. PO -> html 변환");
 
 	}
 
@@ -86,9 +85,6 @@ public class AppMain {
 				case 11: new TamrielTradeCentre(appWorkConfig).start();
 				case 12: new Destinations(appWorkConfig).start();
 				case 100: lm.translateGoogle(); break;
-				case 101: lm.htmlConvert(); break;
-
-
 
 			}
 		}
