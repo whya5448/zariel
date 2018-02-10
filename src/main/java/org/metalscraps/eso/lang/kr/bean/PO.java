@@ -67,6 +67,10 @@ public class PO implements Comparable {
 		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_":"")+target+"\"\n";
 	}
 
+	public String toText(){
+		return this.getTarget()+"\n";
+	}
+
 	@Override
 	public int compareTo(Object o) {
 		PO x = (PO) o;
