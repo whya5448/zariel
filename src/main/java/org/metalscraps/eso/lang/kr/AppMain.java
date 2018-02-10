@@ -35,12 +35,14 @@ public class AppMain {
 		System.out.println("11. TTC");
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
+		System.out.println("200. PO -> 번역가버전 생성 (파일명 앞에 추가)");
 
 	}
 
 	private void start() {
 
 		LangManager lm = new LangManager(appWorkConfig);
+
 
 		JFileChooser jFileChooser = new JFileChooser();
 		File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");

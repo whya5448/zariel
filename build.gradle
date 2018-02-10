@@ -17,7 +17,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+
 // https://mvnrepository.com/artifact/org.apache.commons/commons-text
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
 

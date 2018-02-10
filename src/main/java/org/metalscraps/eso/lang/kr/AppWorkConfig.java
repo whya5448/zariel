@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
  * Whya5448@gmail.com
  */
 
-class AppWorkConfig {
+public class AppWorkConfig {
 
 	AppWorkConfig() {
 		LocalDate today = LocalDate.now();
