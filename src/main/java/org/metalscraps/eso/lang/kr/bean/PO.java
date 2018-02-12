@@ -41,9 +41,13 @@ public class PO implements Comparable {
 
 	public PO(String id, String source, String target) { this(id, source, target, null); }
 
+	private Integer id1, id2, id3;
+
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private String id, source, target, fileName;
-	private Integer id1, id2, id3;
+
+	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
+	private boolean fuzzy = false;
 
 	public PO wrap(@Nullable String prefix, @Nullable String suffix, POWrapType wrapType) {
 
