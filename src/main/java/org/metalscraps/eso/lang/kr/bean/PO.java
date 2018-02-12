@@ -82,24 +82,4 @@ public class PO implements Comparable {
 
 	}
 
-	public void setSource(String text){
-		this.source = text;
-	}
-
-		public String getSource(){
-		return this.source;
-	}
-
-	public void setTarget(String text){
-		this.target = text;
-	}
-
-	public String getTarget(){
-		return this.target;
-	}
-
-	public String getId(){return this.id;}
-
-	public String getFileName() { return this.fileName;}
-
 }
