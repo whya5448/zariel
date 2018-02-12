@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.metalscraps.eso.lang.kr.Utils.GoogleTranslate;
+
+import org.metalscraps.eso.lang.kr.Utils.PoConverter;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
 import org.metalscraps.eso.lang.kr.bean.PO;
@@ -28,10 +29,13 @@ import java.util.*;
 
 @AllArgsConstructor
 public class LangManager {
-
-	private final ArrayList<PO> sourceList = new ArrayList<>();
-	private final ArrayList<PO> transList = new ArrayList<>();
+	private PoConverter PC = new PoConverter();
 	private final AppWorkConfig appWorkConfig;
+	private final ArrayList<PO> sourceList = new ArrayList<>();
+
+	public LangManager(AppWorkConfig appWorkConfig) {
+		this.appWorkConfig = appWorkConfig;
+	}
 
 	public void getPO() {
 
@@ -112,54 +116,7 @@ public class LangManager {
 		}
 	}
 
-	public void translateGoogle(){
-		try {
-			File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
-			ArrayList<PO> fileItems = new ArrayList<>();
-			fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-			System.out.println("target : " + file);
 
-			int requestCount = 0;
-
-			ArrayList<PO> skippedItem = new ArrayList<>();
-			ArrayList<PO> translatedItem = new ArrayList<>();
-
-			ArrayList<Thread> workerList = new ArrayList<>();
-			GoogleTranslate worker = new GoogleTranslate();
-			for (PO oneItem : fileItems) {
-				if (oneItem.getSource().equals(oneItem.getTarget())) {
-					worker.addJob(oneItem);
-					Thread transWork = new Thread(worker);
-					transWork.start();
-					workerList.add(transWork);
-					requestCount++;
-				} else {
-					skippedItem.add(oneItem);
-				}
-
-				if(requestCount > 10){
-					System.out.println("wait for Google translate....");
-					for (Thread t : workerList) {
-						t.join();
-					}
-					requestCount = 0;
-				}
-			}
-
-			this.transList.addAll(skippedItem);
-			this.transList.addAll(worker.getResult());
-
-			System.out.println("Convert job done! file data count ["+fileItems.size()+"] translist cound ["+this.transList.size()+"]");
-
-
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-	}
-
-	public void translateToCSV() {
-		makeFile(new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig(), this.transList);
-	}
 
 	public void csvMapping() {
 		File file = new File(appWorkConfig.getBaseDirectory()+"/kr_"+appWorkConfig.getTodayWithYear()+".csv");
@@ -222,7 +179,6 @@ public class LangManager {
 					.redirectError(ProcessBuilder.Redirect.INHERIT)
 					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			pb.start().waitFor();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -246,4 +202,11 @@ public class LangManager {
 			e.printStackTrace();
 		}
 	}
+
+	public void translateGoogle(){
+		this.PC.setAppWorkConfig(this.appWorkConfig);
+		this.PC.translateGoogle();
+	}
+
+
 }

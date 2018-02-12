@@ -31,6 +31,10 @@ public class GoogleTranslate implements Runnable {
         this.jobList.add(job);
     }
 
+    public void clearJob(){
+        this.jobList.clear();
+    }
+
     private synchronized int getIndex() {
         int ret = this.jobIndex;
         this.jobIndex++;
@@ -73,6 +77,7 @@ public class GoogleTranslate implements Runnable {
         System.out.println("result : "+sb);
         return sb.toString();
     }
+
 
     public static void main(String[] args) {
         GoogleTranslate trans = new GoogleTranslate();
