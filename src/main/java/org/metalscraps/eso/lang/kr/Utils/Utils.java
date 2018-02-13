@@ -25,7 +25,13 @@ public class Utils {
 		char[] c = string.toCharArray();
 		for(int i=0; i < c.length; i++) if (c[i] >= 0xAC00 && c[i] <= 0xEA00) c[i] -= 0x3E00;
 		return new String(c);
-	};
+	}
+
+	public static String CNtoKO(String string) {
+		char[] c = string.toCharArray();
+		for(int i=0; i < c.length; i++) if (c[i] >= 0x6E00 && c[i] <= 0xAC00) c[i] += 0x3E00;
+		return new String(c);
+	}
 
 	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
 

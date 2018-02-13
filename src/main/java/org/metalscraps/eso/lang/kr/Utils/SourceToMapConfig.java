@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class SourceToMapConfig {
 
 	private File file = null;
-	private int keyGroup = 1;
+	private int keyGroup = 2;
 	private boolean
 			processText = true,
 			processItemName = true,
