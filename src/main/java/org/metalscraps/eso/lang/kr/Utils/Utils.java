@@ -85,7 +85,7 @@ public class Utils {
 			}
 
 			Matcher m = config.getPattern().matcher(source);
-			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(3), fileName).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
+			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(2), m.group(3), m.group(4), fileName).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
 
 		} catch (IOException e) {
 			e.printStackTrace();
