@@ -65,10 +65,21 @@ public class PO implements Comparable {
 
 	@Override
 	public String toString() { return toCSV(new ToCSVConfig(false, false, false)); }
+
 	public String toCSV(ToCSVConfig toCSVConfig) {
 		String target = this.target;
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
 		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_":"")+target+"\"\n";
+	}
+
+	public StringBuilder toPO() {
+		StringBuilder sb = new StringBuilder("\n\n#: ").append(getId());
+		if(isFuzzy()) sb.append("\n#, fuzzy");
+		sb
+				.append("\nmsgctxt \"").append(getId()).append("\"")
+				.append("\nmsgid \"").append(getSource()).append("\"")
+				.append("\nmsgstr \"\"");
+		return sb;
 	}
 
 	@Override

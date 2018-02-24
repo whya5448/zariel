@@ -22,6 +22,7 @@ public class AppMain {
 	}
 
 	private void showMessage() {
+		System.out.println("0. CSV To PO");
 		System.out.println("1. Zanata PO 다운로드");
 		System.out.println("2. PO 폰트 매핑/변환");
 		System.out.println("3. CSV 생성");
@@ -64,6 +65,7 @@ public class AppMain {
 		while(true) {
 			showMessage();
 			switch(this.getCommand()) {
+				case 0: lm.CsvToPo(); break;
 				case 1: lm.getPO(); break;
 				case 2: lm.Mapping(); break;
 				case 3: lm.makeCSV(); break;

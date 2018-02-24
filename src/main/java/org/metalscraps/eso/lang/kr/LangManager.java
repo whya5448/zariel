@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-
 import org.metalscraps.eso.lang.kr.Utils.PoConverter;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
@@ -33,8 +32,68 @@ public class LangManager {
 	private final AppWorkConfig appWorkConfig;
 	private final ArrayList<PO> sourceList = new ArrayList<>();
 
-	public LangManager(AppWorkConfig appWorkConfig) {
+	LangManager(AppWorkConfig appWorkConfig) {
 		this.appWorkConfig = appWorkConfig;
+	}
+
+	public void CsvToPo() {
+
+		// EsoExtractData.exe depot/eso.mnf export -a 0
+		// EsoExtractData.exe -l en_0124.lang -p
+
+		LinkedList<File> fileLinkedList = new LinkedList<>();
+		HashMap<String, PO> map = new HashMap<>();
+
+		JFileChooser jFileChooser = new JFileChooser();
+		jFileChooser.setMultiSelectionEnabled(false);
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+		jFileChooser.setFileFilter(new FileFilter() {
+			@Override
+			public boolean accept(File f) { return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory(); }
+
+			@Override
+			public String getDescription() { return "*.csv"; }
+		});
+
+		while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
+			jFileChooser.setCurrentDirectory(jFileChooser.getSelectedFile());
+			fileLinkedList.add(jFileChooser.getSelectedFile());
+		}
+
+		if(fileLinkedList.size() == 0) return;
+
+		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+		for(File file : fileLinkedList) {
+			System.out.println(file);
+			map.putAll( Utils.sourceToMap(sourceToMapConfig.setFile(file)));
+		}
+
+		ArrayList<PO> arrayList = new ArrayList<>(map.values());
+		Collections.sort(arrayList);
+
+		StringBuilder sb = new StringBuilder(
+				"# Administrator <admin@the.gg>, 2017. #zanata\n" +
+				"msgid \"\"\n" +
+				"msgstr \"\"\n" +
+				"\"MIME-Version: 1.0\\n\"\n" +
+				"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
+				"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
+				"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
+				"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
+				"\"Language-Team: Korean\\n\"\n" +
+				"\"Language: ko\\n\"\n" +
+				"\"X-Generator: Zanata 4.2.4\\n\"\n" +
+				"\"Plural-Forms: nplurals=1; plural=0\\n\""
+				);
+		for(PO p : arrayList) sb.append(p.toPO());
+
+		try {
+
+			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory()+"/"+fileLinkedList.getLast().getName()+".po"), sb.toString(), AppConfig.CHARSET);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void getPO() {
