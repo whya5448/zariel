@@ -44,7 +44,8 @@ public class LangManager {
 		LinkedList<File> fileLinkedList = new LinkedList<>();
 		HashMap<String, PO> map = new HashMap<>();
 		HashMap<String, PO> map2 = new HashMap<>();
-		HashMap<String, PO> map3 = new HashMap<>();
+		HashMap<String, String> map3 = new HashMap<>();
+		HashMap<Integer, String> map4 = new HashMap<>();
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
@@ -83,37 +84,40 @@ public class LangManager {
 			// 41714900-0-345|249936564-0-5081|265851556-0-4666
 
 			map2.putAll( Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)) );
-			System.out.println(file);
 		}
 
-		for(PO p : map2.values()) map3.put(p.getSource(), p);
+		for(PO p : map2.values()) {
+			map3.put(p.getSource(), p.getFileName());
+			map4.put(p.getId1(), p.getFileName());
+		}
 
-		System.out.println("Entry");
 		for(Map.Entry<String, PO> entry : map.entrySet()) {
-			System.out.println(entry.getValue());
 			PO s = entry.getValue();
 			PO x = map2.get(entry.getKey());
 
 			if(x != null) s.setFileName(x.getFileName());
 			else {
-				PO pp = map3.get(s.getSource());
-				if(pp!=null) s.setFileName(pp.getFileName());
+				String pp = map4.get(s.getId1());
+				if(pp!=null) s.setFileName(pp);
+				else {
+					pp = map3.get(s.getSource());
+					if(pp!=null) s.setFileName(pp);
+					else {
+
+							System.out.println(entry);
+							s.setFileName("3.3.6.1561871");
+
+					}
+				}
 			}
 		}
-		System.out.println("Entry End");
 
-		for(PO p : map.values()) {
-			if(p.getFileName() == null || p.getFileName().equals("")) p.setFileName("3.3.6.1561871");
-			System.out.println(p);
-		}
-
-		map2 = null;
-
-		System.out.println("To...");
 		HashMap<String, StringBuilder> builderMap = new HashMap<>();
 		String fileName;
-		for(PO p : map.values()) {
-			System.out.println(p);
+
+		ArrayList<PO> sort = new ArrayList<>(map.values());
+		Collections.sort(sort);
+		for(PO p : sort) {
 			fileName = p.getFileName();
 			StringBuilder sb = builderMap.get(fileName);
 			if(sb == null) {
@@ -139,8 +143,7 @@ public class LangManager {
 		try {
 
 			for(Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
-				System.out.println(entry.getKey());
-				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp7/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
 			}
 
 		} catch (Exception e) {
