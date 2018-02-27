@@ -43,6 +43,9 @@ public class LangManager {
 
 		LinkedList<File> fileLinkedList = new LinkedList<>();
 		HashMap<String, PO> map = new HashMap<>();
+		HashMap<String, PO> map2 = new HashMap<>();
+		HashMap<String, String> map3 = new HashMap<>();
+		HashMap<Integer, String> map4 = new HashMap<>();
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
@@ -68,28 +71,80 @@ public class LangManager {
 			map.putAll( Utils.sourceToMap(sourceToMapConfig.setFile(file)));
 		}
 
-		ArrayList<PO> arrayList = new ArrayList<>(map.values());
-		Collections.sort(arrayList);
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+		for(File file : fileList) {
+			String fileName = FilenameUtils.getBaseName(file.getName());
 
-		StringBuilder sb = new StringBuilder(
-				"# Administrator <admin@the.gg>, 2017. #zanata\n" +
-				"msgid \"\"\n" +
-				"msgstr \"\"\n" +
-				"\"MIME-Version: 1.0\\n\"\n" +
-				"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
-				"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
-				"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
-				"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
-				"\"Language-Team: Korean\\n\"\n" +
-				"\"Language: ko\\n\"\n" +
-				"\"X-Generator: Zanata 4.2.4\\n\"\n" +
-				"\"Plural-Forms: nplurals=1; plural=0\\n\""
+			// pregame 쪽 데이터
+			if(fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+
+			//41714900-0-345 tip.po "////"
+			//249936564-0-5081 quest-sub.po """Captain""
+			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
+			// 41714900-0-345|249936564-0-5081|265851556-0-4666
+
+			map2.putAll( Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)) );
+		}
+
+		for(PO p : map2.values()) {
+			map3.put(p.getSource(), p.getFileName());
+			map4.put(p.getId1(), p.getFileName());
+		}
+
+		for(Map.Entry<String, PO> entry : map.entrySet()) {
+			PO s = entry.getValue();
+			PO x = map2.get(entry.getKey());
+
+			if(x != null) s.setFileName(x.getFileName());
+			else {
+				String pp = map4.get(s.getId1());
+				if(pp!=null) s.setFileName(pp);
+				else {
+					pp = map3.get(s.getSource());
+					if(pp!=null) s.setFileName(pp);
+					else {
+
+							System.out.println(entry);
+							s.setFileName("3.3.6.1561871");
+
+					}
+				}
+			}
+		}
+
+		HashMap<String, StringBuilder> builderMap = new HashMap<>();
+		String fileName;
+
+		ArrayList<PO> sort = new ArrayList<>(map.values());
+		Collections.sort(sort);
+		for(PO p : sort) {
+			fileName = p.getFileName();
+			StringBuilder sb = builderMap.get(fileName);
+			if(sb == null) {
+				sb = new StringBuilder(
+						"# Administrator <admin@the.gg>, 2017. #zanata\n" +
+								"msgid \"\"\n" +
+								"msgstr \"\"\n" +
+								"\"MIME-Version: 1.0\\n\"\n" +
+								"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
+								"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
+								"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
+								"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
+								"\"Language-Team: Korean\\n\"\n" +
+								"\"Language: ko\\n\"\n" +
+								"\"X-Generator: Zanata 4.2.4\\n\"\n" +
+								"\"Plural-Forms: nplurals=1; plural=0\\n\""
 				);
-		for(PO p : arrayList) sb.append(p.toPO());
+				builderMap.put(fileName, sb);
+			}
+			sb.append(p.toPO());
+		}
 
 		try {
 
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory()+"/"+fileLinkedList.getLast().getName()+".po"), sb.toString(), AppConfig.CHARSET);
+			for(Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
+				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp7/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
