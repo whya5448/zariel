@@ -77,7 +77,8 @@ public class Utils {
 
 			if(config.isProcessText()) {
 				if(config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+",""); // 아이템 명 뒤의 기호 수정
-				source = source.replaceAll("msgid \"\\\\+\"\n","msgid \"\"") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+				source = source.replaceAll("msgid \"\\\\+\"\n","msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+						.replaceAll("msgstr \"\\\\+\"\n","msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
 						.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
 						.replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
 
