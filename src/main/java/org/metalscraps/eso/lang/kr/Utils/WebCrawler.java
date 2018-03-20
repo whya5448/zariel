@@ -50,12 +50,11 @@ public class WebCrawler {
 
         for(Element skill : skills){
             System.out.println("--------------------------------------");
-            System.out.println("one row" + skill.html());
+            //System.out.println("one row" + skill.html());
             Elements cols = skill.select("td");
             if(cols.size() > 0) {
-                System.out.println("skill id :" + cols.get(2).text() + " category :" + cols.get(4).text() + " skill name :" + cols.get(5).text() + " desc :" + cols.get(13).text());
+                System.out.println("skill id :" + cols.get(2).text() + " category :" + cols.get(4).text() + " skill name :" + cols.get(6).text() );
             }
-            System.out.println("--------------------------------------");
         }
 
 
