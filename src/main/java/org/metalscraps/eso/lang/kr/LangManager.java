@@ -153,7 +153,7 @@ public class LangManager {
 
 	public void getPO() {
 
-		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/3.2.6.1517120/ko/po?docId=";
+		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/3.3.8.1567568/ko/po?docId=";
 		final File baseDirectory = appWorkConfig.getBaseDirectory();
 		final File PODirectory = new File(baseDirectory.getAbsolutePath()+"/PO_"+appWorkConfig.getToday());
 		appWorkConfig.setPODirectory(PODirectory);
@@ -325,53 +325,6 @@ public class LangManager {
 		this.PC.translateGoogle();
 	}
 
-	public void CsVToText(){
-
-		// EsoExtractData.exe depot/eso.mnf export -a 0
-		// EsoExtractData.exe -l en_0124.lang -p
-
-		LinkedList<File> fileLinkedList = new LinkedList<>();
-		HashMap<String, PO> map = new HashMap<>();
-
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
-		jFileChooser.setFileFilter(new FileFilter() {
-			@Override
-			public boolean accept(File f) { return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory(); }
-
-			@Override
-			public String getDescription() { return "*.csv"; }
-		});
-
-		while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
-			jFileChooser.setCurrentDirectory(jFileChooser.getSelectedFile());
-			fileLinkedList.add(jFileChooser.getSelectedFile());
-		}
-
-		if(fileLinkedList.size() == 0) return;
-
-		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
-		for(File file : fileLinkedList) {
-			System.out.println(file);
-			map.putAll( Utils.sourceToMap(sourceToMapConfig.setFile(file)));
-		}
-
-		ArrayList<PO> arrayList = new ArrayList<>(map.values());
-		Collections.sort(arrayList);
-
-		ToCSVConfig toCSVConfig = new ToCSVConfig();
-
-		StringBuilder sb = new StringBuilder();
-
-		for(PO p : arrayList) sb.append(p.toText());
-
-		try {
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".csv.txt"), sb.toString(), AppConfig.CHARSET);
-		} catch (Exception ex){
-			ex.printStackTrace();
-		}
-	}
 
 
 }
