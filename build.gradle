@@ -18,7 +18,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
 
-// https://mvnrepository.com/artifact/org.apache.commons/commons-text
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-text
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
 
     compile 'org.apache.httpcomponents:httpclient:4.5.5'
