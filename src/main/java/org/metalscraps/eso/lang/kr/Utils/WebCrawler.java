@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-import javafx.util.Pair;
 import org.apache.http.client.ClientProtocolException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,14 +17,6 @@ import org.metalscraps.eso.lang.kr.bean.WebData;
 //get html table data from url.
 public class WebCrawler {
 
-    public static String getCurrentData(){
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-
-        return sdf.format(new Date());
-
-    }
-
     public boolean GetUESPSkillTree(WebData outputData){
         boolean ret = false;
         try {
@@ -35,7 +26,7 @@ public class WebCrawler {
             outputData.addWebTable(table);
 
             String url;
-            for(int pageCount = 1; pageCount < 9 ; pageCount++) {
+            for(int pageCount = 1; pageCount < 0 ; pageCount++) {
                 url = "https://esoitem.uesp.net/viewlog.php?start="+pageCount*300+"&record=skillTree";
                 System.out.println(url);
                 HTMLdoc = Jsoup.connect(url).get();
@@ -63,18 +54,19 @@ public class WebCrawler {
                         System.out.println("skill id :" + cols.get(2).text() + " category :" + cols.get(4).text() + " skill name :" + cols.get(6).text() );
                         sr = SkillCategory.add(cols.get(4).text());
                         if(sr){
-                            System.out.println("Set inserted : "+cols.get(4).text());
-                            if(SkillCSV.size() !=0){
+                            if(CCSV!=null) {
+                                System.out.println("prev Set inserted : "+CCSV.getCategory());
                                 SkillCSV.add(CCSV);
                             }
                             CCSV = new CategoryCSV();
                             CCSV.setCategory(cols.get(4).text());
                         }
-                        CCSV.addPair("198758357-0-"+cols.get(2).text() , "132143172-0-"+cols.get(2).text());
-                        System.out.println("pair name : 198758357-0-"+cols.get(2).text() +" pair desc 132143172-0-"+cols.get(2).text());
+                        //skill name poindex
+                        CCSV.addPoIndex("198758357-0-"+cols.get(2).text());
+                        //skill desc poindex
+                        CCSV.addPoIndex("132143172-0-"+cols.get(2).text());
                     }
                 }
-
             }
 
             System.out.println("SkillCSV Size : "+SkillCSV.size());
@@ -82,8 +74,8 @@ public class WebCrawler {
             for(CategoryCSV oneCSV : SkillCSV){
                 System.out.println("=========================================");
                 System.out.println("Category : "+oneCSV.getCategory());
-                for(Pair<String,String> oneItem : oneCSV.getData()){
-                    System.out.println("name index : "+oneItem.getKey() + ", desc index : "+oneItem.getValue());
+                for(String index: oneCSV.getPoIndexList() ){
+                    System.out.println("Index : "+ index);
                 }
                 System.out.println("=========================================");
             }
