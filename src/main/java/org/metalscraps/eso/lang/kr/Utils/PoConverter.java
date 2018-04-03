@@ -70,8 +70,8 @@ public class PoConverter {
                     LtransList.addAll(skippedItem);
                     LtransList.addAll(worker.getResult());
 
-                    String outputNmae = LtransList.get(1).getFileName() + "_conv.po";
-                    this.makePOFile(outputNmae, LtransList);
+                    String outputName = LtransList.get(1).getFileName() + "_conv.po";
+                    this.makePOFile(outputName, LtransList);
                     LtransList.clear();
                 }
             }
@@ -85,7 +85,10 @@ public class PoConverter {
         System.out.println("po file making... file : "+appWorkConfig.getPODirectory()+"\\"+filename);
         File file = new File( appWorkConfig.getPODirectory()+"\\"+filename);
         for(PO p : poList) {
-            sb.append("#: "+p.getId()+"\nmsgctxt \""+p.getId()+"\"\nmsgid \""+p.getSource()+"\"\nmsgstr \""+p.getTarget()+"\"\n\n");
+            if(p.isFuzzy()){
+                sb.append("#, fuzzy\n");
+            }
+            sb.append("msgctxt \""+p.getId()+"\"\nmsgid \""+p.getSource()+"\"\nmsgstr \""+p.getTarget()+"\"\n\n");
         }
 
         try {

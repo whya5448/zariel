@@ -18,6 +18,10 @@ public class CategoryCSV {
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	ArrayList<String> PoIndexList, CSVList = null;
 
+	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
+	ArrayList<PO> PODataList = null;
+
+
 	public void addPoIndex(String Index){
 		if(this.PoIndexList == null){
 			this.PoIndexList = new ArrayList<>();
@@ -32,4 +36,10 @@ public class CategoryCSV {
 		PoIndexList.add(oneCSVItem);
 	}
 
+	public void addPoData(PO po){
+		if(this.PODataList == null){
+			this.PODataList = new ArrayList<>();
+		}
+		PODataList.add(po);
+	}
 }

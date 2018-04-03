@@ -21,7 +21,8 @@ public class GoogleTranslate implements Runnable {
     public void run() {
         int localIndex = this.getIndex();
         PO localPO = this.getPO(localIndex);
-        localPO.setTarget(this.Translate(localPO.getSource(), true));
+        localPO.setTarget(this.Translate(localPO.getSource(), false));
+        localPO.setFuzzy(true);
         this.setPO(localIndex, localPO);
     }
 
@@ -67,7 +68,7 @@ public class GoogleTranslate implements Runnable {
                             TranslateOption.targetLanguage("ko"));
             sb = new StringBuilder(StringEscapeUtils.unescapeXml(translation.getTranslatedText()));
             Utils.replaceStringBuilder(sb, GoogleTranslate.TAG, GoogleTranslate.SYMBOL);
-            sb.append(" - G ");
+            sb.append("-G-");
             if(addOriginText) sb.append("(").append(origin).append(")");
         } catch (Exception ex) {
             System.out.println("Google Translate : Exception occur! exception msg [" + ex.getMessage() + "]");

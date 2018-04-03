@@ -55,6 +55,7 @@ public class WebCrawler {
         return ret;
     }
 
+
     private boolean ParseUSEPSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
         Set<String> SkillCategory = new HashSet<>();
         CategoryCSV CCSV = null;
@@ -90,6 +91,7 @@ public class WebCrawler {
                 }
             }
         }
+        //final skill set
         skillCSV.add(CCSV);
 
         if(skillCSV.size() > 0){
@@ -136,7 +138,6 @@ public class WebCrawler {
         }else{
             return false;
         }
-
     }
 
 
