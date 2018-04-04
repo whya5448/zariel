@@ -85,15 +85,17 @@ public class GoogleTranslate implements Runnable {
         String ret = origin.replace("<< ", "<<");
         ret =  ret.replace(" >>", ">>");
         ret  = ret.replace(" : ", ":");
-        ret  = ret.replace("\\ n", "\\n");
-        ret  = ret.replace("\\n \\n", "\\n\\n");
+        ret  = ret.replace(" / ", "/");
+        ret  = ret.replace(" | ", "|");
+        ret  = ret.replace(" \\ ", "\\");
+        ret  = ret.replace(" \\ n", "\\n");
         return ret;
     }
 
 
     public static void main(String[] args) {
         GoogleTranslate trans = new GoogleTranslate();
-        String orig = "<<1>> <<c:1>>  \\n\\n test \\n testetstest";
+        String orig = "<<1>> <<c:1>>  \\n\\n test \\n testetstest. |\\/:.";
         System.out.println("Convert orign : " + orig);
         System.out.println("translate with original: " + trans.Translate(orig,true));
         System.out.println("translate witout original: " + trans.Translate(orig, false));
