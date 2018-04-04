@@ -141,6 +141,8 @@ public class WebCrawler {
     }
 
 
+
+
     public static void main(String[] args) {
         boolean skillret;
         ArrayList<CategoryCSV> SkillCSV = new ArrayList<>();

@@ -75,16 +75,29 @@ public class GoogleTranslate implements Runnable {
             sb.append("Translate fail(by Google translate)");
             ex.printStackTrace();
         }
-        System.out.println("result : "+sb);
-        return sb.toString();
+        String Translated =  sb.toString();
+        String ret = this.ReplaceSpecialChar(Translated);
+        System.out.println("result : "+ret);
+        return ret;
+    }
+
+    private String ReplaceSpecialChar(String origin){
+        String ret = origin.replace("<< ", "<<");
+        ret =  ret.replace(" >>", ">>");
+        ret  = ret.replace(" : ", ":");
+        ret  = ret.replace("\\ n", "\\n");
+        ret  = ret.replace("\\n \\n", "\\n\\n");
+        return ret;
     }
 
 
     public static void main(String[] args) {
         GoogleTranslate trans = new GoogleTranslate();
-        String orig = "No one believed the old ouster Del when he staggered into Vulkhel Guard and claimed he'd found a huge deposit of lapis lazuli in the hills, but it turned out to be true, and now Del's Claim is one of the most profitable mines on Auridon.";
+        String orig = "<<1>> <<c:1>>  \\n\\n test \\n testetstest";
         System.out.println("Convert orign : " + orig);
         System.out.println("translate with original: " + trans.Translate(orig,true));
         System.out.println("translate witout original: " + trans.Translate(orig, false));
+
+
     }
 }
