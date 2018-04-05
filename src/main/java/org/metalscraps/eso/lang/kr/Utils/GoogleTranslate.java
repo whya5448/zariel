@@ -77,7 +77,7 @@ public class GoogleTranslate implements Runnable {
         }
         String Translated =  sb.toString();
         String ret = this.ReplaceSpecialChar(Translated);
-        System.out.println("result : "+ret);
+        System.out.println("result of "+origin+" : "+ret);
         return ret;
     }
 
@@ -89,6 +89,10 @@ public class GoogleTranslate implements Runnable {
         ret  = ret.replace(" | ", "|");
         ret  = ret.replace(" \\ ", "\\");
         ret  = ret.replace(" \\ n", "\\n");
+        ret  = ret.replace(": ", ":");
+        ret  = ret.replace("/ ", "/");
+        ret  = ret.replace("| ", "|");
+        ret  = ret.replace("\\ ", "\\");
         return ret;
     }
 
