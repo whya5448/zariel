@@ -46,7 +46,7 @@ public class PoConverter {
                     }
 
 
-                    if (requestCount > 3) {
+                    if (requestCount > 0) {
                             System.out.println("wait for Google translate....");
                             for (Thread t : workerList) {
                                 try {
