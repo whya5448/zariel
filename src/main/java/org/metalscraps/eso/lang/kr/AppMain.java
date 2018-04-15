@@ -37,7 +37,8 @@ public class AppMain {
 		System.out.println("11. TTC");
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
-		System.out.println("200. PO -> 번역가버전 생성 (파일명 앞에 추가)");
+		System.out.println("200. USEP 사이트를 이용해 Po context id 인덱스 파일 생성");
+
 
 	}
 
@@ -91,6 +92,8 @@ public class AppMain {
 				case 11: new TamrielTradeCentre(appWorkConfig).start();
 				case 12: new Destinations(appWorkConfig).start();
 				case 100: lm.translateGoogle(); break;
+				case 200:
+               
 
 			}
 		}

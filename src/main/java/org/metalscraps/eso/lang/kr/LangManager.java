@@ -166,7 +166,7 @@ public class LangManager {
 
 	public void getPO() {
 
-		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/3.2.6.1517120/ko/po?docId=";
+		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/3.3.8.1567568/ko/po?docId=";
 		final File baseDirectory = appWorkConfig.getBaseDirectory();
 		final File PODirectory = new File(baseDirectory.getAbsolutePath()+"/PO_"+appWorkConfig.getToday());
 		appWorkConfig.setPODirectory(PODirectory);
@@ -232,6 +232,8 @@ public class LangManager {
 		makeFile(new File(appWorkConfig.getBaseDirectory()+"/krWithOutEnglishTitle_"+appWorkConfig.getTodayWithYear()+".csv"), new ToCSVConfig().setRemoveComment(true), sourceList);
 
 	}
+
+
 
 	private void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
@@ -358,6 +360,7 @@ public class LangManager {
 
 		sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
 		toCSVConfig.setRemoveComment(true);
+
 		for(PO p : arrayList) sb.append(p.toCSV(toCSVConfig));
 
 		try {
@@ -381,4 +384,9 @@ public class LangManager {
 		this.PC.translateGoogle();
 	}
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 4363c63731c10ed98cb26cdf646a0f4527c376ec
 }

@@ -67,7 +67,8 @@ public class PO implements Comparable {
 	public String toCSV(ToCSVConfig toCSVConfig) {
 		String target = this.target;
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
-		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_":"")+target+"\"\n";
+		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_"+id+"_":"")+target+"\"\n";
+
 	}
 
 	public StringBuilder toPO() {
