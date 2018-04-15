@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metalscraps.eso.lang.kr.Utils.PoConverter;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
@@ -20,6 +22,8 @@ import java.net.URL;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by 안병길 on 2018-01-24.
@@ -140,10 +144,19 @@ public class LangManager {
 			sb.append(p.toPO());
 		}
 
+		for(StringBuilder sb : builderMap.values()) {
+			Pattern p = Pattern.compile("\\\\(?!n)");
+			Matcher m = p.matcher(sb);
+			String x = m.replaceAll("\\\\$0");
+			sb.delete(0, sb.length());
+			sb.append(x);
+		}
+
+
 		try {
 
 			for(Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
-				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp7/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp14/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
 			}
 
 		} catch (Exception e) {
@@ -194,7 +207,7 @@ public class LangManager {
 
 	public void makeCSV() {
 
-		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
 		for(File file : fileList) {
 
 			String fileName = FilenameUtils.getBaseName(file.getName());
@@ -243,6 +256,52 @@ public class LangManager {
 		}
 	}
 
+	public void makeLangToJSON() {
+
+		// EsoExtractData.exe depot/eso.mnf export -a 0
+		// EsoExtractData.exe -l en_0124.lang -p
+
+		LinkedList<File> fileLinkedList = new LinkedList<>();
+		HashMap<String, PO> map = new HashMap<>();
+
+		JFileChooser jFileChooser = new JFileChooser();
+		jFileChooser.setMultiSelectionEnabled(false);
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+		jFileChooser.setFileFilter(new FileFilter() {
+			@Override
+			public boolean accept(File f) { return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory(); }
+
+			@Override
+			public String getDescription() { return "*.csv"; }
+		});
+
+		while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
+			jFileChooser.setCurrentDirectory(jFileChooser.getSelectedFile());
+			fileLinkedList.add(jFileChooser.getSelectedFile());
+		}
+
+		if(fileLinkedList.size() == 0) return;
+
+		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+		for(File file : fileLinkedList) {
+			System.out.println(file);
+			map.putAll( Utils.sourceToMap(sourceToMapConfig.setFile(file)));
+		}
+
+		JSONObject jsonObject = new JSONObject();
+		for(PO p : map.values()) jsonObject.put(p.getId(), p.getFileName()+"_"+Utils.CNtoKO((p.getTarget())));
+		String x = jsonObject.toString();
+
+		System.out.println(x);
+
+		try {
+			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory()+"/json.json"), x, AppConfig.CHARSET);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+	}
 
 	public void makeLang() {
 
@@ -321,6 +380,5 @@ public class LangManager {
 		this.PC.setAppWorkConfig(this.appWorkConfig);
 		this.PC.translateGoogle();
 	}
-
 
 }

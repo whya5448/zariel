@@ -27,6 +27,7 @@ public class AppMain {
 		System.out.println("2. PO 폰트 매핑/변환");
 		System.out.println("3. CSV 생성");
 		System.out.println("4. 기존 번역물 합치기");
+		System.out.println("44. 기존 번역물 합치기 => JSON");
 		System.out.println("5. 다!");
 		System.out.print("6. 작업폴더 변경 ");
 		System.out.println(appWorkConfig.getBaseDirectory());
@@ -70,6 +71,7 @@ public class AppMain {
 				case 2: lm.Mapping(); break;
 				case 3: lm.makeCSV(); break;
 				case 4: lm.makeLang(); break;
+				case 44: lm.makeLangToJSON(); break;
 				case 5:
 					lm.getPO();
 					lm.Mapping();

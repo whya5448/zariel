@@ -28,3 +28,11 @@ hs_err_pid*
 out/
 src/main/resources/
 src/test/
+ttc_file_watch/
+ttc_file_watch/build.gradle
+ttc_file_watch/gradle/wrapper/gradle-wrapper.properties
+ttc_file_watch/gradlew
+ttc_file_watch/gradlew.bat
+ttc_file_watch/settings.gradle
+ttc_file_watch/src/main/
+ttc_file_watch/src/test/resources/
