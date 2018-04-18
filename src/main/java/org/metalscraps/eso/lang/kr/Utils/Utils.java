@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -68,29 +69,35 @@ public class Utils {
 
 		HashMap<String, PO> poMap = new HashMap<>();
 		String fileName = FilenameUtils.getBaseName(config.getFile().getName());
+		String source = sourceToMapParser(config);
 
+		Matcher m = config.getPattern().matcher(source);
+		while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(2), m.group(6), m.group(7), FileNames.fromString(fileName)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
+
+		return poMap;
+	}
+
+	private static String sourceToMapParser(SourceToMapConfig config) {
+
+		String source = null;
 		try {
-
-			String source = FileUtils.readFileToString(config.getFile(), AppConfig.CHARSET);
-
-			if(config.isToLowerCase()) source = source.toLowerCase();
-
-			if(config.isProcessText()) {
-				if(config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+",""); // 아이템 명 뒤의 기호 수정
-				source = source.replaceAll("msgid \"\\\\+\"\n","msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
-						.replaceAll("msgstr \"\\\\+\"\n","msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
-						.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
-						.replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
-
-				if(config.isRemoveComment()) source = source.replaceAll(AppConfig.englishTitlePattern, "$1");
-			}
-
-			Matcher m = config.getPattern().matcher(source);
-			while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(2), m.group(3), m.group(4), fileName).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
-
+			source = FileUtils.readFileToString(config.getFile(), AppConfig.CHARSET);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return poMap;
+
+		if (config.isToLowerCase()) source = source.toLowerCase();
+
+		if (config.isProcessText()) {
+			if (config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
+			source = source.replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+					.replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+					.replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
+					.replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
+
+			if (config.isRemoveComment()) source = source.replaceAll(AppConfig.englishTitlePattern, "$1");
+		}
+		return source;
+
 	}
 }

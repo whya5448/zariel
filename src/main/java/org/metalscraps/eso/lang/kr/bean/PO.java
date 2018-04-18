@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 /**
  * Created by 안병길 on 2018-01-18.
@@ -21,7 +22,7 @@ public class PO implements Comparable {
 		WRAP_TARGET
 	}
 
-	public PO(String id, String source, String target, String fileName) {
+	public PO(String id, String source, String target, FileNames fileName) {
 		source = source.replaceAll("\"\n\"", "");
 		target = target.replaceAll("\"\n\"", "");
 
@@ -42,7 +43,8 @@ public class PO implements Comparable {
 	private Integer id1, id2, id3;
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
-	private String id, source, target, fileName;
+	private String id, source, target;
+	private FileNames fileName;
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private boolean fuzzy = false;
@@ -65,9 +67,8 @@ public class PO implements Comparable {
 	public String toString() { return toCSV(new ToCSVConfig(false, false, false)); }
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
-		String target = this.target;
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
-		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName+"_"+id+"_":"")+target+"\"\n";
+		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+(toCSVConfig.isWriteFileName()?fileName.getShortName()+"_"+id3+"_":"")+target+"\"\n";
 
 	}
 
