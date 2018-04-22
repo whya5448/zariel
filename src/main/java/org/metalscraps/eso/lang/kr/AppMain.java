@@ -25,7 +25,8 @@ public class AppMain {
 		System.out.println("0. CSV To PO");
 		System.out.println("1. Zanata PO 다운로드");
 		System.out.println("2. PO 폰트 매핑/변환");
-		System.out.println("3. CSV 생성");
+		System.out.println("3. CSV 생성 (PO2)");
+		System.out.println("33. CSV 생성 (PO)");
 		System.out.println("4. 기존 번역물 합치기");
 		System.out.println("44. 기존 번역물 합치기 => JSON");
 		System.out.println("5. 다!");
@@ -70,13 +71,14 @@ public class AppMain {
 				case 0: lm.CsvToPo(); break;
 				case 1: lm.getPO(); break;
 				case 2: lm.Mapping(); break;
-				case 3: lm.makeCSV(); break;
+				case 3: lm.makeCSV(true); break;
+				case 33: lm.makeCSV(false); break;
 				case 4: lm.makeLang(); break;
 				case 44: lm.makeLangToJSON(); break;
 				case 5:
 					lm.getPO();
 					lm.Mapping();
-					lm.makeCSV();
+					lm.makeCSV(true);
 					lm.makeLang();
 					break;
 				case 6:
@@ -89,8 +91,8 @@ public class AppMain {
 					appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
 					break;
 				case 9: System.exit(0);
-				case 11: new TamrielTradeCentre(appWorkConfig).start();
-				case 12: new Destinations(appWorkConfig).start();
+				case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
+				case 12: new Destinations(appWorkConfig).start(); break;
 				case 100: lm.translateGoogle(); break;
 				case 200:
                

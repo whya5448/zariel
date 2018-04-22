@@ -46,7 +46,7 @@ class TamrielTradeCentre {
 				poHashMap.putAll(
 						Utils.sourceToMap(
 								new SourceToMapConfig()
-										.setKeyGroup(2)
+										.setKeyGroup(6)
 										.setToLowerCase(true)
 										.setFile(new File(appWorkConfig.getPODirectory() + "/" + fileName.toStringPO2()))
 										.setPattern(AppConfig.POPattern)));
