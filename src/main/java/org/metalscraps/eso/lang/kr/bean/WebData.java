@@ -1,16 +1,13 @@
 package org.metalscraps.eso.lang.kr.bean;
 
-import com.sun.istack.internal.Nullable;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.metalscraps.eso.lang.kr.config.WebPageNames;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.metalscraps.eso.lang.kr.config.WebPageNames;
 
 @Data
 public class WebData{
