@@ -237,7 +237,7 @@ public class LangManager {
 
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithFileName_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true), sourceList);
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithOutEnglishTitle_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setRemoveComment(true), sourceList);
+		//makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithOutEnglishTitle_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setRemoveComment(true), sourceList);
 
 	}
 
