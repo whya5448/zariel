@@ -381,6 +381,8 @@ public class LangManager {
 		toCSVConfig.setWriteSource(true);
 		for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
 
+		if(fileLinkedList.getLast().getName().contains(".po.")) return;
+
 		try {
 
 			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.csv"), sb.toString(), AppConfig.CHARSET);
