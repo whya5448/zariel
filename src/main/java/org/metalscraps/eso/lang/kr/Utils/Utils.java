@@ -65,7 +65,7 @@ public class Utils {
         }
 	}
 
-	public static Map<String, PO> sourceToMap(SourceToMapConfig config) {
+	public static HashMap<String, PO> sourceToMap(SourceToMapConfig config) {
 
 		HashMap<String, PO> poMap = new HashMap<>();
 		String fileName = FilenameUtils.getBaseName(config.getFile().getName());

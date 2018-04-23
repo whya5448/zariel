@@ -315,14 +315,14 @@ public class LangManager {
 
 	}
 
-	public void makeLang() {
+	void makeLang() {
 
 		// EsoExtractData.exe depot/eso.mnf export -a 0
 		// EsoExtractData.exe -l en_0124.lang -p
 
 		LinkedList<File> fileLinkedList = new LinkedList<>();
-		HashMap<String, PO> ko = new HashMap<>();
 		ArrayList<PO> sourceList = new ArrayList<>();
+		HashMap<String, PO> ko;
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
@@ -344,12 +344,14 @@ public class LangManager {
 			fileLinkedList.add(jFileChooser.getSelectedFile());
 		}
 
-		if (fileLinkedList.size() == 0) return;
+		if (fileLinkedList.size() != 2) return;
 
 		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
 
-		ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0))));
+		ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
 		ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
+
+		ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
 		HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
 		for(PO p : ko.values()) {
@@ -373,8 +375,10 @@ public class LangManager {
 			}
 		}
 
+
 		for(Map<String, ArrayList<PO>> childMap : motherMap.values()) for(List childList : childMap.values()) sourceList.addAll(childList);
 		Collections.sort(sourceList);
+
 
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
 		ToCSVConfig toCSVConfig = new ToCSVConfig();
