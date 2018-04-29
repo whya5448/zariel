@@ -72,7 +72,7 @@ public class Utils {
 		String source = sourceToMapParser(config);
 
 		Matcher m = config.getPattern().matcher(source);
-		while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(2), m.group(6), m.group(7), FileNames.fromString(fileName)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
+		while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(1), m.group(2), m.group(6), m.group(7), FileNames.fromString(fileName)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
 
 		return poMap;
 	}
