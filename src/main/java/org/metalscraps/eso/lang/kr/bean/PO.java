@@ -23,12 +23,7 @@ public class PO implements Comparable {
 		WRAP_TARGET
 	}
 
-	public PO(String fuzzy, String id, String source, String target, FileNames fileName) {
-		if("fuzzy".equals(fuzzy)){
-			this.setFuzzy(true);
-		}else{
-			this.setFuzzy(false);
-		}
+	public PO(String id, String source, String target, FileNames fileName) {
 		source = source.replaceAll("\"\n\"", "");
 		target = target.replaceAll("\"\n\"", "");
 
