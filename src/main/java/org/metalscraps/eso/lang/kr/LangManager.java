@@ -327,11 +327,10 @@ class LangManager {
 			}
 		});
 
-		while (jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
-			jFileChooser.setCurrentDirectory(jFileChooser.getSelectedFile());
-			fileLinkedList.add(jFileChooser.getSelectedFile());
-		}
-
+		while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
+            fileLinkedList.add(jFileChooser.getSelectedFile());
+            if(fileLinkedList.size() == 2) break;
+        }
 		if (fileLinkedList.size() != 2) return;
 
 		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
