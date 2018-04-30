@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 import org.metalscraps.eso.lang.kr.config.FileNames;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -23,14 +24,13 @@ public class PO implements Comparable {
 		WRAP_TARGET
 	}
 
-	public PO(String id, String source, String target, FileNames fileName) {
+	public PO(String id, String source, String target) {
 		source = source.replaceAll("\"\n\"", "");
 		target = target.replaceAll("\"\n\"", "");
 
 		this.id = id;
 		this.source = source;
 		this.target = target;
-		this.fileName = fileName;
 
 		String[] ids = id.split("-");
 		id1 = Integer.parseInt(ids[0]);
@@ -46,8 +46,6 @@ public class PO implements Comparable {
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private String id, source, target;
 	private FileNames fileName;
-
-	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private boolean fuzzy = false;
 
 	public PO wrap(@Nullable String prefix, @Nullable String suffix, POWrapType wrapType) {
@@ -92,7 +90,7 @@ public class PO implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(@Nonnull Object o) {
 		PO x = (PO) o;
 		PO t = this;
 		if(t.id1.equals(x.id1)) {

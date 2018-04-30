@@ -25,5 +25,5 @@ public class AppWorkConfig {
 	private File baseDirectory, PODirectory;
 
 	@Getter(AccessLevel.PUBLIC)
-	private String today, todayWithYear;
+	private final String today, todayWithYear;
 }

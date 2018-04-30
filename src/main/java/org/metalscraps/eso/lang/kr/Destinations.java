@@ -19,7 +19,7 @@ import java.util.Map;
 
 
 @AllArgsConstructor
-public class Destinations {
+class Destinations {
 
 	private final AppWorkConfig appWorkConfig;
 

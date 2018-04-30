@@ -1,23 +1,17 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.http.client.ClientProtocolException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.PO;
-import org.metalscraps.eso.lang.kr.bean.WebData;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 @AllArgsConstructor
 public class CategoryGenerator {

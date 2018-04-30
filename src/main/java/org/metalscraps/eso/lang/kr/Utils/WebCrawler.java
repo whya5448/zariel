@@ -1,18 +1,16 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
-import java.io.IOException;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-
-import org.apache.http.client.ClientProtocolException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.WebData;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 //get html table data from url.
 public class WebCrawler {

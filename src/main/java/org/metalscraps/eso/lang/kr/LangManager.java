@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  */
 
 @AllArgsConstructor
-public class LangManager {
+class LangManager {
 	private PoConverter PC = new PoConverter();
 	private final AppWorkConfig appWorkConfig;
 
@@ -252,19 +252,7 @@ public class LangManager {
 		}
 	}
 
-
-	public void csvMapping() {
-		File file = new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + ".csv");
-		System.out.println(file);
-
-		try {
-			FileUtils.write(file, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void makeLangToJSON() {
+	void makeLangToJSON() {
 
 		// EsoExtractData.exe depot/eso.mnf export -a 0
 		// EsoExtractData.exe -l en_0124.lang -p

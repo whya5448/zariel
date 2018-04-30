@@ -69,7 +69,7 @@ public enum FileNames {
 	treasureMap("treasure-map", "tre-map");
 
 	@Getter(AccessLevel.PUBLIC)
-	private String name, shortName;
+	private final String name, shortName;
 
 	FileNames(String name) {
 		this.name = name;

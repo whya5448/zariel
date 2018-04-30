@@ -17,11 +17,6 @@ import java.util.regex.Matcher;
  */
 public class Utils {
 
-	@SuppressWarnings("unused")
-	public static String replaceStringFromMap(String string, Map map) {
-		return replaceStringFromMap(new StringBuilder(string), map).toString();
-	}
-
 	public static String KOToCN(String string) {
 		char[] c = string.toCharArray();
 		for(int i=0; i < c.length; i++) if (c[i] >= 0xAC00 && c[i] <= 0xEA00) c[i] -= 0x3E00;
@@ -34,8 +29,7 @@ public class Utils {
 		return new String(c);
 	}
 
-	public static StringBuilder replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
-
+	public static void replaceStringFromMap(StringBuilder stringBuilder, Map<String, ?> map) {
 		for (Map.Entry<String, ?> entry : map.entrySet()) {
 			String key = entry.getKey();
 			Object rawValue = entry.getValue();
@@ -49,20 +43,6 @@ public class Utils {
 				start = stringBuilder.indexOf(key, nextSearchStart);
 			}
 		}
-
-		return stringBuilder;
-	}
-
-	public static void replaceStringBuilder(StringBuilder sb, String[] key, String[] value) {
-	    for(int i = 0; i >= key.length; i++) {
-            int start = sb.indexOf(key[i], 0);
-            while (start > -1) {
-                int end = start + key[i].length();
-                int nextSearchStart = start + value[i].length();
-                sb.replace(start, end, value[i]);
-                start = sb.indexOf(key[i], nextSearchStart);
-            }
-        }
 	}
 
 	public static HashMap<String, PO> sourceToMap(SourceToMapConfig config) {
@@ -72,7 +52,13 @@ public class Utils {
 		String source = sourceToMapParser(config);
 
 		Matcher m = config.getPattern().matcher(source);
-		while (m.find()) poMap.put(m.group(config.getKeyGroup()), new PO(m.group(2), m.group(6), m.group(7), FileNames.fromString(fileName)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType()));
+		Boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
+		while (m.find()) {
+			PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
+			po.setFileName(FileNames.fromString(fileName));
+			if(isPOPattern && m.group(1).equals("fuzzy")) po.setFuzzy(true);
+			poMap.put(m.group(config.getKeyGroup()), po);
+		}
 
 		return poMap;
 	}

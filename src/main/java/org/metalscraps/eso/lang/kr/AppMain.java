@@ -9,7 +9,7 @@ import java.util.Scanner;
  * Created by 안병길 on 2018-01-17.
  * Whya5448@gmail.com
  */
-public class AppMain {
+class AppMain {
 
 	private final Scanner sc;
 	private final AppWorkConfig appWorkConfig = new AppWorkConfig();
@@ -62,6 +62,7 @@ public class AppMain {
 		jFileChooser.setCurrentDirectory(workDir);
 		appWorkConfig.setBaseDirectory(workDir);
 		appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
+		//noinspection ResultOfMethodCallIgnored
 		workDir.mkdirs();
 
 
