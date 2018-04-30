@@ -1,19 +1,14 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
-import com.google.cloud.translate.Translate;
-import com.google.cloud.translate.Translate.TranslateOption;
-import com.google.cloud.translate.TranslateOptions;
-import com.google.cloud.translate.Translation;
-import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONArray;
 import org.metalscraps.eso.lang.kr.bean.PO;
 
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import org.json.JSONArray;
+import java.util.ArrayList;
 
 public class GoogleTranslate implements Runnable {
 
@@ -32,7 +27,7 @@ public class GoogleTranslate implements Runnable {
     }
 
 
-    public void addJob(PO job) {
+    void addJob(PO job) {
         //System.out.println("job add : "+ job.getTarget());
         this.jobList.add(job);
     }
@@ -55,11 +50,11 @@ public class GoogleTranslate implements Runnable {
         this.jobList.set(index, po);
     }
 
-    public synchronized ArrayList<PO> getResult(){
+    synchronized ArrayList<PO> getResult(){
         return this.jobList;
     }
 
-    public String Translate(String origin, boolean addOriginText) {
+    private String Translate(String origin, boolean addOriginText) {
         /*
         Translate translate = TranslateOptions.getDefaultInstance().getService();
         StringBuilder sb = new StringBuilder(StringEscapeUtils.escapeXml11(origin));
@@ -88,7 +83,7 @@ public class GoogleTranslate implements Runnable {
         String Translated =  sb.toString();
         String ret = this.ReplaceSpecialChar(Translated);
         System.out.println("result of "+origin+" : "+ret);
-        return Translated;
+        return ret;
     }
 
     private String callUrlAndParseResult(String langFrom, String langTo, String word)
@@ -108,7 +103,7 @@ public class GoogleTranslate implements Runnable {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
             String inputLine;
-            StringBuffer response = new StringBuffer();
+            StringBuilder response = new StringBuilder();
 
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
@@ -119,19 +114,27 @@ public class GoogleTranslate implements Runnable {
             System.out.println("Google Translate : Exception occur! exception msg [" + ex.getMessage() + "]");
             ex.printStackTrace();
             ret = ret + "Translate fail(by Google translate)";
-        }finally {
+        } finally {
             return ret;
         }
     }
 
     private String parseResult(String inputJson) throws Exception
     {
-
+        String ret ="";
+        int idx = 0;
         JSONArray jsonArray = new JSONArray(inputJson);
-        JSONArray jsonArray2 = (JSONArray) jsonArray.get(0);
-        JSONArray jsonArray3 = (JSONArray) jsonArray2.get(0);
 
-        return jsonArray.get(0).toString();
+        JSONArray jsonArray2 = (JSONArray) jsonArray.get(0);
+        JSONArray oneData;
+
+        while(!jsonArray2.isNull(idx)){
+            oneData = (JSONArray) jsonArray2.get(idx);
+            ret = ret+ oneData.get(0).toString();
+            idx++;
+        }
+
+        return ret;
     }
 
     private String ReplaceSpecialChar(String origin){
@@ -159,13 +162,9 @@ public class GoogleTranslate implements Runnable {
         GoogleTranslate trans = new GoogleTranslate();
 
         String orig = "<<1>> <<c:1>>  \\n\\n test \\n testetstest. |\\/:.";
-        System.out.println("Convert orign : " + orig);
-        System.out.println("translate with original: " + trans.Translate(orig,true));
-        System.out.println("translate witout original: " + trans.Translate(orig, false));
+        String booksmaple = "[fragment from the Trials of Saint Alessia]\\n\\nAkatosh made a covenant with Alessia in those days so long ago. He gathered the tangled skeins of Oblivion, and knit them fast with the bloody sinews of his Heart, and gave them to Alessia, saying, \"\"This shall be my token to you, that so long as your blood and oath hold true, yet so shall my blood and oath be true to you. This token shall be the Amulet of Kings, and the Covenant shall be made between us, for I am the King of Spirits, and you are the Queen of Mortals. As you shall stand witness for all Mortal Flesh, so shall I stand witness for all Immortal Spirits.\"\"\\n\\nAnd Akatosh drew from his breast a burning handful of his Heart's blood, and he gave it into Alessia's hand, saying, \"\"This shall also be a token to you of our joined blood and pledged faith. So long as you and your descendants shall wear the Amulet of Kings, then shall this dragonfire burn—an eternal flame—as a sign to all men and gods of our faithfulness. So long as the dragonfires shall burn, to you, and to all generations, I swear that my Heart's blood shall hold fast the Gates of Oblivion.\\n\\n\"\"So long as the Blood of the Dragon runs strong in her rulers, the glory of the Empire shall extend in unbroken years. But should the dragonfires fail, and should no heir of our joined blood wear the Amulet of Kings, then shall the Empire descend into darkness, and the Demon Lords of Misrule shall govern the land.\"\"\\n\\n— from the liturgy of the Re-Kindling of the Dragonfires";
+        System.out.println("translate witout original: " + trans.Translate(booksmaple, false));
 
-        String word = trans.callUrlAndParseResult("en", "ko", "hello");
-
-        System.out.println(word);
 
     }
 }
