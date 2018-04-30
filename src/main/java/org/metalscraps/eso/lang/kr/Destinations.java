@@ -37,7 +37,9 @@ class Destinations {
 			boolean init = false;
 			for(Map.Entry<String, PO> entry : ((Map<String, PO>)poMap.clone()).entrySet()) {
 				if(!init) { poMap.clear(); init = true; }
-				poMap.put("{\""+entry.getKey()+"\"}", entry.getValue());
+				PO po = entry.getValue();
+				if(po.isFuzzy()) po.setTarget(po.getSource());
+				poMap.put("{\""+entry.getKey()+"\"}", po);
 			}
 
 			// 찾아바꾸기
