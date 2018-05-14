@@ -28,8 +28,8 @@ class Destinations {
 		HashMap<String, PO> poMap = new HashMap<>();
 
 		try {
-			StringBuilder destinationQuestSource = new StringBuilder(FileUtils.readFileToString(target, AppConfig.CHARSET));
-			SourceToMapConfig config = new SourceToMapConfig().setPattern(AppConfig.POPattern).setKeyGroup(6).setPrefix("{\"").setSuffix("\"}");
+			StringBuilder destinationQuestSource = new StringBuilder(FileUtils.readFileToString(new File(target.getPath().replace("kr","en")), AppConfig.CHARSET));
+			SourceToMapConfig config = new SourceToMapConfig().setPattern(AppConfig.POPattern).setKeyGroup(6).setPrefix("{\"").setSuffix("\"}").setProcessItemName(false);
 			if(removeComment) config.setRemoveComment(removeComment);
 
 			for(FileNames fileName : fileNames) poMap.putAll(Utils.sourceToMap(config.setFile(new File(appWorkConfig.getPODirectory() +"/"+ fileName.toStringPO2()))));
@@ -59,7 +59,7 @@ class Destinations {
 		//work(new FileNames[] { FileNames.journey, FileNames.journeyOther } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuests_kr.lua"), true);
 		//work(new FileNames[] { FileNames.npcName } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuestgivers_kr.lua"), true);
 
-		work(new FileNames[] { FileNames.journey, FileNames.journeyOther } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuests_kr.lua"), false);
+		//work(new FileNames[] { FileNames.journey, FileNames.journeyOther } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuests_kr.lua"), false);
 		work(new FileNames[] { FileNames.npcName } , new File(appWorkConfig.getBaseDirectory()+"/Destinations/DestinationsQuestgivers_kr.lua"), false);
 
 	}

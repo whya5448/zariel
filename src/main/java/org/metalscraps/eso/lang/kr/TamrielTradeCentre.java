@@ -39,17 +39,22 @@ class TamrielTradeCentre {
 			File koreanTable = new File(appWorkConfig.getBaseDirectory().getAbsolutePath() + "/TTC/ItemLookUpTable_KR.lua");
 			File englishTable = new File(appWorkConfig.getBaseDirectory().getAbsolutePath() + "/TTC/ItemLookUpTable_EN.lua");
 
-			HashMap<String, PO> poHashMap = new HashMap<>();
+			HashMap<String, PO> poHashMap = new HashMap<>(), poHashMapWithTitle;
+
+            SourceToMapConfig sourceToMapConfig = new SourceToMapConfig()
+                    .setKeyGroup(6)
+                    .setToLowerCase(true)
+                    .setPattern(AppConfig.POPattern);
 
 			// 번역본에서 데이터 추출
-			for (FileNames fileName : fileNames)
-				poHashMap.putAll(
-						Utils.sourceToMap(
-								new SourceToMapConfig()
-										.setKeyGroup(6)
-										.setToLowerCase(true)
-										.setFile(new File(appWorkConfig.getPODirectory() + "/" + fileName.toStringPO2()))
-										.setPattern(AppConfig.POPattern)));
+            for (FileNames fileName : fileNames) {
+                sourceToMapConfig.setFile(new File(appWorkConfig.getPODirectory() + "/" + fileName.toStringPO2()));
+                poHashMap.putAll(Utils.sourceToMap(sourceToMapConfig));
+            }
+
+            // 타이틀 버전
+            poHashMapWithTitle = (HashMap<String, PO>) poHashMap.clone();
+            for(PO p : poHashMapWithTitle.values()) p.setTarget(p.getFileName().getShortName()+"_"+p.getId3()+"_"+p.getTarget());
 
 			// 룩업 테이블 정보화
 			StringBuilder englishSource = new StringBuilder(FileUtils.readFileToString(englishTable, AppConfig.CHARSET).toLowerCase().replaceAll("},}\\s*end\\s*", "},"));
@@ -58,18 +63,28 @@ class TamrielTradeCentre {
 			Matcher m = p.matcher(englishSource);
 			while (m.find()) englishMap.put(m.group(2), new LuaClass(m.group(3), m.group(4)));
 
-			StringBuilder sb = new StringBuilder();
-			for (Map.Entry<String, PO> entry : poHashMap.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, PO> entry : poHashMap.entrySet()) {
+                LuaClass luaClass = englishMap.get(entry.getKey());
+                if(luaClass!=null) sb.append("[\"")
+                        .append(entry.getValue().getTarget())
+                        .append("\"]={[")
+                        .append(luaClass.getFirst())
+                        .append("]=")
+                        .append(luaClass.getSecond())
+                        .append(",},");
+            }
 
-				LuaClass luaClass = englishMap.get(entry.getKey());
-				if(luaClass!=null) sb.append("[\"")
-									.append(entry.getValue().getTarget())
-									.append("\"]={[")
-									.append(luaClass.getFirst())
-									.append("]=")
-									.append(luaClass.getSecond())
-									.append(",},");
-			}
+            for (Map.Entry<String, PO> entry : poHashMapWithTitle.entrySet()) {
+                LuaClass luaClass = englishMap.get(entry.getKey());
+                if(luaClass!=null) sb.append("[\"")
+                        .append(entry.getValue().getTarget())
+                        .append("\"]={[")
+                        .append(luaClass.getFirst())
+                        .append("]=")
+                        .append(luaClass.getSecond())
+                        .append(",},");
+            }
 
 			englishSource.append(Utils.KOToCN(sb.toString())).append("}\nend");
 
@@ -86,7 +101,8 @@ class TamrielTradeCentre {
 			englishSource.replace(0, 71, "function TamrielTradeCentre:LoadItemLookUpTable()\nself.ItemLookUpTable");
 
 			FileUtils.writeStringToFile(koreanTable, englishSource.toString(), Charset.forName("UTF-8"));
-			FileUtils.writeStringToFile(new File(koreanTable.getPath()+".no.comment"), englishSource.toString().replaceAll(AppConfig.englishTitlePattern, "$1"), Charset.forName("UTF-8"));
+            FileUtils.copyFile(koreanTable, new File(koreanTable.getAbsolutePath().replace("_KR","_TR")));
+            //FileUtils.writeStringToFile(new File(koreanTable.getPath()+".no.comment"), englishSource.toString().replaceAll(AppConfig.englishTitlePattern, "$1"), Charset.forName("UTF-8"));
 
 		} catch(Exception e) {
 			e.printStackTrace();
