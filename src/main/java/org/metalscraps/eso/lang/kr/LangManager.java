@@ -168,7 +168,7 @@ class LangManager {
 
 	public void getPO() {
 
-		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/3.3.8.1567568/ko/po?docId=";
+		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/4.0.8.1611196/ko/po?docId=";
 		final File baseDirectory = appWorkConfig.getBaseDirectory();
 		final File PODirectory = new File(baseDirectory.getAbsolutePath() + "/PO_" + appWorkConfig.getToday());
 		appWorkConfig.setPODirectory(PODirectory);
@@ -232,11 +232,16 @@ class LangManager {
 		}
 
 		ToCSVConfig csvConfig = new ToCSVConfig();
+
 		csvConfig.setWriteSource(true);
 		Collections.sort(sourceList);
 
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithFileName_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true), sourceList);
+
+		ToCSVConfig betacsvConfig = new ToCSVConfig();
+		betacsvConfig.setWriteSource(true);
+		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), betacsvConfig.setBeta(true), sourceList);
 		//makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithOutEnglishTitle_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setRemoveComment(true), sourceList);
 
 	}

@@ -9,6 +9,8 @@ import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by 안병길 on 2018-01-18.
@@ -48,6 +50,13 @@ public class PO implements Comparable {
 	private FileNames fileName;
 	private boolean fuzzy = false;
 
+
+	public boolean modifyDoubleQuart(){
+		this.source  =source.replace("\"\"", "\"");
+		this.target  =target.replace("\"\"", "\"");
+		return true;
+	}
+
 	public PO wrap(@Nullable String prefix, @Nullable String suffix, POWrapType wrapType) {
 
 		if (prefix == null) prefix = "";
@@ -63,17 +72,36 @@ public class PO implements Comparable {
 	}
 
 	@Override
-	public String toString() { return toCSV(new ToCSVConfig(false, false, false)); }
+	public String toString() { return toCSV(new ToCSVConfig(false, false, false, false)); }
 
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
-		String t;
+		String SystemFile[] = {"00_EsoUI_Client","00_EsoUI_Pregame", "achievement", "chat", "color", "emote",
+				"item", "item-crate", "item-crown", "item-crown-other", "item-crown-pack", "item-crown-pack-other", "item-other","item-quest", "item-quest-other",  "item-type",
+				"more-desc", "more-ui", "popup-tip", "popup-tip-other", "set","skill", "skill-other", "title", };
+		List<String> SystemArr = Arrays.asList(SystemFile);
+
+		String t = "";
 
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
 
-		if(toCSVConfig.isWriteFileName()) t = fileName.getShortName()+"_"+id3+"_"+target;
-		else if(isFuzzy() && target.contains("-G-")) t = source;
-		else t = target;
+		if(toCSVConfig.isWriteFileName()) {
+			t = fileName.getShortName() + "_" + id3 + "_" + target;
+		}else if (toCSVConfig.isBeta()){
+			if(SystemArr.contains(fileName)){
+				if(isFuzzy() && target.contains("-G-")) {
+					t = source;
+				}
+			}else {
+				t = target;
+			}
+		}else {
+			if(isFuzzy() && target.contains("-G-")){
+				t = source;
+			}else {
+				t = target;
+			}
+		}
 
 		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+t+"\"\n";
 

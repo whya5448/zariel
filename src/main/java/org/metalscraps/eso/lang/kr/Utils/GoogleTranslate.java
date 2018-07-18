@@ -3,6 +3,7 @@ package org.metalscraps.eso.lang.kr.Utils;
 import org.json.JSONArray;
 import org.metalscraps.eso.lang.kr.bean.PO;
 
+import java.util.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -62,6 +63,8 @@ public class GoogleTranslate implements Runnable {
 */
         StringBuilder sb = new StringBuilder();
         String translated;
+        String[] parsed = origin.split("\n\n");
+
         try {
             /*
             Translation translation =
@@ -72,8 +75,11 @@ public class GoogleTranslate implements Runnable {
             sb = new StringBuilder(StringEscapeUtils.unescapeXml(translation.getTranslatedText()));
             Utils.replaceStringBuilder(sb, GoogleTranslate.TAG, GoogleTranslate.SYMBOL);
             */
-            translated = this.callUrlAndParseResult("en", "ko", origin);
-            sb.append(translated);
+            for(String oneitem : parsed) {
+                translated = this.callUrlAndParseResult("en", "ko", oneitem);
+                sb.append(translated);
+                sb.append("\n\n");
+            }
             sb.append("-G-");
             if(addOriginText) sb.append("(").append(origin).append(")");
         } catch (Exception ex) {
@@ -85,6 +91,9 @@ public class GoogleTranslate implements Runnable {
         System.out.println("result of "+origin+" : "+ret);
         return ret;
     }
+
+
+
 
     private String callUrlAndParseResult(String langFrom, String langTo, String word)
     {

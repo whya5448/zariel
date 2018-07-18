@@ -1,5 +1,7 @@
 package org.metalscraps.eso.lang.kr;
 
+import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
@@ -16,6 +18,11 @@ class AppMain {
 	private AppMain() {
 		sc = new Scanner(System.in);
 	}
+
+	public AppWorkConfig getAppWorkConfig(){
+		return this.appWorkConfig;
+	}
+
 
 	public static void main(String[] args) {
 		new AppMain().start();
@@ -64,7 +71,7 @@ class AppMain {
 		appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
 		//noinspection ResultOfMethodCallIgnored
 		workDir.mkdirs();
-
+		CategoryGenerator CG = new CategoryGenerator(this.getAppWorkConfig());
 
 		while(true) {
 			showMessage();
@@ -95,7 +102,7 @@ class AppMain {
 				case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
 				case 12: new Destinations(appWorkConfig).start(); break;
 				case 100: lm.translateGoogle(); break;
-				case 200:
+				case 200: CG.GenSkillCategory();
                
 
 			}

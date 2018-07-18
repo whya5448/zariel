@@ -36,6 +36,7 @@ public class PoConverter {
                 GoogleTranslate worker = new GoogleTranslate();
                 for (PO oneItem : fileItems) {
                     if (oneItem.getSource().equals(oneItem.getTarget())) {
+                        oneItem.modifyDoubleQuart();
                         worker.addJob(oneItem);
                         Thread transWork = new Thread(worker);
                         transWork.start();
@@ -67,7 +68,7 @@ public class PoConverter {
                         }
                     }
 
-                    LtransList.addAll(skippedItem);
+                    //LtransList.addAll(skippedItem);
                     LtransList.addAll(worker.getResult());
 
                     String outputName = LtransList.get(1).getFileName() + "_conv.po";

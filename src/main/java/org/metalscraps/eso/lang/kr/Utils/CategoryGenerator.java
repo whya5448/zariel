@@ -3,6 +3,7 @@ package org.metalscraps.eso.lang.kr.Utils;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.AppWorkConfig;
+import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 
@@ -19,11 +20,39 @@ public class CategoryGenerator {
     private final AppWorkConfig appWorkConfig;
     private final ArrayList<PO> sourceList = new ArrayList<>();
 
-    CategoryGenerator(AppWorkConfig appWorkConfig) {
+    public CategoryGenerator(AppWorkConfig appWorkConfig) {
         this.appWorkConfig = appWorkConfig;
     }
 
+    public void GenSkillCategory(){
+        System.out.println("Select Csv file for generate category.");
+        HashMap<String, PO> CSVMap = GetSelectedCSVMap();
+        HashMap<String, String> PoMap = new HashMap<>();
 
+        for(PO po : CSVMap.values()) {
+            PoMap.put(po.getId(), po.getSource());
+        }
+
+
+        boolean skillret;
+        ArrayList<CategoryCSV> SkillCSV = new ArrayList<>();
+
+        WebCrawler wc = new WebCrawler();
+        skillret = wc.GetUESPChampionSkill(SkillCSV);
+        skillret = wc.GetUESPSkillTree(SkillCSV);
+
+        if(skillret){
+            System.out.println("SkillCSV Size : "+SkillCSV.size());
+            for(CategoryCSV oneCSV : SkillCSV){
+                System.out.println("=========================================");
+                System.out.println("Category : "+oneCSV.getCategory());
+                for(String index: oneCSV.getPoIndexList() ){
+                    System.out.println(index+" "+PoMap.get(index));
+                }
+            }
+        }
+
+    }
 
     public HashMap<String, PO> GetSelectedCSVMap() {
         // EsoExtractData.exe depot/eso.mnf export -a 0
@@ -62,6 +91,8 @@ public class CategoryGenerator {
             System.out.println(file);
             map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
         }
+
+
 
         return map;
     }
