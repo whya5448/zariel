@@ -52,7 +52,7 @@ public class Utils {
 		String source = sourceToMapParser(config);
 
 		Matcher m = config.getPattern().matcher(source);
-		Boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
+		boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
 		while (m.find()) {
 			PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
 			po.setFileName(FileNames.fromString(fileName));

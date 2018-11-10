@@ -38,7 +38,7 @@ class LangManager {
 		this.appWorkConfig = appWorkConfig;
 	}
 
-	public void CsvToPo() {
+	void CsvToPo() {
 
 		// EsoExtractData.exe depot/eso.mnf export -a 0
 		// EsoExtractData.exe -l en_0124.lang -p
@@ -166,7 +166,7 @@ class LangManager {
 		}
 	}
 
-	public void getPO() {
+	void getPO() {
 
 		final String url = "http://www.dostream.com/zanata/rest/file/translation/esokr/4.0.8.1611196/ko/po?docId=";
 		final File baseDirectory = appWorkConfig.getBaseDirectory();
@@ -197,7 +197,7 @@ class LangManager {
 
 	}
 
-	public void Mapping() {
+	void Mapping() {
 
 		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
 
@@ -231,19 +231,42 @@ class LangManager {
 
 		}
 
-		ToCSVConfig csvConfig = new ToCSVConfig();
-
-		csvConfig.setWriteSource(true);
+		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(true);
 		Collections.sort(sourceList);
 
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithFileName_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true), sourceList);
+        makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setBeta(true), sourceList);
+        makeFile(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
 
-		ToCSVConfig betacsvConfig = new ToCSVConfig();
-		betacsvConfig.setWriteSource(true);
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), betacsvConfig.setBeta(true), sourceList);
-		//makeFile(new File(appWorkConfig.getBaseDirectory() + "/krWithOutEnglishTitle_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setRemoveComment(true), sourceList);
+	}
 
+	void makeServerCSV(String[] filenames) {
+
+		ArrayList<PO> sourceList = new ArrayList<>();
+
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
+		for (File file : fileList) {
+
+			String fileName = FilenameUtils.getBaseName(file.getName());
+
+			// pregame 쪽 데이터
+			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+
+			//41714900-0-345 tip.po "////"
+			//249936564-0-5081 quest-sub.po """Captain""
+			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
+			// 41714900-0-345|249936564-0-5081|265851556-0-4666
+
+			sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+			System.out.println(file);
+
+		}
+
+		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
+		Collections.sort(sourceList);
+
+		makeFile(new File(appWorkConfig.getBaseDirectory() + "/" + filenames[0] + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig, sourceList);
+		makeFile(new File(appWorkConfig.getBaseDirectory() + "/" + filenames[1] + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig.setWriteFileName(true), sourceList);
 	}
 
 
@@ -308,90 +331,90 @@ class LangManager {
 
 	}
 
-	void makeLang() {
+    void makeLang() {
 
-		// EsoExtractData.exe depot/eso.mnf export -a 0
-		// EsoExtractData.exe -l en_0124.lang -p
+        // EsoExtractData.exe depot/eso.mnf export -a 0
+        // EsoExtractData.exe -l en_0124.lang -p
 
-		LinkedList<File> fileLinkedList = new LinkedList<>();
-		ArrayList<PO> sourceList = new ArrayList<>();
-		HashMap<String, PO> ko;
+        LinkedList<File> fileLinkedList = new LinkedList<>();
+        ArrayList<PO> sourceList = new ArrayList<>();
+        HashMap<String, PO> ko;
 
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
-		jFileChooser.setFileFilter(new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
-			}
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setMultiSelectionEnabled(false);
+        jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+        jFileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
+            }
 
-			@Override
-			public String getDescription() {
-				return "*.csv";
-			}
-		});
+            @Override
+            public String getDescription() {
+                return "*.csv";
+            }
+        });
 
-		while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
+        while(jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
             fileLinkedList.add(jFileChooser.getSelectedFile());
             if(fileLinkedList.size() == 2) break;
         }
-		if (fileLinkedList.size() != 2) return;
+        if (fileLinkedList.size() != 2) return;
 
-		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+        SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
 
-		ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
-		ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
+        ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
+        ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
 
-		ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
+        ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
-		HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
-		for(PO p : ko.values()) {
-			HashMap<String, ArrayList<PO>> childMap;
-			ArrayList<PO> childList;
+        HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
+        for(PO p : ko.values()) {
+            HashMap<String, ArrayList<PO>> childMap;
+            ArrayList<PO> childList;
 
-			if(motherMap.containsKey(p.getFileName())) childMap = motherMap.get(p.getFileName());
-			else motherMap.put(p.getFileName(), childMap = new HashMap<>());
+            if(motherMap.containsKey(p.getFileName())) childMap = motherMap.get(p.getFileName());
+            else motherMap.put(p.getFileName(), childMap = new HashMap<>());
 
-			if(childMap.containsKey(p.getSource())) childList = childMap.get(p.getSource());
-			else childMap.put(p.getSource(), childList = new ArrayList<>());
+            if(childMap.containsKey(p.getSource())) childList = childMap.get(p.getSource());
+            else childMap.put(p.getSource(), childList = new ArrayList<>());
 
-			childList.add(p);
-		}
+            childList.add(p);
+        }
 
-		for(HashMap<String, ArrayList<PO>> childMap : motherMap.values()) {
-			for(ArrayList<PO> childList : childMap.values()) {
-				PO p = null;
-				for(PO x : childList) if(!x.getSource().equals(x.getTarget())) p = x;
-				if(p != null) for(PO x : childList) if(x.getSource().equals(x.getTarget())) x.setTarget(p.getTarget());
-			}
-		}
-
-
-		for(Map<String, ArrayList<PO>> childMap : motherMap.values()) for(List childList : childMap.values()) sourceList.addAll(childList);
-		Collections.sort(sourceList);
+        for(HashMap<String, ArrayList<PO>> childMap : motherMap.values()) {
+            for(ArrayList<PO> childList : childMap.values()) {
+                PO p = null;
+                for(PO x : childList) if(!x.getSource().equals(x.getTarget())) p = x;
+                if(p != null) for(PO x : childList) if(x.getSource().equals(x.getTarget())) x.setTarget(p.getTarget());
+            }
+        }
 
 
-		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-		ToCSVConfig toCSVConfig = new ToCSVConfig();
-		toCSVConfig.setWriteSource(true);
-		for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
+        for(Map<String, ArrayList<PO>> childMap : motherMap.values()) for(List childList : childMap.values()) sourceList.addAll(childList);
+        Collections.sort(sourceList);
 
-		if(fileLinkedList.getLast().getName().contains(".po.")) return;
 
-		try {
+        StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+        ToCSVConfig toCSVConfig = new ToCSVConfig();
+        toCSVConfig.setWriteSource(true);
+        for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
 
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.csv"), sb.toString(), AppConfig.CHARSET);
+        if(fileLinkedList.getLast().getName().contains(".po.")) return;
 
-			ProcessBuilder pb = new ProcessBuilder()
-					.directory(appWorkConfig.getBaseDirectory())
-					.command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + fileLinkedList.getLast().getName() + ".merged.csv -p")
-					.redirectError(ProcessBuilder.Redirect.INHERIT)
-					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			pb.start().waitFor();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        try {
+
+            FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.csv"), sb.toString(), AppConfig.CHARSET);
+
+            ProcessBuilder pb = new ProcessBuilder()
+                    .directory(appWorkConfig.getBaseDirectory())
+                    .command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + fileLinkedList.getLast().getName() + ".merged.csv -p")
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            pb.start().waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 /*
 		sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
@@ -415,10 +438,112 @@ class LangManager {
 		}
 */
 
-	}
+    }
 
-	public void translateGoogle() {
+    void makeServerLang(String filename) {
+
+        // EsoExtractData.exe depot/eso.mnf export -a 0
+        // EsoExtractData.exe -l en_0124.lang -p
+
+        ArrayList<PO> sourceList = new ArrayList<>();
+        HashMap<String, PO> ko;
+
+        SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+
+        ko = Utils.sourceToMap(sourceToMapConfig.setFile(new File(appWorkConfig.getBaseDirectory() + "/" + filename + appWorkConfig.getTodayWithYear() + ".csv")));
+        ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(new File(appWorkConfig.getBaseDirectory() + "/" + filename + appWorkConfig.getTodayWithYear() + ".csv"))));
+
+        HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
+        for(PO p : ko.values()) {
+            HashMap<String, ArrayList<PO>> childMap;
+            ArrayList<PO> childList;
+
+            if(motherMap.containsKey(p.getFileName())) childMap = motherMap.get(p.getFileName());
+            else motherMap.put(p.getFileName(), childMap = new HashMap<>());
+
+            if(childMap.containsKey(p.getSource())) childList = childMap.get(p.getSource());
+            else childMap.put(p.getSource(), childList = new ArrayList<>());
+
+            childList.add(p);
+        }
+
+        for(HashMap<String, ArrayList<PO>> childMap : motherMap.values()) {
+            for(ArrayList<PO> childList : childMap.values()) {
+                PO p = null;
+                for(PO x : childList) if(!x.getSource().equals(x.getTarget())) p = x;
+                if(p != null) for(PO x : childList) if(x.getSource().equals(x.getTarget())) x.setTarget(p.getTarget());
+            }
+        }
+
+
+        for(Map<String, ArrayList<PO>> childMap : motherMap.values()) for(List childList : childMap.values()) sourceList.addAll(childList);
+        Collections.sort(sourceList);
+
+        StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+        ToCSVConfig toCSVConfig = new ToCSVConfig();
+        toCSVConfig.setWriteSource(true);
+        for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
+
+        try {
+
+            File f = new File(appWorkConfig.getBaseDirectory() + "/" + filename + appWorkConfig.getTodayWithYear() + ".csv");
+
+            FileUtils.writeStringToFile(f, sb.toString(), AppConfig.CHARSET);
+
+            ProcessBuilder pb = new ProcessBuilder()
+                    .directory(appWorkConfig.getBaseDirectory())
+                    .command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + f.getAbsolutePath() + " -p")
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            pb.start().waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+/*
+		sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+		toCSVConfig.setRemoveComment(true);
+
+		for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
+
+		try {
+
+			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.no.comment.csv"), sb.toString(), AppConfig.CHARSET);
+
+			ProcessBuilder pb = new ProcessBuilder()
+					.directory(appWorkConfig.getBaseDirectory())
+					.command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + fileLinkedList.getLast().getName() + ".merged.no.comment.csv -p")
+					.redirectError(ProcessBuilder.Redirect.INHERIT)
+					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+			pb.start().waitFor();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+*/
+
+    }
+
+	void translateGoogle() {
 		this.PC.setAppWorkConfig(this.appWorkConfig);
 		this.PC.translateGoogle();
 	}
+
+    void enLangToPo() {
+
+	    File f = new File(appWorkConfig.getBaseDirectory()+"/en.lang");
+
+	    if(new File(appWorkConfig.getBaseDirectory()+"/en.lang.csv").exists()) return;
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder()
+                    .directory(appWorkConfig.getBaseDirectory())
+                    .command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -l " + f.getAbsolutePath() + " -p")
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            pb.start().waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -15,17 +15,18 @@ class AppMain {
 
 	private final Scanner sc;
 	private final AppWorkConfig appWorkConfig = new AppWorkConfig();
-	private AppMain() {
-		sc = new Scanner(System.in);
-	}
+	private AppMain() { sc = new Scanner(System.in); }
 
-	public AppWorkConfig getAppWorkConfig(){
+	private AppWorkConfig getAppWorkConfig(){
 		return this.appWorkConfig;
 	}
 
+	public static void main(String args[]) {
 
-	public static void main(String[] args) {
-		new AppMain().start();
+        // 서버용 자동화..
+	    if(args[0].equals("-auto")) new ServerMain().start();
+	    // 수동
+	    else new AppMain().start();
 	}
 
 	private void showMessage() {
@@ -50,10 +51,48 @@ class AppMain {
 
 	}
 
-	private void start() {
+	private void workLangManager(JFileChooser jFileChooser) {
+		CategoryGenerator CG = new CategoryGenerator(this.getAppWorkConfig());
 
 		LangManager lm = new LangManager(appWorkConfig);
 
+		switch(this.getCommand()) {
+			case 0: lm.CsvToPo(); break;
+			case 1: lm.getPO(); break;
+			case 2: lm.Mapping(); break;
+			case 3: lm.makeCSV(true); break;
+			case 33: lm.makeCSV(false); break;
+			case 4: lm.makeLang(); break;
+			case 44: lm.makeLangToJSON(); break;
+			case 5:
+				lm.getPO();
+				lm.Mapping();
+				lm.makeCSV(true);
+				lm.makeLang();
+				break;
+			case 6:
+				if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) break;
+				appWorkConfig.setBaseDirectory(jFileChooser.getSelectedFile());
+				appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
+				break;
+			case 7:
+				if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) break;
+				appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
+				break;
+			case 8:
+				System.gc();
+                Runtime.getRuntime().gc();
+                break;
+			case 9: System.exit(0);
+			case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
+			case 12: new Destinations(appWorkConfig).start(); break;
+			case 100: lm.translateGoogle(); break;
+			case 200: CG.GenSkillCategory();
+
+		}
+	}
+
+	private void start() {
 
 		JFileChooser jFileChooser = new JFileChooser();
 		File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
@@ -71,41 +110,10 @@ class AppMain {
 		appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
 		//noinspection ResultOfMethodCallIgnored
 		workDir.mkdirs();
-		CategoryGenerator CG = new CategoryGenerator(this.getAppWorkConfig());
 
 		while(true) {
 			showMessage();
-			switch(this.getCommand()) {
-				case 0: lm.CsvToPo(); break;
-				case 1: lm.getPO(); break;
-				case 2: lm.Mapping(); break;
-				case 3: lm.makeCSV(true); break;
-				case 33: lm.makeCSV(false); break;
-				case 4: lm.makeLang(); break;
-				case 44: lm.makeLangToJSON(); break;
-				case 5:
-					lm.getPO();
-					lm.Mapping();
-					lm.makeCSV(true);
-					lm.makeLang();
-					break;
-				case 6:
-					if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) continue;
-					appWorkConfig.setBaseDirectory(jFileChooser.getSelectedFile());
-					appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
-					break;
-				case 7:
-					if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) continue;
-					appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
-					break;
-				case 9: System.exit(0);
-				case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
-				case 12: new Destinations(appWorkConfig).start(); break;
-				case 100: lm.translateGoogle(); break;
-				case 200: CG.GenSkillCategory();
-               
-
-			}
+			workLangManager(jFileChooser);
 		}
 
 

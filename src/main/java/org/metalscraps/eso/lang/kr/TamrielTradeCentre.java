@@ -1,7 +1,5 @@
 package org.metalscraps.eso.lang.kr;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
@@ -21,12 +19,61 @@ import java.util.regex.Pattern;
  * Whya5448@gmail.com
  */
 
-@AllArgsConstructor
 class TamrielTradeCentre {
 
-	@Data
-	@AllArgsConstructor
-	class LuaClass { final String first, second; }
+	@java.beans.ConstructorProperties({"appWorkConfig"})
+	public TamrielTradeCentre(AppWorkConfig appWorkConfig) {
+		this.appWorkConfig = appWorkConfig;
+	}
+
+	class LuaClass { final String first, second;
+
+		@java.beans.ConstructorProperties({"first", "second"})
+		public LuaClass(String first, String second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		public String getFirst() {
+			return this.first;
+		}
+
+		public String getSecond() {
+			return this.second;
+		}
+
+		public boolean equals(final Object o) {
+			if (o == this) return true;
+			if (!(o instanceof LuaClass)) return false;
+			final LuaClass other = (LuaClass) o;
+			if (!other.canEqual((Object) this)) return false;
+			final Object this$first = this.first;
+			final Object other$first = other.first;
+			if (this$first == null ? other$first != null : !this$first.equals(other$first)) return false;
+			final Object this$second = this.second;
+			final Object other$second = other.second;
+			if (this$second == null ? other$second != null : !this$second.equals(other$second)) return false;
+			return true;
+		}
+
+		protected boolean canEqual(final Object other) {
+			return other instanceof LuaClass;
+		}
+
+		public int hashCode() {
+			final int PRIME = 59;
+			int result = 1;
+			final Object $first = this.first;
+			result = result * PRIME + ($first == null ? 43 : $first.hashCode());
+			final Object $second = this.second;
+			result = result * PRIME + ($second == null ? 43 : $second.hashCode());
+			return result;
+		}
+
+		public String toString() {
+			return "TamrielTradeCentre.LuaClass(first=" + this.first + ", second=" + this.second + ")";
+		}
+	}
 
 	private final AppWorkConfig appWorkConfig;
 
