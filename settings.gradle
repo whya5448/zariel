@@ -1,2 +1,3 @@
 rootProject.name = 'zariel'
+include 'esok_client'
 

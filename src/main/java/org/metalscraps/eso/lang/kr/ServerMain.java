@@ -20,7 +20,5 @@ class ServerMain {
         lm.enLangToPo();
         lm.Mapping();
         lm.makeServerCSV(new String[]{"kr","tr"});
-        lm.makeServerLang("kr");
-        lm.makeServerLang("tr");
     }
 }

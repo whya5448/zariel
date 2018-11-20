@@ -14,12 +14,15 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    //compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
