@@ -24,7 +24,7 @@ class AppMain {
 	public static void main(String args[]) {
 
         // 서버용 자동화..
-	    if(args.length > 0 && args[0].equals("-auto")) new ServerMain().start();
+	    if(args.length > 0 && args[0].equals("-auto")) new ServerMain().start(args);
 	    // 수동
 	    else new AppMain().start();
 	}

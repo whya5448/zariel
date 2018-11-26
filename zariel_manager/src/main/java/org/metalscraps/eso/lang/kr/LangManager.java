@@ -1,10 +1,5 @@
 package org.metalscraps.eso.lang.kr;
 
-import lombok.AllArgsConstructor;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 import org.metalscraps.eso.lang.kr.Utils.PoConverter;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
@@ -12,6 +7,11 @@ import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 import org.metalscraps.eso.lang.kr.config.FileNames;
+import lombok.AllArgsConstructor;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -173,23 +173,35 @@ class LangManager {
 		final File PODirectory = new File(baseDirectory.getAbsolutePath() + "/PO_" + appWorkConfig.getToday());
 		appWorkConfig.setPODirectory(PODirectory);
 
+        File po = null;
 		try {
 
-			FileNames[] fileNames = FileNames.values();
-			LocalTime totalSt = LocalTime.now();
+            FileNames[] fileNames = FileNames.values();
+            LocalTime totalSt = LocalTime.now();
 
-			for (FileNames fileName : fileNames) {
-				LocalTime st = LocalTime.now();
-				System.out.print(fileName);
+            for (FileNames fileName : fileNames) {
+                LocalTime st = LocalTime.now();
+                System.out.print(fileName);
 
-				File po = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
-				FileUtils.writeStringToFile(po, IOUtils.toString(new URL(url + fileName), AppConfig.CHARSET), AppConfig.CHARSET);
 
-				LocalTime ed = LocalTime.now();
-				System.out.println(" " + st.until(ed, ChronoUnit.SECONDS) + "초");
-			}
+                po = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
+                if (!po.exists()) FileUtils.writeStringToFile(po, IOUtils.toString(new URL(url + fileName), AppConfig.CHARSET), AppConfig.CHARSET);
+                po = null;
 
-			System.out.println("총 " + totalSt.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+                LocalTime ed = LocalTime.now();
+                System.out.println(" " + st.until(ed, ChronoUnit.SECONDS) + "초");
+            }
+
+            System.out.println("총 " + totalSt.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+
+        } catch (IOException e) {
+		    if(e.getMessage().contains("Premature EOF")) {
+                System.out.println("EOF 재시도");
+                if(po.exists()) po.delete();
+                try { Thread.sleep(1800000); } catch (InterruptedException e1) {  e1.printStackTrace(); }
+                getPO();
+            }
+            else e.printStackTrace();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -202,7 +214,10 @@ class LangManager {
 		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
 
 		try {
-			for (File file : fileList) FileUtils.write(new File(file.getAbsolutePath() + "2"), Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
+			for (File file : fileList) {
+				File po2 = new File(file.getAbsolutePath() + "2");
+				if(!po2.exists()) FileUtils.write(po2, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -240,7 +255,7 @@ class LangManager {
 
 	}
 
-	void makeServerCSV(String[] filenames) {
+	void makeServerCSV() {
 
 		ArrayList<PO> sourceList = new ArrayList<>();
 
@@ -265,8 +280,8 @@ class LangManager {
 		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
 		Collections.sort(sourceList);
 
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/" + filenames[0] + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig, sourceList);
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/" + filenames[1] + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig.setWriteFileName(true), sourceList);
+		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig, sourceList);
+		makeFile(new File(appWorkConfig.getBaseDirectory() + "/tr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig.setWriteFileName(true), sourceList);
 	}
 
 
@@ -445,21 +460,4 @@ class LangManager {
 		this.PC.translateGoogle();
 	}
 
-    void enLangToPo() {
-
-	    File f = new File(appWorkConfig.getBaseDirectory()+"/en.lang");
-
-	    if(new File(appWorkConfig.getBaseDirectory()+"/en.lang.csv").exists()) return;
-
-        try {
-            ProcessBuilder pb = new ProcessBuilder()
-                    .directory(appWorkConfig.getBaseDirectory())
-                    .command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -l " + f.getAbsolutePath() + " -p")
-                    .redirectError(ProcessBuilder.Redirect.INHERIT)
-                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            pb.start().waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

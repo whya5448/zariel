@@ -1,9 +1,20 @@
 package org.metalscraps.eso.lang.kr;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 
 class ServerMain {
-    void start() {
+
+    private static final Logger logger = LoggerFactory.getLogger("org.metalscraps.eso.lang.kr.ServerMain");
+    private boolean useCache = false;
+
+    void start(String[] args) {
+
+        for(var s : args) {
+            if(s.equals("-cache")) useCache = true;
+        }
 
         System.out.println("서버 모드 작동");
         final AppWorkConfig appWorkConfig = new AppWorkConfig();
@@ -16,9 +27,10 @@ class ServerMain {
         LangManager lm = new LangManager(appWorkConfig);
 
         // 테스트용 고정값 쓰기
-        // lm.getPO();
-        lm.enLangToPo();
+        if(!useCache) lm.getPO();
+        else appWorkConfig.setPODirectory(new File((appWorkConfig.getBaseDirectory()+"/PO_CACHE")));
+
         lm.Mapping();
-        lm.makeServerCSV(new String[]{"kr","tr"});
+        lm.makeServerCSV();
     }
 }

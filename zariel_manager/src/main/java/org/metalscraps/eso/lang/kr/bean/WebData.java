@@ -1,5 +1,6 @@
 package org.metalscraps.eso.lang.kr.bean;
 
+import org.metalscraps.eso.lang.kr.config.WebPageNames;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -7,7 +8,6 @@ import lombok.Setter;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.metalscraps.eso.lang.kr.config.WebPageNames;
 
 @Data
 public class WebData{

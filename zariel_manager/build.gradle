@@ -1,12 +1,23 @@
+plugins {
+    id 'java'
+}
+
 group 'metalscraps.org.eso'
-version '1.0-SNAPSHOT'
+version '1.0'
 
-apply plugin: 'java'
-
-sourceCompatibility = 10
+sourceCompatibility = 11
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.metalscraps.eso.lang.kr.AppMain'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -16,10 +27,10 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    // compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compile group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
@@ -32,4 +43,7 @@ dependencies {
     compile 'com.google.cloud:google-cloud-translate:1.14.0'
 
     compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 }

@@ -1,3 +1,4 @@
 rootProject.name = 'zariel'
 include 'esok_client'
+include 'zariel_manager'
 

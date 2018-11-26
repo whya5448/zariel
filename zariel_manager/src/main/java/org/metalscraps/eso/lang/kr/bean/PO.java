@@ -1,11 +1,11 @@
 package org.metalscraps.eso.lang.kr.bean;
 
+import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
