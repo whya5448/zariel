@@ -31,6 +31,6 @@ class ServerMain {
         else appWorkConfig.setPODirectory(new File((appWorkConfig.getBaseDirectory()+"/PO_CACHE")));
 
         lm.Mapping();
-        lm.makeServerCSV();
+        lm.serverWork();
     }
 }

@@ -1,5 +1,10 @@
 package org.metalscraps.eso.lang.kr;
 
+import lombok.AllArgsConstructor;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import org.metalscraps.eso.lang.kr.Utils.PoConverter;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
@@ -7,15 +12,12 @@ import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 import org.metalscraps.eso.lang.kr.config.FileNames;
-import lombok.AllArgsConstructor;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalTime;
@@ -23,6 +25,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 /**
  * Created by 안병길 on 2018-01-24.
@@ -255,35 +259,73 @@ class LangManager {
 
 	}
 
-	void makeServerCSV() {
+	void serverWork() {
 
 		ArrayList<PO> sourceList = new ArrayList<>();
+		File lang = new File(appWorkConfig.getPODirectory()+"/lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
 		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
-		for (File file : fileList) {
+		try {
+			if(!lang.exists() && lang.length() <= 0) {
+				for (File file : fileList) {
 
-			String fileName = FilenameUtils.getBaseName(file.getName());
+					String fileName = FilenameUtils.getBaseName(file.getName());
 
-			// pregame 쪽 데이터
-			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+					// pregame 쪽 데이터
+					if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
-			//41714900-0-345 tip.po "////"
-			//249936564-0-5081 quest-sub.po """Captain""
-			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
-			// 41714900-0-345|249936564-0-5081|265851556-0-4666
+					//41714900-0-345 tip.po "////"
+					//249936564-0-5081 quest-sub.po """Captain""
+					//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
+					// 41714900-0-345|249936564-0-5081|265851556-0-4666
 
-			sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-			System.out.println(file);
+					sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+					System.out.println(file);
 
+				}
+
+				ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
+				Collections.sort(sourceList);
+
+				makeFile(new File(appWorkConfig.getPODirectory() + "/kr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig, sourceList);
+				makeFile(new File(appWorkConfig.getPODirectory() + "/tr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig.setWriteFileName(true), sourceList);
+
+				processRun("7za a -mx=7 " + lang.getAbsolutePath() + " " + appWorkConfig.getPODirectory() + "/*.csv");
+				processRun("cat 7zCon.sfx "+lang.getAbsolutePath(), ProcessBuilder.Redirect.to(new File(lang.getAbsolutePath()+".exe")));
+				processRun("gsutil cp "+lang.getAbsolutePath()+".exe gs://dcinside-esok-cdn/");
+				processRun("echo "+new Date().getTime()+"/"+appWorkConfig.getTodayWithYear()+"/"+CRC32(new File(lang.getAbsolutePath()+".exe")), ProcessBuilder.Redirect.to(new File("/usr/share/nginx/html/ver.html")));
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-
-		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
-		Collections.sort(sourceList);
-
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig, sourceList);
-		makeFile(new File(appWorkConfig.getBaseDirectory() + "/tr" + appWorkConfig.getTodayWithYear() + ".csv"), csvConfig.setWriteFileName(true), sourceList);
 	}
 
+
+	private long CRC32(File f) {
+		Checksum crc = new CRC32();
+		if(!f.exists() || f.length() <= 0) return -1;
+
+		try(BufferedInputStream in = new BufferedInputStream(new FileInputStream(f))) {
+			byte[] buffer = new byte[32768];
+			int length;
+
+			while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
+		} catch (IOException e) { e.printStackTrace(); }
+		return crc.getValue();
+	}
+
+
+	private void processRun(String command) throws IOException, InterruptedException { processRun(command, ProcessBuilder.Redirect.INHERIT); }
+
+	private void processRun(String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
+		ProcessBuilder pb = new ProcessBuilder()
+				.directory(appWorkConfig.getBaseDirectory())
+				.command((command).split("\\s+"))
+				.redirectError(redirect)
+				.redirectOutput(redirect);
+		pb.start().waitFor();
+	}
 
 	private void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
