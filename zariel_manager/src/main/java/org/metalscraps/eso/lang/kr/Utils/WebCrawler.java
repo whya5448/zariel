@@ -1,11 +1,11 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.WebData;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.kr.bean.WebData;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,11 +31,7 @@ public class WebCrawler {
             table = HTMLdoc.select("table").get(0);
             PageData.addWebTable(table);
         }
-        if(PageData.getWebTables() == null){
-            return false;
-        }else {
-            return true;
-        }
+        return PageData.getWebTables() != null;
     }
 
 
@@ -92,11 +88,7 @@ public class WebCrawler {
         //final skill set
         skillCSV.add(CCSV);
 
-        if(skillCSV.size() > 0){
-            return true;
-        }else{
-            return false;
-        }
+        return skillCSV.size() > 0;
     }
 
     public boolean GetUESPChampionSkill(ArrayList<CategoryCSV> SkillCSV){
@@ -131,11 +123,7 @@ public class WebCrawler {
         }
         skillCSV.add(CCSV);
 
-        if(skillCSV.size() > 0){
-            return true;
-        }else{
-            return false;
-        }
+        return skillCSV.size() > 0;
     }
 
 

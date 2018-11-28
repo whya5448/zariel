@@ -21,7 +21,7 @@ class AppMain {
 		return this.appWorkConfig;
 	}
 
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 
         // 서버용 자동화..
 	    if(args.length > 0 && args[0].equals("-auto")) new ServerMain().start(args);

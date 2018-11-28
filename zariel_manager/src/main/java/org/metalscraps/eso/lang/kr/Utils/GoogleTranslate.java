@@ -1,13 +1,14 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
-import org.metalscraps.eso.lang.kr.bean.PO;
 import org.json.JSONArray;
+import org.metalscraps.eso.lang.kr.bean.PO;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class GoogleTranslate implements Runnable {
@@ -102,7 +103,7 @@ public class GoogleTranslate implements Runnable {
                     "client=gtx&" +
                     "sl=" + langFrom +
                     "&tl=" + langTo +
-                    "&dt=t&q=" + URLEncoder.encode(word, "UTF-8");
+                    "&dt=t&q=" + URLEncoder.encode(word, StandardCharsets.UTF_8);
 
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();

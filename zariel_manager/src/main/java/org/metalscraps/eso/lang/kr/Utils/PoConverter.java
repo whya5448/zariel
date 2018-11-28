@@ -1,9 +1,9 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
+import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class PoConverter {
 
     private void makePOFile(String filename ,ArrayList<PO> poList) {
 
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         System.out.println("po file making... file : "+appWorkConfig.getPODirectory()+"\\"+filename);
         File file = new File( appWorkConfig.getPODirectory()+"\\"+filename);
         for(PO p : poList) {

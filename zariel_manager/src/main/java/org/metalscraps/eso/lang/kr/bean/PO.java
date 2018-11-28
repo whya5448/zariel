@@ -1,11 +1,11 @@
 package org.metalscraps.eso.lang.kr.bean;
 
-import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.metalscraps.eso.lang.kr.config.FileNames;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,9 +76,9 @@ public class PO implements Comparable {
 
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
-		String SystemFile[] = {"00_EsoUI_Client","00_EsoUI_Pregame", "achievement", "chat", "color", "emote",
-				"item", "item-crate", "item-crown", "item-crown-other", "item-crown-pack", "item-crown-pack-other", "item-other","item-quest", "item-quest-other",  "item-type",
-				"more-desc", "more-ui", "popup-tip", "popup-tip-other", "set","skill", "skill-other", "title", };
+        String[] SystemFile = {"00_EsoUI_Client", "00_EsoUI_Pregame", "achievement", "chat", "color", "emote",
+                "item", "item-crate", "item-crown", "item-crown-other", "item-crown-pack", "item-crown-pack-other", "item-other", "item-quest", "item-quest-other", "item-type",
+                "more-desc", "more-ui", "popup-tip", "popup-tip-other", "set", "skill", "skill-other", "title",};
 		List<String> SystemArr = Arrays.asList(SystemFile);
 
 		String t = "";

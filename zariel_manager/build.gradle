@@ -46,4 +46,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+
+    //compile 'com.google.cloud:google-cloud-storage:1.53.0'
 }
