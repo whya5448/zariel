@@ -1,11 +1,11 @@
 package org.metalscraps.eso.lang.kr;
 
+import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
 import org.metalscraps.eso.lang.kr.Utils.Utils;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
 import org.metalscraps.eso.lang.kr.config.FileNames;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -46,14 +46,13 @@ class TamrielTradeCentre {
 			if (o == this) return true;
 			if (!(o instanceof LuaClass)) return false;
 			final LuaClass other = (LuaClass) o;
-			if (!other.canEqual((Object) this)) return false;
+			if (!other.canEqual(this)) return false;
 			final Object this$first = this.first;
 			final Object other$first = other.first;
 			if (this$first == null ? other$first != null : !this$first.equals(other$first)) return false;
 			final Object this$second = this.second;
 			final Object other$second = other.second;
-			if (this$second == null ? other$second != null : !this$second.equals(other$second)) return false;
-			return true;
+			return this$second == null ? other$second == null : this$second.equals(other$second);
 		}
 
 		protected boolean canEqual(final Object other) {
