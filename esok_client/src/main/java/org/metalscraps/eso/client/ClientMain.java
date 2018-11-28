@@ -1,8 +1,6 @@
 package org.metalscraps.eso.client;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,11 +9,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 public class ClientMain {
 
     private final Path appPath = Paths.get(System.getenv("appdata") + "/" + "dcinside_eso_client");
     private static final Logger LOG = Logger.getGlobal();
+    private long servVer = 0;
+    private String servFileName = null;
+    private String crc32 = null;
 
     public static void main(String[] args) {
         new ClientMain().run();
@@ -71,7 +74,7 @@ public class ClientMain {
 
         LOG.info("서버 버전 확인 중...");
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://eso.metalscraps.org/test.html"))
+                .uri(URI.create("https://eso.metalscraps.org/ver.html"))
                 .GET() //used by default if we don't specify
                 .build();
 
@@ -86,8 +89,12 @@ public class ClientMain {
             e.printStackTrace();
         }
 
-        long servVer = Long.parseLong(response.body().trim());
+        String[] resData = response.body().trim().split("/");
+        servVer = Long.parseLong(resData[0]);
+        servFileName = resData[1];
+        crc32 = resData[2];
 
+        LOG.info("서버 파일명 : " + servFileName);
         LOG.info("서버 버전 : " + servVer);
         LOG.info("로컬 버전 : " + localVer);
 
@@ -112,7 +119,56 @@ public class ClientMain {
             }
         }
 
+        downloadLang();
+        try {
+            processRun(tool.toString()+" -p -x kr"+servFileName+".csv -o kr.lang");
+            processRun(tool.toString()+" -p -x tr"+servFileName+".csv -o tr.lang");
+        } catch (Exception e) {
+            LOG.severe("LANG 생성 실패");
+            e.printStackTrace();
+            System.exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.getErrCode());
+        }
+
         return false;
+    }
+
+    private void downloadLang() {
+
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://storage.googleapis.com/dcinside-esok-cdn/lang_"+servFileName+".7z.exe")).build();
+        HttpClient client = HttpClient.newHttpClient();
+        Path langPath = Paths.get(appPath.toString() + "/lang.exe");
+
+        if(langPath.toFile().exists() && CRC32(langPath.toFile()).equals(crc32)) {
+            LOG.info("언어 파일 존재함. 다운로드 스킵");
+             return;
+        }
+
+        LOG.info("다운로드 시도");
+        try {
+            client.send(request, HttpResponse.BodyHandlers.ofFile(langPath));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            LOG.severe("언어 다운로드 실패");
+            System.exit(AppErrorCode.CANNOT_DOWNLOAD_LANG.getErrCode());
+        }
+
+        if(!crc32.equals(CRC32(langPath.toFile()))) {
+            LOG.severe("LANG 파일 CRC 불일치");
+            langPath.toFile().delete();
+            downloadLang();
+        }
+
+        try {
+            processRun(appPath.toFile().toString() + "/lang.exe -y");
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+            LOG.severe("언어파일 압축해제 실패");
+            System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.getErrCode());
+        }
+
+        if(langPath.toFile().delete()) LOG.info("임시파일 삭제 성공");
+        else LOG.warning("임시파일 삭제 실패");
+
     }
 
     private boolean downloadTool() {
@@ -131,12 +187,8 @@ public class ClientMain {
             System.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.getErrCode());
         }
 
-        ProcessBuilder pb = new ProcessBuilder()
-                .directory(toolPath.toFile().getParentFile())
-                .command((toolPath.toFile().getParentFile().toString() + "/tool.exe -y").split("\\s+"))
-                .inheritIO();
         try {
-            pb.start().waitFor();
+            processRun(appPath.toFile().toString() + "/tool.exe -y");
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
             LOG.severe("툴 압축해제 실패");
@@ -148,4 +200,34 @@ public class ClientMain {
 
         return Paths.get(toolPath.getParent().toString()+"/EsoExtractData v0.32/EsoExtractData.exe").toFile().exists();
     }
+
+
+    private void processRun(String command) throws IOException, InterruptedException { processRun(command, ProcessBuilder.Redirect.INHERIT); }
+
+    private void processRun(String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException { processRun(command, redirect, appPath.toFile()); }
+
+    private void processRun(String command, ProcessBuilder.Redirect redirect, File directory) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder()
+                .directory(directory)
+                .command((command).split("\\s+"))
+                .redirectError(redirect)
+                .redirectOutput(redirect);
+        pb.start().waitFor();
+    }
+
+
+    private String CRC32(File f) {
+        Checksum crc = new CRC32();
+        if(!f.exists() || f.length() <= 0) return null;
+
+        try(BufferedInputStream in = new BufferedInputStream(new FileInputStream(f))) {
+            byte[] buffer = new byte[32768];
+            int length;
+
+            while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
+        } catch (IOException e) { e.printStackTrace(); }
+        return String.valueOf(crc.getValue());
+    }
+
+
 }
