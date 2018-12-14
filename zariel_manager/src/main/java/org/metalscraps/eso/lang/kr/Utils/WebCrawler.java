@@ -72,11 +72,11 @@ public class WebCrawler {
                     }
                     if(sr){
                         if(CCSV!=null) {
-                            //System.out.println("prev Set inserted : "+CCSV.getCategory());
+                            //System.out.println("prev Set inserted : "+CCSV.getZanataFileName());
                             skillCSV.add(CCSV);
                         }
                         CCSV = new CategoryCSV();
-                        CCSV.setCategory(cols.get(4).text());
+                        CCSV.setZanataFileName(cols.get(4).text());
                     }
                     //skill name poindex
                     CCSV.addPoIndex("198758357-0-"+cols.get(2).text());
@@ -108,7 +108,7 @@ public class WebCrawler {
     private boolean ParseUSEPChampionSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
         CategoryCSV CCSV = null;
         CCSV = new CategoryCSV();
-        CCSV.setCategory("Champion::Champion Point");
+        CCSV.setZanataFileName("Champion::Champion Point");
         for(Element oneTable : USEPWebData.getWebTables()) {
             Elements skills = oneTable.select("tr");
             for(Element skill : skills){
@@ -141,7 +141,7 @@ public class WebCrawler {
             System.out.println("SkillCSV Size : "+SkillCSV.size());
             for(CategoryCSV oneCSV : SkillCSV){
                 System.out.println("=========================================");
-                System.out.println("Category : "+oneCSV.getCategory());
+                System.out.println("Category : "+oneCSV.getZanataFileName());
                 for(String index: oneCSV.getPoIndexList() ){
                     System.out.println(index);
                 }

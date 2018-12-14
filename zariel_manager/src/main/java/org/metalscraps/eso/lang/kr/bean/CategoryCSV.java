@@ -11,8 +11,9 @@ import java.util.ArrayList;
 @Data
 public class CategoryCSV {
 
+
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
-	private String Category;
+	private String zanataFileName;
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	ArrayList<String> PoIndexList, CSVList = null;

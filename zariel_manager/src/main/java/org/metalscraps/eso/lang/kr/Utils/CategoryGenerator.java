@@ -45,7 +45,7 @@ public class CategoryGenerator {
             System.out.println("SkillCSV Size : "+SkillCSV.size());
             for(CategoryCSV oneCSV : SkillCSV){
                 System.out.println("=========================================");
-                System.out.println("Category : "+oneCSV.getCategory());
+                System.out.println("Category : "+oneCSV.getZanataFileName());
                 for(String index: oneCSV.getPoIndexList() ){
                     System.out.println(index+" "+PoMap.get(index));
                 }
