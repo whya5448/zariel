@@ -1,27 +1,67 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class CategoryGenerator {
     private PoConverter PC = new PoConverter();
     private final AppWorkConfig appWorkConfig;
     private final ArrayList<PO> sourceList = new ArrayList<>();
+    private HashMap<String, CategoryCSV> CategoryMap = null;
 
     public CategoryGenerator(AppWorkConfig appWorkConfig) {
         this.appWorkConfig = appWorkConfig;
+    }
+
+
+    public void GenCategory(){
+        if(CategoryMap == null){
+            CategoryMap = new HashMap<>();
+        }
+        GenCategoryFromFile();
+
+
+    }
+
+    public void GenCategoryFromFile(){
+        String indexFileName = appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt";
+        System.out.println("config file name : "+indexFileName);
+        File file = new File(indexFileName);
+        String fileString = "";
+
+        try {
+            fileString =  FileUtils.readFileToString(file, AppConfig.CHARSET);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Matcher matcher = AppConfig.CategoryConfig.matcher(fileString);
+        while(matcher.find()){
+            System.out.println("---------------------------");
+            System.out.println("FileName:"+matcher.group(1) + " isDuplicate:"+ matcher.group(5) + " type:"+ matcher.group(9) + " indexLinkCount:" + matcher.group(13) + " index:" +  matcher.group(17));
+        }
+
+    }
+
+    public void GenCategoryFromUESP(){
+
     }
 
     public void GenSkillCategory(){

@@ -14,6 +14,8 @@ public class CategoryCSV {
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private String zanataFileName;
+	private String type;
+
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	ArrayList<String> PoIndexList, CSVList = null;

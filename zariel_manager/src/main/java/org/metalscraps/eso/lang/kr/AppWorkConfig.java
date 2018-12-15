@@ -22,7 +22,7 @@ public class AppWorkConfig {
 	}
 
 	@Getter(AccessLevel.PUBLIC) @Setter(AccessLevel.PUBLIC)
-	private File baseDirectory, PODirectory;
+	private File baseDirectory, PODirectory, ZanataCategoryConfigDirectory;
 
 	@Getter(AccessLevel.PUBLIC)
 	private final String today, todayWithYear;
