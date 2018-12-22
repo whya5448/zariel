@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 
 public class AppWorkConfig {
 
-	AppWorkConfig() {
+	public AppWorkConfig() {
 		LocalDate today = LocalDate.now();
 		this.today = today.format(DateTimeFormatter.ofPattern("MMdd"));
 		this.todayWithYear = today.format(DateTimeFormatter.ofPattern("yyMMdd"));

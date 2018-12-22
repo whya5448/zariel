@@ -88,8 +88,8 @@ class AppMain {
 			case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
 			case 12: new Destinations(appWorkConfig).start(); break;
 			case 100: lm.translateGoogle(); break;
-			case 200: CG.GenSkillCategory();
-			case 300: CG.GenCategory();
+			//case 200: CG.GenSkillCategory();
+			case 300: CG.GenMainCategory();
 
 		}
 	}

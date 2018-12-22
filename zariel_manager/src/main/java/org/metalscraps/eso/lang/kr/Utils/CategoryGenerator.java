@@ -1,50 +1,52 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class CategoryGenerator {
     private PoConverter PC = new PoConverter();
     private final AppWorkConfig appWorkConfig;
     private final ArrayList<PO> sourceList = new ArrayList<>();
-    private HashMap<String, CategoryCSV> CategoryMap = null;
+
+    @Getter(AccessLevel.PUBLIC)
+    private HashMap<String, CategoryCSV> CategoryMap = new HashMap<>();
+
+    @Getter(AccessLevel.PUBLIC)
+    private HashSet<CategoryCSV> CategorizedCSV = new HashSet<>();
 
     public CategoryGenerator(AppWorkConfig appWorkConfig) {
         this.appWorkConfig = appWorkConfig;
     }
 
-
-    public void GenCategory(){
+    public void GenMainCategory(){
         if(CategoryMap == null){
             CategoryMap = new HashMap<>();
         }
-        GenCategoryFromFile();
 
-
+        System.out.println("Select Csv file for generate category.");
+        HashMap<String, PO> CSVMap = GetSelectedCSVMap();
+        GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+        ParseMainCategorizedCSV(CSVMap);
     }
 
-    public void GenCategoryFromFile(){
-        String indexFileName = appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt";
-        System.out.println("config file name : "+indexFileName);
+    public void GenCategoryConfigMap(String indexFileName){
         File file = new File(indexFileName);
         String fileString = "";
+        String localIndex = "";
 
         try {
             fileString =  FileUtils.readFileToString(file, AppConfig.CHARSET);
@@ -54,45 +56,26 @@ public class CategoryGenerator {
 
         Matcher matcher = AppConfig.CategoryConfig.matcher(fileString);
         while(matcher.find()){
-            System.out.println("---------------------------");
-            System.out.println("FileName:"+matcher.group(1) + " isDuplicate:"+ matcher.group(5) + " type:"+ matcher.group(9) + " indexLinkCount:" + matcher.group(13) + " index:" +  matcher.group(17));
-        }
+            localIndex = matcher.group(17);
+            String[] localIndexList  = localIndex.split(",");
 
-    }
-
-    public void GenCategoryFromUESP(){
-
-    }
-
-    public void GenSkillCategory(){
-        System.out.println("Select Csv file for generate category.");
-        HashMap<String, PO> CSVMap = GetSelectedCSVMap();
-        HashMap<String, String> PoMap = new HashMap<>();
-
-        for(PO po : CSVMap.values()) {
-            PoMap.put(po.getId(), po.getSource());
-        }
-
-
-        boolean skillret;
-        ArrayList<CategoryCSV> SkillCSV = new ArrayList<>();
-
-        WebCrawler wc = new WebCrawler();
-        skillret = wc.GetUESPChampionSkill(SkillCSV);
-        skillret = wc.GetUESPSkillTree(SkillCSV);
-
-        if(skillret){
-            System.out.println("SkillCSV Size : "+SkillCSV.size());
-            for(CategoryCSV oneCSV : SkillCSV){
-                System.out.println("=========================================");
-                System.out.println("Category : "+oneCSV.getZanataFileName());
-                for(String index: oneCSV.getPoIndexList() ){
-                    System.out.println(index+" "+PoMap.get(index));
-                }
+            CategoryCSV categoryCSV = new CategoryCSV();
+            categoryCSV.setZanataFileName(matcher.group(1));
+            categoryCSV.setType(matcher.group(9));
+            categoryCSV.setLinkCount(Integer.parseInt(matcher.group(13)));
+            for(String index : localIndexList) {
+                categoryCSV.addPoIndex(index);
+                CategoryMap.put(index, categoryCSV);
             }
         }
 
+        CategoryCSV UndefinedCategoryCSV = new CategoryCSV();
+        UndefinedCategoryCSV.setZanataFileName("Undefined");
+        UndefinedCategoryCSV.setType("system");
+        UndefinedCategoryCSV.setLinkCount(0);
+        CategoryMap.put("Undefined", UndefinedCategoryCSV);
     }
+
 
     public HashMap<String, PO> GetSelectedCSVMap() {
         // EsoExtractData.exe depot/eso.mnf export -a 0
@@ -131,11 +114,61 @@ public class CategoryGenerator {
             System.out.println(file);
             map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
         }
-
-
-
         return map;
     }
+
+    public void ParseMainCategorizedCSV(HashMap<String, PO> CSVMap){
+        for(PO onePO : CSVMap.values()){
+            CategoryCSV categoryCSV = this.getCategoryMap().get(onePO.getId1().toString());
+            if(categoryCSV == null){
+                categoryCSV = this.getCategoryMap().get("Undefined");
+            }
+            categoryCSV.putPoData(onePO.getId(), onePO);
+        }
+
+        for(CategoryCSV categoryCSV : this.getCategoryMap().values()){
+            this.CategorizedCSV.add(categoryCSV);
+        }
+    }
+
+    public ArrayList<CategoryCSV> GenSubCategory(CategoryCSV mainCategorizedCsv){
+        ArrayList<CategoryCSV> subCategorizedCsvList = new ArrayList<>();
+
+        boolean genRet = GenSkillCategory(subCategorizedCsvList);
+        HashMap<String, PO> MainPoMap = mainCategorizedCsv.getPODataMap();
+
+        if(genRet){
+            System.out.println("SkillCSV Size : "+subCategorizedCsvList.size());
+            for(CategoryCSV oneCSV : subCategorizedCsvList){
+                for(String index: oneCSV.getPoIndexList() ){
+                    PO podata = MainPoMap.get(index);
+                    if(podata != null) {
+                        oneCSV.putPoData(index, podata);
+                    }
+                }
+            }
+        }
+        return subCategorizedCsvList;
+    }
+
+    private boolean GenSkillCategory(ArrayList<CategoryCSV> SkillCSV){
+        boolean wbCrawlRet;
+        WebCrawler wc = new WebCrawler();
+        try {
+            if(!wc.GetUESPChampionSkill(SkillCSV)){
+                throw new Exception("ChampionSkill gen fail");
+            }
+            if(!wc.GetUESPSkillTree(SkillCSV)){
+                throw new Exception("Skill tree gen fail");
+            }
+            wbCrawlRet = true;
+        }catch(Exception ex){
+            wbCrawlRet = false;
+        }
+        return wbCrawlRet;
+    }
+
+
 
 }
 
