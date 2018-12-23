@@ -89,7 +89,7 @@ class AppMain {
 			case 12: new Destinations(appWorkConfig).start(); break;
 			case 100: lm.translateGoogle(); break;
 			//case 200: CG.GenSkillCategory();
-			case 300: CG.GenMainCategory();
+			case 300: lm.MergedCsvToPo(); break;
 
 		}
 	}

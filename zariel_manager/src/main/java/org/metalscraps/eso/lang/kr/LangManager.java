@@ -5,9 +5,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
-import org.metalscraps.eso.lang.kr.Utils.PoConverter;
-import org.metalscraps.eso.lang.kr.Utils.SourceToMapConfig;
-import org.metalscraps.eso.lang.kr.Utils.Utils;
+import org.metalscraps.eso.lang.kr.Utils.*;
+import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
@@ -122,13 +121,49 @@ class LangManager {
 			}
 		}
 
+		ArrayList<PO> poList = new ArrayList<>(map.values());
+		mkaePotFile(poList);
+	}
+
+	void MergedCsvToPo() {
+		CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
+		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+
+		CategoryGenerator zanataCG = new CategoryGenerator(appWorkConfig);
+		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+
+		originCG.GenMainCategory();
+		HashSet<CategoryCSV> origin = originCG.getCategorizedCSV();
+
+		//select zanata csv
+		zanataCG.GenMainCategory();
+		HashSet<CategoryCSV> zanata = zanataCG.getCategorizedCSV();
+
+		CSVmerge merge = new CSVmerge();
+		merge.GenMergedCSV(origin, zanata);
+
+		HashMap<String, CategoryCSV> mergedMap = merge.getMergedCSV();
+
+		for(CategoryCSV oneCSV : mergedMap.values()){
+			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
+			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
+			System.out.println("file name ["+ oneCSV.getZanataFileName()+"]");
+			mkaePotFile(poList);
+		}
+	}
+
+
+	void mkaePotFile(ArrayList<PO> sort){
 		HashMap<String, StringBuilder> builderMap = new HashMap<>();
 		String fileName;
-
-		ArrayList<PO> sort = new ArrayList<>(map.values());
 		Collections.sort(sort);
 		for (PO p : sort) {
-			fileName = p.getFileName().getName();
+			FileNames file = p.getFileName();
+			if(file == null){
+				fileName = "Undefined";
+			} else {
+				fileName = p.getFileName().getName();
+			}
 			StringBuilder sb = builderMap.get(fileName);
 			if (sb == null) {
 				sb = new StringBuilder(

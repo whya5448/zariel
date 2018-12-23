@@ -11,11 +11,12 @@ import java.util.HashSet;
 public class CSVmerge {
     private HashMap<String, CategoryCSV> esoClientCSV = new HashMap<>();
     private HashMap<String, CategoryCSV> zanataCSV = new HashMap<>();
+    @Getter(AccessLevel.PUBLIC)
     private HashMap<String, CategoryCSV> mergedCSV = new HashMap<>();
 
-    public void MergeCSV (HashSet<CategoryCSV> clientCSV, HashSet<CategoryCSV> zanataCSV){
+    public void GenMergedCSV (HashSet<CategoryCSV> clientCSV, HashSet<CategoryCSV> zanataCSV){
         setCategoryNameMap(clientCSV, zanataCSV);
-        genMergedPO();
+        genMergedPO(true);
     }
 
     private void setCategoryNameMap(HashSet<CategoryCSV> clientCSV, HashSet<CategoryCSV> zanataCSV){
@@ -28,15 +29,21 @@ public class CSVmerge {
         }
     }
 
-    private void genMergedPO(){
+    private void genMergedPO(boolean getOnlyChanged){
         for(String filename : this.esoClientCSV.keySet()){
-            CategoryCSV merged = MergeCategory(this.esoClientCSV.get(filename), this.zanataCSV.get(filename));
+            CategoryCSV merged = MergeCategory(this.esoClientCSV.get(filename), this.zanataCSV.get(filename), getOnlyChanged);
             this.mergedCSV.put(filename, merged);
         }
     }
 
-    private CategoryCSV MergeCategory(CategoryCSV origin, CategoryCSV zanata){
+
+
+    private CategoryCSV MergeCategory(CategoryCSV origin, CategoryCSV zanata, boolean getOnlyChanged){
         CategoryCSV merged = new CategoryCSV();
+        if(zanata == null){
+            merged = origin;
+            return merged;
+        }
         HashMap<String, PO> originPOMap = origin.getPODataMap();
         HashMap<String, PO> zanataPOMap = zanata.getPODataMap();
 
@@ -51,7 +58,13 @@ public class CSVmerge {
 
             String mergedSource = "";
             String mergedTarget = "";
-            if(originPO.getSource().equals( zanataPO.getSource() )){
+            if(zanataPO == null){
+                mergedSource = originPO.getSource();
+                mergedTarget = originPO.getTarget();
+            } else if (originPO.getSource().equals( zanataPO.getSource() )){
+                if(getOnlyChanged){
+                    continue;
+                }
                 mergedSource = originPO.getSource();
                 mergedTarget = zanataPO.getTarget();
             } else {
@@ -60,6 +73,7 @@ public class CSVmerge {
             }
 
             PO mergedPO = new PO(index, mergedSource, mergedTarget);
+            mergedPO.setFileName(originPO.getFileName());
             merged.putPoData(index, mergedPO);
         }
 

@@ -9,6 +9,7 @@ import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -33,13 +34,12 @@ public class CategoryGenerator {
     }
 
     public void GenMainCategory(){
-        if(CategoryMap == null){
-            CategoryMap = new HashMap<>();
+        if(CategoryMap .size() ==0){
+            GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
         }
 
         System.out.println("Select Csv file for generate category.");
         HashMap<String, PO> CSVMap = GetSelectedCSVMap();
-        GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
         ParseMainCategorizedCSV(CSVMap);
     }
 
@@ -123,6 +123,7 @@ public class CategoryGenerator {
             if(categoryCSV == null){
                 categoryCSV = this.getCategoryMap().get("Undefined");
             }
+            onePO.setFileName(FileNames.fromString(categoryCSV.getZanataFileName()));
             categoryCSV.putPoData(onePO.getId(), onePO);
         }
 
