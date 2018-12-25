@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +17,7 @@ public class CSVmerge {
 
     public void GenMergedCSV (HashSet<CategoryCSV> clientCSV, HashSet<CategoryCSV> zanataCSV){
         setCategoryNameMap(clientCSV, zanataCSV);
-        genMergedPO(true);
+        genMergedPO(false);
     }
 
     private void setCategoryNameMap(HashSet<CategoryCSV> clientCSV, HashSet<CategoryCSV> zanataCSV){
@@ -33,6 +34,15 @@ public class CSVmerge {
         for(String filename : this.esoClientCSV.keySet()){
             CategoryCSV merged = MergeCategory(this.esoClientCSV.get(filename), this.zanataCSV.get(filename), getOnlyChanged);
             this.mergedCSV.put(filename, merged);
+        }
+        for(CategoryCSV oneCSV : this.mergedCSV.values()){
+            HashMap<String, PO> poMap = oneCSV.getPODataMap();
+            for(PO po : poMap.values()){
+                po.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
+                if(po.getSource().equals(po.getTarget())){
+                    po.setTarget("");
+                }
+            }
         }
     }
 

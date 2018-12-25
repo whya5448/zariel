@@ -15,21 +15,34 @@ import java.util.Set;
 //get html table data from url.
 public class WebCrawler {
 
-    public boolean GetUSEPWebPage(WebData PageData, String PageName, int PageLoop) throws IOException {
+    public boolean GetUSEPCpWebPage(WebData PageData, String PageName) throws IOException {
         String url;
         url = "https://esoitem.uesp.net/viewlog.php?record=" + PageName;
         System.out.println(url);
         Document HTMLdoc = Jsoup.connect(url).get();
         Element table = HTMLdoc.select("table").get(0);
         PageData.addWebTable(table);
+        return PageData.getWebTables() != null;
+    }
+
+    public boolean GetUSEPSkillWebPage(WebData PageData, String PageName) throws IOException {
+        String url = "";
+        Document HTMLdoc = null;
+        Element table = null;
 
 
-        for (int pageCount = 1; pageCount < PageLoop; pageCount++) {
+        int pageCount = 1;
+        while(true){
             url = "https://esoitem.uesp.net/viewlog.php?start=" + pageCount * 300 + "&record=" + PageName;
             System.out.println(url);
             HTMLdoc = Jsoup.connect(url).get();
             table = HTMLdoc.select("table").get(0);
+            Elements skills = table.select("tr");
+            if(skills.size() <= 1){
+                break;
+            }
             PageData.addWebTable(table);
+            pageCount++;
         }
         return PageData.getWebTables() != null;
     }
@@ -39,19 +52,27 @@ public class WebCrawler {
         boolean ret = false;
         try {
             WebData USEPSkillData = new WebData();
-            ret = GetUSEPWebPage(USEPSkillData, "skillTree", 9);
+            ret = GetUSEPSkillWebPage(USEPSkillData, "skillTree");
             if(ret) {
                 ret = ParseUSEPSkillTable(USEPSkillData, SkillCSV);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        for(CategoryCSV oneCSV : SkillCSV){
+            String originFilename = oneCSV.getZanataFileName();
+            String convFilename = originFilename.replace("::", "-");
+            oneCSV.setZanataFileName(convFilename);
+        }
+
         return ret;
     }
 
 
     private boolean ParseUSEPSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
         Set<String> SkillCategory = new HashSet<>();
+
         CategoryCSV CCSV = null;
 
         boolean sr;
@@ -65,7 +86,7 @@ public class WebCrawler {
                 if(cols.size() > 0) {
                     //System.out.println("skill id :" + cols.get(2).text() + " category :" + cols.get(4).text() + " skill name :" + cols.get(6).text() );
                     Category = cols.get(4).text();
-                    if(Category.length() >0) {
+                    if(Category.length() >0 ) {
                         sr = SkillCategory.add(Category);
                     }else{
                         continue;
@@ -95,7 +116,7 @@ public class WebCrawler {
         boolean ret = false;
         try {
             WebData USEPSkillData = new WebData();
-            ret = GetUSEPWebPage(USEPSkillData, "cpSkills", 0);
+            ret = GetUSEPCpWebPage(USEPSkillData, "cpSkills");
             if(ret) {
                 ret = ParseUSEPChampionSkillTable(USEPSkillData, SkillCSV);
             }

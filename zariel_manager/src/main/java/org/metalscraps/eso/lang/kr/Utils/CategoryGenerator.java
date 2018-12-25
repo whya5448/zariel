@@ -33,13 +33,19 @@ public class CategoryGenerator {
         this.appWorkConfig = appWorkConfig;
     }
 
-    public void GenMainCategory(){
+    public void GenCategory(){
         if(CategoryMap .size() ==0){
             GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
         }
 
         System.out.println("Select Csv file for generate category.");
         HashMap<String, PO> CSVMap = GetSelectedCSVMap();
+        GenSubCategory(CSVMap);
+        GenMainCategory(CSVMap);
+    }
+
+    public void GenMainCategory(HashMap<String, PO> CSVMap){
+
         ParseMainCategorizedCSV(CSVMap);
     }
 
@@ -132,11 +138,10 @@ public class CategoryGenerator {
         }
     }
 
-    public ArrayList<CategoryCSV> GenSubCategory(CategoryCSV mainCategorizedCsv){
+    public void GenSubCategory(HashMap<String, PO> MainPoMap){
         ArrayList<CategoryCSV> subCategorizedCsvList = new ArrayList<>();
 
         boolean genRet = GenSkillCategory(subCategorizedCsvList);
-        HashMap<String, PO> MainPoMap = mainCategorizedCsv.getPODataMap();
 
         if(genRet){
             System.out.println("SkillCSV Size : "+subCategorizedCsvList.size());
@@ -144,12 +149,17 @@ public class CategoryGenerator {
                 for(String index: oneCSV.getPoIndexList() ){
                     PO podata = MainPoMap.get(index);
                     if(podata != null) {
+                        podata.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
                         oneCSV.putPoData(index, podata);
+                        MainPoMap.remove(index);
                     }
                 }
             }
         }
-        return subCategorizedCsvList;
+
+        for(CategoryCSV oneCSV : subCategorizedCsvList) {
+            CategorizedCSV.add(oneCSV);
+        }
     }
 
     private boolean GenSkillCategory(ArrayList<CategoryCSV> SkillCSV){

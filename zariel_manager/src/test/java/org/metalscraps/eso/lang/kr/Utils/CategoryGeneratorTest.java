@@ -23,7 +23,7 @@ public class CategoryGeneratorTest {
         appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
 
         CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
-        CG.GenMainCategory();
+        CG.GenCategory();
         HashMap<String, CategoryCSV> testMap = CG.getCategoryMap();
         System.out.println("========== Category Map info ===========");
         for(String index : testMap.keySet()){
@@ -32,22 +32,16 @@ public class CategoryGeneratorTest {
         }
         System.out.println("========== Category Map info ===========");
 
-        CategoryCSV skillCsv = null;
 
         System.out.println("========== Category Set info ===========");
         HashSet<CategoryCSV> testSet = CG.getCategorizedCSV();
         int totalPoCount = 0;
         for(CategoryCSV csv : testSet){
             printCategory(csv);
-            if("skill".equals(csv.getZanataFileName())){
-                skillCsv = csv;
-            }
             totalPoCount = totalPoCount + csv.getPODataMap().size();
         }
         System.out.println("========== Category Set info. total po count ["+totalPoCount+"] ===========");
 
-
-        //CG.GenSubCategory(skillCsv);
 
     }
 

@@ -122,7 +122,7 @@ class LangManager {
 		}
 
 		ArrayList<PO> poList = new ArrayList<>(map.values());
-		mkaePotFile(poList);
+		makePotFile(poList, false);
 	}
 
 	void MergedCsvToPo() {
@@ -132,11 +132,11 @@ class LangManager {
 		CategoryGenerator zanataCG = new CategoryGenerator(appWorkConfig);
 		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
 
-		originCG.GenMainCategory();
+		originCG.GenCategory();
 		HashSet<CategoryCSV> origin = originCG.getCategorizedCSV();
 
 		//select zanata csv
-		zanataCG.GenMainCategory();
+		zanataCG.GenCategory();
 		HashSet<CategoryCSV> zanata = zanataCG.getCategorizedCSV();
 
 		CSVmerge merge = new CSVmerge();
@@ -148,41 +148,143 @@ class LangManager {
 			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
 			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
 			System.out.println("file name ["+ oneCSV.getZanataFileName()+"]");
-			mkaePotFile(poList);
+			makePotFile(poList, true, oneCSV.getZanataFileName());
+		}
+	}
+
+	ArrayList<PO> reOrderAsMatchFirst(ArrayList<PO> poArrayList){
+		Collections.sort(poArrayList);
+		ArrayList<PO> Match = new ArrayList<>();
+		ArrayList<PO> NonMatch = new ArrayList<>();
+		ArrayList<PO> Reordered = new ArrayList<>();
+		PO checkPO = poArrayList.get(0);
+		boolean isChecked = false;
+		for(PO TargetPo : poArrayList){
+			String checkidx = Integer.toString(checkPO.getId2()) + Integer.toString(checkPO.getId3());
+			String targetidx = Integer.toString(TargetPo.getId2()) + Integer.toString(TargetPo.getId3());
+			if(checkidx.equals(targetidx)){
+				Match.add(checkPO);
+				isChecked = true;
+			}else{
+				if(isChecked){
+					Match.add(checkPO);
+				}else {
+					NonMatch.add(checkPO);
+				}
+				isChecked = false;
+			}
+			checkPO = TargetPo;
+		}
+		Reordered.addAll(Match);
+		Reordered.addAll(NonMatch);
+		return Reordered;
+	}
+
+	void makePotFile(ArrayList<PO> origin, boolean outputTargetData , String fileName) {
+		HashMap<String, StringBuilder> builderMap = new HashMap<>();
+		ArrayList<PO> sort =  reOrderAsMatchFirst(origin);
+		for (PO p : sort) {
+			boolean isLargeFile = true;
+			int fileCount = 0;
+			StringBuilder sb = new StringBuilder();
+			String splitFile = fileName;
+			while (isLargeFile) {
+				sb = builderMap.get(splitFile);
+				if (sb == null) {
+					sb = new StringBuilder(
+							"# Administrator <admin@the.gg>, 2017. #zanata\n" +
+									"msgid \"\"\n" +
+									"msgstr \"\"\n" +
+									"\"MIME-Version: 1.0\\n\"\n" +
+									"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
+									"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
+									"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
+									"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
+									"\"Language-Team: Korean\\n\"\n" +
+									"\"Language: ko\\n\"\n" +
+									"\"X-Generator: Zanata 4.2.4\\n\"\n" +
+									"\"Plural-Forms: nplurals=1; plural=0\\n\""
+					);
+					builderMap.put(splitFile, sb);
+					break;
+				} else if (sb.length() > 1024 * 1024) {
+					fileCount++;
+					splitFile = fileName + Integer.toString(fileCount);
+				} else {
+					break;
+				}
+			}
+			if (outputTargetData) {
+				sb.append(p.toTranslatedPO());
+			} else {
+				sb.append(p.toPO());
+			}
+		}
+
+		for (StringBuilder sb : builderMap.values()) {
+			Pattern p = Pattern.compile("\\\\(?!n)");
+			Matcher m = p.matcher(sb);
+			String x = m.replaceAll("\\\\$0");
+			sb.delete(0, sb.length());
+			sb.append(x);
+		}
+
+
+		try {
+
+			for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
+				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp14/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 
-	void mkaePotFile(ArrayList<PO> sort){
+	void makePotFile(ArrayList<PO> sort, boolean outputTargetData ){
 		HashMap<String, StringBuilder> builderMap = new HashMap<>();
 		String fileName;
 		Collections.sort(sort);
+
+
 		for (PO p : sort) {
-			FileNames file = p.getFileName();
-			if(file == null){
-				fileName = "Undefined";
-			} else {
-				fileName = p.getFileName().getName();
+			fileName = p.getFileName().getName();
+			boolean isLargeFile = true;
+			int fileCount = 0;
+			StringBuilder sb = new StringBuilder();
+			String splitFile = fileName;
+			while(isLargeFile){
+				sb = builderMap.get(splitFile);
+				if (sb == null) {
+					sb = new StringBuilder(
+							"# Administrator <admin@the.gg>, 2017. #zanata\n" +
+									"msgid \"\"\n" +
+									"msgstr \"\"\n" +
+									"\"MIME-Version: 1.0\\n\"\n" +
+									"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
+									"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
+									"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
+									"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
+									"\"Language-Team: Korean\\n\"\n" +
+									"\"Language: ko\\n\"\n" +
+									"\"X-Generator: Zanata 4.2.4\\n\"\n" +
+									"\"Plural-Forms: nplurals=1; plural=0\\n\""
+					);
+					builderMap.put(splitFile, sb);
+					break;
+				} else if(sb.length() > 1024*1024){
+					fileCount++;
+					splitFile = fileName + Integer.toString(fileCount);
+				} else {
+					break;
+				}
 			}
-			StringBuilder sb = builderMap.get(fileName);
-			if (sb == null) {
-				sb = new StringBuilder(
-						"# Administrator <admin@the.gg>, 2017. #zanata\n" +
-								"msgid \"\"\n" +
-								"msgstr \"\"\n" +
-								"\"MIME-Version: 1.0\\n\"\n" +
-								"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
-								"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
-								"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
-								"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
-								"\"Language-Team: Korean\\n\"\n" +
-								"\"Language: ko\\n\"\n" +
-								"\"X-Generator: Zanata 4.2.4\\n\"\n" +
-								"\"Plural-Forms: nplurals=1; plural=0\\n\""
-				);
-				builderMap.put(fileName, sb);
+			if(outputTargetData){
+				sb.append(p.toTranslatedPO());
+			}else {
+				sb.append(p.toPO());
 			}
-			sb.append(p.toPO());
 		}
 
 		for (StringBuilder sb : builderMap.values()) {
@@ -291,7 +393,6 @@ class LangManager {
 		makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
         makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setBeta(true), sourceList);
         makeFile(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
-
 	}
 
 	void serverWork() {

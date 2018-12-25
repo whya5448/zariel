@@ -31,12 +31,12 @@ public class CSVmergeTest {
         originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
 
         //select origin csv
-        originCG.GenMainCategory();
+        originCG.GenCategory();
         HashSet<CategoryCSV> origin = originCG.getCategorizedCSV();
 
 
         //select zanata csv
-        zanataCG.GenMainCategory();
+        zanataCG.GenCategory();
         HashSet<CategoryCSV> zanata = zanataCG.getCategorizedCSV();
 
         CSVmerge merge = new CSVmerge();
@@ -46,13 +46,12 @@ public class CSVmergeTest {
 
         for(String name : mergedMap.keySet()){
             CategoryCSV oneCSV = mergedMap.get(name);
-            System.out.println(" Name ["+name+"] changed count ["+oneCSV.getPODataMap().size()+"]");
-            if("set".equals(name)) {
-                for (PO po : oneCSV.getPODataMap().values()) {
-                    System.out.println("changed idx ["+po.getId()+"] text ["+po.getSource()+"]");
+            System.out.println(" Name ["+name+"] csv name ["+oneCSV.getZanataFileName() +"]changed count ["+oneCSV.getPODataMap().size()+"]");
+            if("Undefined".equals(name)){
+                for(PO po : oneCSV.getPODataMap().values()) {
+                    //System.out.println("id ["+po.getId()+"] filename [" + po.getFileName() + "] source [" + po.getSource() + "] target [" + po.getTarget() + "]");
                 }
             }
         }
-
     }
 }

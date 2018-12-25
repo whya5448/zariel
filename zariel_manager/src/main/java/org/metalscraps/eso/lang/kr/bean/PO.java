@@ -117,6 +117,17 @@ public class PO implements Comparable {
 		return sb;
 	}
 
+	public StringBuilder toTranslatedPO() {
+		StringBuilder sb = new StringBuilder("\n\n#: ").append(getId());
+		if(isFuzzy()) sb.append("\n#, fuzzy");
+		sb
+				.append("\nmsgctxt \"").append(getId()).append("\"")
+				.append("\nmsgid \"").append(getSource()).append("\"")
+				.append("\nmsgstr \"").append(getTarget()).append("\"");
+		return sb;
+	}
+
+	/*
 	@Override
 	public int compareTo(@Nonnull Object o) {
 		PO x = (PO) o;
@@ -127,5 +138,16 @@ public class PO implements Comparable {
 		} else return t.id1.compareTo(x.id1);
 
 	}
+	*/
+	@Override
+	public int compareTo(@Nonnull Object o) {
+		PO x = (PO) o;
+		PO t = this;
+		String src  = Integer.toString(x.id2)+Integer.toString(x.id3);
+		String trg  = Integer.toString(t.id2)+Integer.toString(t.id3);
+		if(src.equals(trg)) {
+			return t.id1.compareTo(x.id1);
+		} else return src.compareTo(trg);
 
+	}
 }
