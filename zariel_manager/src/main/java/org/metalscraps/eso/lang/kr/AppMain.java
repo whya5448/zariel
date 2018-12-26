@@ -46,9 +46,7 @@ class AppMain {
 		System.out.println("11. TTC");
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
-		System.out.println("200. USEP 사이트를 이용해 Po context id 인덱스 파일 생성");
 		System.out.println("300. Zanata upload용 csv category 생성");
-
 
 	}
 
@@ -88,9 +86,8 @@ class AppMain {
 			case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
 			case 12: new Destinations(appWorkConfig).start(); break;
 			case 100: lm.translateGoogle(); break;
-			//case 200: CG.GenSkillCategory();
-			case 300: lm.MergedCsvToPo(); break;
-
+			case 300: lm.GenZanataUploadSet(); break;
+			//case 301: lm.GenJPpo(); break;
 		}
 	}
 
