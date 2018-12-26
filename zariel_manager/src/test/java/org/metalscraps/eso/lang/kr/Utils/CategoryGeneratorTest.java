@@ -28,7 +28,7 @@ public class CategoryGeneratorTest {
         System.out.println("========== Category Map info ===========");
         for(String index : testMap.keySet()){
             CategoryCSV item = testMap.get(index);
-            System.out.println("index ["+index+"] filename ["+item.getZanataFileName()+"]");
+            System.out.println("index ["+index+"] filename ["+item.getZanataFileName()+"] ");
         }
         System.out.println("========== Category Map info ===========");
 
@@ -50,10 +50,6 @@ public class CategoryGeneratorTest {
                 "] index ["+item.getPoIndexList().size()+"] po count [" +item.getPODataMap().size()+ "]" );
     }
 
-    @Test
-    public void genSkillCategory() {
-
-    }
 
     @Test
     public void getSelectedCSVMap() {

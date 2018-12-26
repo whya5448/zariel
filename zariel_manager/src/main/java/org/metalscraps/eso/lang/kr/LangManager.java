@@ -157,7 +157,11 @@ class LangManager {
 		ArrayList<PO> Match = new ArrayList<>();
 		ArrayList<PO> NonMatch = new ArrayList<>();
 		ArrayList<PO> Reordered = new ArrayList<>();
-		PO checkPO = poArrayList.get(0);
+		if(poArrayList.size() < 1) {
+            return Reordered;
+        }
+        PO checkPO = poArrayList.get(0);
+
 		boolean isChecked = false;
 		for(PO TargetPo : poArrayList){
 			String checkidx = Integer.toString(checkPO.getId2()) + Integer.toString(checkPO.getId3());

@@ -39,7 +39,19 @@ public class WebCrawlerTest {
         ArrayList<CategoryCSV> ItemCSV = new ArrayList<>();
 
         WebCrawler wc = new WebCrawler();
-        wc.GetUESPItemCategory(ItemCSV);
+        itemret = wc.GetUESPItemCategory(ItemCSV);
+        if(itemret){
+            System.out.println("SkillCSV Size : "+ItemCSV.size());
+            for(CategoryCSV oneCSV : ItemCSV){
+                System.out.println("=========================================");
+                System.out.println("Category ["+oneCSV.getZanataFileName()+"] index count ["+oneCSV.getPoIndexList().size()+"]");
+                /*
+                for(String index: oneCSV.getPoIndexList() ){
+                    System.out.println(index);
+                }
+                */
+            }
+        }
     }
 
 }

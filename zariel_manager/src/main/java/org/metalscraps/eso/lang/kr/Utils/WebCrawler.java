@@ -15,15 +15,43 @@ import java.util.Set;
 //get html table data from url.
 public class WebCrawler {
 
-    public boolean GetUSEPItemWebPage(WebData PageData) throws IOException {
+    public ArrayList<WebData> GetUSEPItemWebPage(WebData PageData) throws IOException {
         String url;
         url = "https://esoitem.uesp.net/viewMinedItems.php";
         System.out.println(url);
-        Document HTMLdoc = Jsoup.connect(url).get();
-        System.out.println(HTMLdoc);
-        //Element table = HTMLdoc.select("table").get(0);
-        //PageData.addWebTable(table);
-        return true;
+        ArrayList<WebData> WebList = getItemWebData(url, "");
+        return WebList;
+    }
+
+    public ArrayList<WebData> getItemWebData(String rootURL, String rootName){
+        ArrayList<WebData> WebList = new ArrayList<>();
+        Document HTMLdoc = null;
+        try {
+            HTMLdoc = Jsoup.connect(rootURL).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //System.out.println(HTMLdoc);
+        Element Tag = HTMLdoc.select("ol").first();
+        String TagId = Tag.attr("id");
+        Elements PageElementlist = Tag.getElementsByTag("a");
+
+        if("esovmi_list".equals(TagId)){
+            for(Element MainElement : PageElementlist){
+                String linkhref =  MainElement.attr("href");
+                String name = rootName + MainElement.text();
+                System.out.println("name ["+name+"]");
+                name = name.substring(0, name.indexOf("("));
+                WebList.addAll( getItemWebData(rootURL+linkhref, name) );
+            }
+        } else if ("esovmi_itemlist".equals(TagId)){
+            WebData webData = new WebData();
+            webData.setItemFileName(rootName.strip());
+            webData.setItemURL(rootURL);
+            WebList.add(webData);
+        }
+
+        return WebList;
     }
 
 
@@ -59,14 +87,44 @@ public class WebCrawler {
         return PageData.getWebTables() != null;
     }
 
+    public boolean ParseUSEPItemPage(ArrayList<WebData> ItemWebList, ArrayList<CategoryCSV> ItemCSV){
+        for(WebData oneWeb : ItemWebList){
+            System.out.println("name ["+oneWeb.getItemFileName()+"] url ["+oneWeb.getItemURL()+"]");
+            CategoryCSV oneCategory = new CategoryCSV();
+            oneCategory.setZanataFileName(oneWeb.getItemFileName());
+
+            Document HTMLdoc = null;
+            try {
+                HTMLdoc = Jsoup.connect(oneWeb.getItemURL()).get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Element Tag = HTMLdoc.select("ol").first();
+            Elements PageElementlist = Tag.getElementsByTag("a");
+            for(Element MainElement : PageElementlist){
+                String linkhref =  MainElement.attr("href");
+                String ItemIndex = linkhref.substring(linkhref.indexOf("=")+1, linkhref.length());
+                //System.out.println("ItemIndex ["+ItemIndex+"]");
+                oneCategory.addPoIndex("242841733-0-"+ItemIndex);
+                oneCategory.addPoIndex("228378404-0-"+ItemIndex);
+            }
+
+            ItemCSV.add(oneCategory);
+        }
+        return ItemCSV.size() > 0;
+    }
+
 
     public boolean GetUESPItemCategory(ArrayList<CategoryCSV> ItemCSV){
         boolean ret = false;
+        ArrayList<WebData> WebList;
         try {
             WebData USEPItemData = new WebData();
-            ret = GetUSEPItemWebPage(USEPItemData);
-            if(ret) {
-                //ret = ParseUSEPChampionSkillTable(USEPSkillData, SkillCSV);
+            WebList = GetUSEPItemWebPage(USEPItemData);
+            System.out.println("web size : "+WebList.size());
+            if(WebList.size() > 0) {
+                ret = ParseUSEPItemPage(WebList, ItemCSV);
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -139,13 +139,11 @@ public class CategoryGenerator {
     }
 
     public void GenSubCategory(HashMap<String, PO> MainPoMap){
-        ArrayList<CategoryCSV> subCategorizedCsvList = new ArrayList<>();
-
-        boolean genRet = GenSkillCategory(subCategorizedCsvList);
-
+        ArrayList<CategoryCSV> CategorizedSkillCsvList = new ArrayList<>();
+        boolean genRet = GenSkillCategory(CategorizedSkillCsvList);
         if(genRet){
-            System.out.println("SkillCSV Size : "+subCategorizedCsvList.size());
-            for(CategoryCSV oneCSV : subCategorizedCsvList){
+            System.out.println("SkillCSV Size : "+CategorizedSkillCsvList.size());
+            for(CategoryCSV oneCSV : CategorizedSkillCsvList){
                 for(String index: oneCSV.getPoIndexList() ){
                     PO podata = MainPoMap.get(index);
                     if(podata != null) {
@@ -157,8 +155,29 @@ public class CategoryGenerator {
             }
         }
 
-        for(CategoryCSV oneCSV : subCategorizedCsvList) {
-            oneCSV.setType("system");
+        for(CategoryCSV oneCSV : CategorizedSkillCsvList) {
+            oneCSV.setType("skill");
+            CategorizedCSV.add(oneCSV);
+        }
+
+        ArrayList<CategoryCSV> CategorizedItemCsvList = new ArrayList<>();
+        genRet = GetItemCategory(CategorizedItemCsvList);
+        if(genRet){
+            System.out.println("ItemCSV Size : "+CategorizedItemCsvList.size());
+            for(CategoryCSV oneCSV : CategorizedItemCsvList){
+                for(String index: oneCSV.getPoIndexList() ){
+                    PO podata = MainPoMap.get(index);
+                    if(podata != null) {
+                        podata.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
+                        oneCSV.putPoData(index, podata);
+                        MainPoMap.remove(index);
+                    }
+                }
+            }
+        }
+
+        for(CategoryCSV oneCSV : CategorizedItemCsvList) {
+            oneCSV.setType("item");
             CategorizedCSV.add(oneCSV);
         }
     }
@@ -180,7 +199,19 @@ public class CategoryGenerator {
         return wbCrawlRet;
     }
 
-
+    private boolean GetItemCategory(ArrayList<CategoryCSV> ItemCSV){
+        boolean wbCrawlRet;
+        WebCrawler wc = new WebCrawler();
+        try {
+            if(!wc.GetUESPItemCategory(ItemCSV)){
+                throw new Exception("ChampionSkill gen fail");
+            }
+            wbCrawlRet = true;
+        }catch(Exception ex){
+            wbCrawlRet = false;
+        }
+        return wbCrawlRet;
+    }
 
 }
 

@@ -14,6 +14,8 @@ public class WebData{
 	public WebData(){
 
 	}
+	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
+	private String ItemFileName, ItemURL;
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private WebPageNames PageName;
