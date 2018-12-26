@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class WebCrawlerTest {
 
     @Test
-    public void WebCrawlerTest() {
+    public void SkillWebCrawlerTest() {
         boolean skillret;
         ArrayList<CategoryCSV> SkillCSV = new ArrayList<>();
 
@@ -30,8 +30,16 @@ public class WebCrawlerTest {
                 */
             }
         }
+    }
 
 
+    @Test
+    public void ItemWebCrawlerTest() {
+        boolean itemret;
+        ArrayList<CategoryCSV> ItemCSV = new ArrayList<>();
+
+        WebCrawler wc = new WebCrawler();
+        wc.GetUESPItemCategory(ItemCSV);
     }
 
 }

@@ -15,6 +15,18 @@ import java.util.Set;
 //get html table data from url.
 public class WebCrawler {
 
+    public boolean GetUSEPItemWebPage(WebData PageData) throws IOException {
+        String url;
+        url = "https://esoitem.uesp.net/viewMinedItems.php";
+        System.out.println(url);
+        Document HTMLdoc = Jsoup.connect(url).get();
+        System.out.println(HTMLdoc);
+        //Element table = HTMLdoc.select("table").get(0);
+        //PageData.addWebTable(table);
+        return true;
+    }
+
+
     public boolean GetUSEPCpWebPage(WebData PageData, String PageName) throws IOException {
         String url;
         url = "https://esoitem.uesp.net/viewlog.php?record=" + PageName;
@@ -45,6 +57,21 @@ public class WebCrawler {
             pageCount++;
         }
         return PageData.getWebTables() != null;
+    }
+
+
+    public boolean GetUESPItemCategory(ArrayList<CategoryCSV> ItemCSV){
+        boolean ret = false;
+        try {
+            WebData USEPItemData = new WebData();
+            ret = GetUSEPItemWebPage(USEPItemData);
+            if(ret) {
+                //ret = ParseUSEPChampionSkillTable(USEPSkillData, SkillCSV);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
 
@@ -147,34 +174,6 @@ public class WebCrawler {
         return skillCSV.size() > 0;
     }
 
-
-
-
-    public static void main(String[] args) {
-        boolean skillret;
-        ArrayList<CategoryCSV> SkillCSV = new ArrayList<>();
-
-        WebCrawler wc = new WebCrawler();
-        skillret = wc.GetUESPChampionSkill(SkillCSV);
-        skillret = wc.GetUESPSkillTree(SkillCSV);
-
-        if(skillret){
-            System.out.println("SkillCSV Size : "+SkillCSV.size());
-            for(CategoryCSV oneCSV : SkillCSV){
-                System.out.println("=========================================");
-                System.out.println("Category : "+oneCSV.getZanataFileName());
-                for(String index: oneCSV.getPoIndexList() ){
-                    System.out.println(index);
-                }
-            }
-        }
-
-
-
-
-
-
-    }
 
 }
 

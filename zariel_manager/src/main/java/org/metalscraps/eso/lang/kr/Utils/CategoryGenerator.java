@@ -158,6 +158,7 @@ public class CategoryGenerator {
         }
 
         for(CategoryCSV oneCSV : subCategorizedCsvList) {
+            oneCSV.setType("system");
             CategorizedCSV.add(oneCSV);
         }
     }

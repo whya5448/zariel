@@ -148,7 +148,7 @@ class LangManager {
 			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
 			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
 			System.out.println("file name ["+ oneCSV.getZanataFileName()+"]");
-			makePotFile(poList, true, oneCSV.getZanataFileName());
+			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType());
 		}
 	}
 
@@ -163,13 +163,13 @@ class LangManager {
 			String checkidx = Integer.toString(checkPO.getId2()) + Integer.toString(checkPO.getId3());
 			String targetidx = Integer.toString(TargetPo.getId2()) + Integer.toString(TargetPo.getId3());
 			if(checkidx.equals(targetidx)){
-				Match.add(checkPO);
+				Match.add(TargetPo);
 				isChecked = true;
 			}else{
 				if(isChecked){
-					Match.add(checkPO);
+					Match.add(TargetPo);
 				}else {
-					NonMatch.add(checkPO);
+					NonMatch.add(TargetPo);
 				}
 				isChecked = false;
 			}
@@ -177,10 +177,11 @@ class LangManager {
 		}
 		Reordered.addAll(Match);
 		Reordered.addAll(NonMatch);
+		Reordered.remove(0);
 		return Reordered;
 	}
 
-	void makePotFile(ArrayList<PO> origin, boolean outputTargetData , String fileName) {
+	void makePotFile(ArrayList<PO> origin, boolean outputTargetData , String fileName, String type) {
 		HashMap<String, StringBuilder> builderMap = new HashMap<>();
 		ArrayList<PO> sort =  reOrderAsMatchFirst(origin);
 		for (PO p : sort) {
@@ -233,7 +234,7 @@ class LangManager {
 		try {
 
 			for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
-				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp14/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp14/" +type+"/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
 			}
 
 		} catch (Exception e) {
