@@ -29,15 +29,13 @@ public class CSVmerge {
             if(targetPO == null){
                 continue;
             } else {
-                if(basePO.getSource().equals(targetPO.getSource())){
-                    if(isJapPO){
+                if(basePO.getSource().equals(targetPO.getSource())) {
+                    basePO.setTarget(targetPO.getTarget());
+                    basePO.setFuzzy(targetPO.isFuzzy());
+                } else {
+                    if(isJapPO) {
                         basePO.setTarget(targetPO.getSource());
-                    }else {
-                        basePO.setTarget(targetPO.getTarget());
-                        basePO.setFuzzy(targetPO.isFuzzy());
                     }
-                }else {
-                    continue;
                 }
             }
         }
