@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+}
+
+group 'metalscraps.org.eso.lang.server'
+version '1.0'
+
+sourceCompatibility = 11
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"

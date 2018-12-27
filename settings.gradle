@@ -1,4 +1,6 @@
-rootProject.name = 'zariel'
-include 'esok_client'
-include 'zariel_manager'
+rootProject.name = 'eso_korean_translate_project'
+include 'client'
+include 'server'
+include 'tool'
+include 'library'
 
