@@ -133,8 +133,18 @@ class LangManager {
 		HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
 
 		CSVmerge merge = new CSVmerge();
-		System.out.println("Select Csv file for generate ko locale");
-		HashMap<String, PO> targetCSV = originCG.GetSelectedCSVMap();
+		HashMap<String, PO> targetCSV = new HashMap<>();
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+		for (File file : fileList) {
+
+			String fileName = FilenameUtils.getBaseName(file.getName());
+			// pregame 쪽 데이터
+			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+
+			targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
+			System.out.println("zanata po parsed ["+file+"] ");
+		}
+
 		merge.MergeCSV(categorizedCSV, targetCSV, false);
 
 		for(CategoryCSV oneCSV : categorizedCSV){

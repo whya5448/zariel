@@ -87,7 +87,6 @@ class AppMain {
 			case 12: new Destinations(appWorkConfig).start(); break;
 			case 100: lm.translateGoogle(); break;
 			case 300: lm.GenZanataUploadSet(); break;
-			//case 301: lm.GenJPpo(); break;
 		}
 	}
 

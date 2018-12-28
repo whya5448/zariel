@@ -4,9 +4,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.kr.bean.PO;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.File;
+import java.util.*;
 
 public class CSVmerge {
     @Getter(AccessLevel.PUBLIC)
@@ -16,8 +17,12 @@ public class CSVmerge {
         for(CategoryCSV oneCSV : CategorizedClientCSV){
             HashMap<String, PO> clientPO = oneCSV.getPODataMap();
             MergePO(clientPO, targetPO, isJapMerge);
+            if("book".equals(oneCSV.getType()) || "story".equals(oneCSV.getType())) {
+                OverwriteDuplicate(oneCSV);
+            }
         }
     }
+
 
     private void MergePO(HashMap<String, PO> CategorizedClientPO, HashMap<String, PO> FullPO, boolean isJapPO){
         for(String index : CategorizedClientPO.keySet()){
@@ -41,5 +46,27 @@ public class CSVmerge {
         }
     }
 
+    private void OverwriteDuplicate(CategoryCSV CategorizedCSV) {
+        HashMap<String, PO> poMap = CategorizedCSV.getPODataMap();
+        HashMap<String, PO> translatedPoMap = new HashMap<>();
+        ArrayList<PO> nonTransPoList = new ArrayList<>();
+
+        for(PO po : poMap.values()){
+            if(po.getTarget() == null || "".equals(po.getTarget())){
+                nonTransPoList.add(po);
+            }else {
+                translatedPoMap.put(po.getSource(), po);
+            }
+        }
+
+        System.out.println("non trans size ["+nonTransPoList.size()+"]");
+        for(PO po : nonTransPoList){
+            PO sameSource = translatedPoMap.get(po.getSource());
+            if(sameSource != null){
+                po.setTarget(sameSource.getTarget());
+            }
+        }
+
+    }
 
 }

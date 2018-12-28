@@ -127,7 +127,7 @@ public class PO implements Comparable {
 		return sb;
 	}
 
-	/*
+/*
 	@Override
 	public int compareTo(@Nonnull Object o) {
 		PO x = (PO) o;
@@ -138,7 +138,8 @@ public class PO implements Comparable {
 		} else return t.id1.compareTo(x.id1);
 
 	}
-	*/
+*/
+
 	@Override
 	public int compareTo(@Nonnull Object o) {
 		PO x = (PO) o;
@@ -150,4 +151,5 @@ public class PO implements Comparable {
 		} else return src.compareTo(trg);
 
 	}
+
 }
