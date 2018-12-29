@@ -16,6 +16,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -23,10 +24,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -34,30 +32,15 @@ import java.util.zip.Checksum;
 public class Utils {
 
     private static String serverVersion = null;
-    public static String getLatestVersion() {
+    public static String getLatestVersion(String projectName) {
         if(serverVersion != null) return serverVersion;
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://www.dostream.com/zanata/rest/projects/p/esokr"))
+                .uri(URI.create("http://www.dostream.com/zanata/rest/projects/p/"+projectName))
                 .header("Accept","application/json")
                 .build();
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<String> response = null;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = null;
+        JsonNode jsonNode = getBodyFromHTTPsRequest(request);
         String[] serverVer = null;
-        try {
-            jsonNode = objectMapper.readTree(response.body());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         for (JsonNode node : jsonNode.get("iterations")) {
             if(node.get("status").toString().equalsIgnoreCase("\"ACTIVE\"") ) { // && temp > version
                 String[] tempVer = node.get("id").asText().split("\\.");
@@ -77,9 +60,57 @@ public class Utils {
         return serverVersion = String.join(".", serverVer);
     }
 
-    public static void downloadPOs(AppWorkConfig appWorkConfig) {
+    public static JsonNode getBodyFromHTTPsRequest(HttpRequest request){
 
-        final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/esokr/"+Utils.getLatestVersion()+"/ko/po?docId=";
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = null;
+
+        try {
+            jsonNode = objectMapper.readTree(response.body());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonNode;
+    }
+
+    public static ArrayList<String> getFileNames(String projectName){
+        ArrayList<String> filenames = new ArrayList<>();
+        final String url = AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept","application/json")
+                .build();
+
+        JsonNode jsonNode = getBodyFromHTTPsRequest(request);
+
+        for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
+            JsonNode node = it.next();
+            String Trim= node.get("name").toString().replaceAll("^\"|\"$", "");
+            filenames.add(Trim);
+        }
+
+        return filenames;
+    }
+
+    public static void downloadPOs(AppWorkConfig appWorkConfig){
+        downloadPO(appWorkConfig, "ESO-Item");
+        downloadPO(appWorkConfig, "ESO-Skill");
+        downloadPO(appWorkConfig, "ESO-System");
+        downloadPO(appWorkConfig, "ESO-Book");
+        downloadPO(appWorkConfig, "ESO-Story");
+    }
+
+    public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
+
+        final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
         final File baseDirectory = appWorkConfig.getBaseDirectory();
         final File PODirectory = new File(baseDirectory.getAbsolutePath() + "/PO_" + appWorkConfig.getToday());
         appWorkConfig.setPODirectory(PODirectory);
@@ -87,20 +118,21 @@ public class Utils {
         File fPO = null;
         try {
 
-            FileNames[] fileNames = FileNames.values();
+            ArrayList<String > fileNames = getFileNames(projectName);
             LocalTime timeTaken = LocalTime.now();
 
-            for (FileNames fileName : fileNames) {
+            for (String fileName : fileNames) {
 
                 // 우리가 사용하는 데이터 아님.
-                if (fileName.getName().equals("00_EsoUI_Client") || fileName.getName().equals("00_EsoUI_Pregame")) continue;
+                if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
                 LocalTime ltStart = LocalTime.now();
-                System.out.print(fileName);
-
+                String fileURL = url+fileName;
+                fileURL =  fileURL.replace(" ", "%20");
+                System.out.println("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po ");
 
                 fPO = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
-                if (!fPO.exists()) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(url + fileName), AppConfig.CHARSET), AppConfig.CHARSET);
+                if (!fPO.exists()) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
                 fPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
@@ -114,7 +146,7 @@ public class Utils {
                 System.out.println("EOF 재시도");
                 if(fPO.exists()) fPO.delete();
                 try { Thread.sleep(1800000); } catch (InterruptedException e1) {  e1.printStackTrace(); }
-                Utils.downloadPOs(appWorkConfig);
+                Utils.downloadPO(appWorkConfig, projectName);
             }
             else e.printStackTrace();
 

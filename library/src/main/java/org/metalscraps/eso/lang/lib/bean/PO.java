@@ -74,25 +74,14 @@ public class PO implements Comparable {
 
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
-        String[] SystemFile = {"00_EsoUI_Client", "00_EsoUI_Pregame", "achievement", "chat", "color", "emote",
-                "item", "item-crate", "item-crown", "item-crown-other", "item-crown-pack", "item-crown-pack-other", "item-other", "item-quest", "item-quest-other", "item-type",
-                "more-desc", "more-ui", "popup-tip", "popup-tip-other", "set", "skill", "skill-other", "title",};
-		List<String> SystemArr = Arrays.asList(SystemFile);
-
 		String t = "";
 
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
 
 		if(toCSVConfig.isWriteFileName()) {
-			t = (fileName==null?getStringFileName():fileName.getShortName()) + "_" + id3 + "_" + target;
+			t = (fileName + "_" + id3 + "_" + target);
 		}else if (toCSVConfig.isBeta()){
-			if(fileName!=null && SystemArr.contains(fileName)) {
-				if(isFuzzy() && target.contains("-G-")) {
-					t = source;
-				}
-			}else {
 				t = target;
-			}
 		}else {
 			if(isFuzzy() && target.contains("-G-")){
 				t = source;
