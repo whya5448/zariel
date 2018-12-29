@@ -555,6 +555,16 @@ class LangManager {
 
 	}
 
+	void makeNewLang(){
+		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
+		System.out.println("select eso client csv file");
+		HashMap<String, PO> originCSVMap = CG.GetSelectedCSVMap();
+		System.out.println("select csv file to merge");
+		HashMap<String, PO> zanataCSVMap = CG.GetSelectedCSVMap();
+
+
+	}
+
     void makeLang() {
 
         // EsoExtractData.exe depot/eso.mnf export -a 0
