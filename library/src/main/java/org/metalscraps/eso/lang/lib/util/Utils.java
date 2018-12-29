@@ -247,7 +247,8 @@ public class Utils {
         boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
         while (m.find()) {
             PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
-            po.setFileName(FileNames.fromString(fileName));
+            //po.setFileName(FileNames.fromString(fileName));
+            po.setStringFileName(fileName);
             if(isPOPattern && m.group(1) != null && m.group(1).equals("#, fuzzy")) po.setFuzzy(true);
             poMap.put(m.group(config.getKeyGroup()), po);
         }
