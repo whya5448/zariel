@@ -49,6 +49,7 @@ public class CategoryGenerator {
                 break;
             }
         }
+
         GenBookSubCategory(bookCSV);
     }
 
@@ -223,19 +224,43 @@ public class CategoryGenerator {
         HashMap<String, PO> BookPOMap = BookCSV.getPODataMap();
         HashMap<String, PO> SourcePOMap = new HashMap<>();
         for(PO po : BookPOMap.values()) {
-            SourcePOMap.put(po.getSource(), po);
+            if(po.getId1() == 51188213) {
+                SourcePOMap.put(po.getSource(), po);
+            }
         }
+
+        CategoryCSV motifCSV = GenCraftMotif(BookPOMap, SourcePOMap, BookCSV);
+        bookList.add(motifCSV);
 
         for(String bookCategory : BookNameMap.keySet()){
             CategoryCSV subCSV = new CategoryCSV();
             subCSV.setZanataFileName(bookCategory);
             subCSV.setType("book");
+            subCSV.setLinkCount(BookCSV.getLinkCount());
+            subCSV.setPoIndexList(BookCSV.getPoIndexList());
             for(String title : BookNameMap.get(bookCategory)){
+                if(title.contains((" ("))) {
+                    title = title.substring(0, title.indexOf(" ("));
+                }
                 PO po = SourcePOMap.get(title);
+                if(po == null) {
+                    title = title.replace("\"", "\"\"");
+                    title = title.replace("No. ", "#");
+                    title = title.replace(" — ", "—");
+                    PO containPo = getContainPO(title, SourcePOMap);
+                    if(containPo == null){
+                        System.out.println("title ["+title+"]");
+                        continue;
+                    }else {
+                        po = containPo;
+                    }
+                }
+
+
                 ArrayList<String> indexList = getLinkedIndexList(BookCSV, po.getId());
                 for(String index : indexList){
                     PO subpo = BookPOMap.get(index);
-                    if(subCSV != null){
+                    if(subpo != null){
                         BookPOMap.remove(index);
                         subCSV.putPoData(index, subpo);
                     }
@@ -247,9 +272,53 @@ public class CategoryGenerator {
         return bookList;
     }
 
+    private PO getContainPO(String title, HashMap<String, PO> sourcePOMap) {
+        PO containPO = null;
+
+        for(String SourceTitle : sourcePOMap.keySet()){
+            if(SourceTitle.contains(title)){
+                containPO = sourcePOMap.get(SourceTitle);
+                //System.out.println("Contina title ["+ SourceTitle+"]");
+                break;
+            }
+        }
+
+        return containPO;
+    }
+
+    private CategoryCSV GenCraftMotif(HashMap<String, PO> BookPOMap, HashMap<String, PO> SourcePOMap, CategoryCSV BookCSV){
+        CategoryCSV motifCSV = new CategoryCSV();
+        motifCSV.setZanataFileName("Craft Motifs");
+        motifCSV.setType("book");
+        motifCSV.setLinkCount(BookCSV.getLinkCount());
+        motifCSV.setPoIndexList(BookCSV.getPoIndexList());
+        ArrayList<String> title = new ArrayList<>();
+        for(String name : SourcePOMap.keySet()){
+            if(name.contains("Crafting Motif")){
+                title.add(name);
+            }
+        }
+
+        for(String oneTitle : title){
+            PO titlepo = SourcePOMap.get(oneTitle);
+            SourcePOMap.remove(oneTitle);
+            ArrayList<String> indexList = getLinkedIndexList(BookCSV, titlepo.getId());
+            for(String index : indexList) {
+                PO bookPO = BookPOMap.get(index);
+                if(bookPO != null) {
+                    motifCSV.putPoData(bookPO.getId(), bookPO);
+                    BookPOMap.remove(index);
+                }
+            }
+        }
+
+        return motifCSV;
+    }
+
+
     private ArrayList<String> getLinkedIndexList(CategoryCSV CSV, String originFullIndex ){
         ArrayList<String> LinkedMainIndex = CSV.getPoIndexList();
-        String originTailIndex = originFullIndex.substring(originFullIndex.indexOf("_"), originFullIndex.length());
+        String originTailIndex = originFullIndex.substring(originFullIndex.indexOf("-"), originFullIndex.length());
         ArrayList<String> LinkedFullIndex = new ArrayList<>();
         for(String MainIndex : LinkedMainIndex){
             LinkedFullIndex.add(MainIndex+originTailIndex);

@@ -47,7 +47,6 @@ class AppMain {
 		System.out.println("12. Destinations");
 		System.out.println("100. PO -> 구글 번역 (beta)");
 		System.out.println("300. Zanata upload용 csv category 생성");
-
 	}
 
 	private void workLangManager(JFileChooser jFileChooser) {
