@@ -2,8 +2,10 @@ package org.metalscraps.eso.lang.kr.Utils;
 
 import org.junit.Test;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.kr.bean.WebData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -52,6 +54,22 @@ public class WebCrawlerTest {
                 */
             }
         }
+    }
+
+    @Test
+    public void BookWebCrawlerTest(){
+        boolean bookret;
+        ArrayList<CategoryCSV> BookCSV = new ArrayList<>();
+        WebCrawler wc = new WebCrawler();
+        HashMap<String, ArrayList<String>> bookMap = wc.GetUESPBookMap();
+        for(String category : bookMap.keySet()){
+            ArrayList<String> titles = bookMap.get(category);
+            System.out.println("============");
+            System.out.println("category ["+category+"]");
+            System.out.println("------------");
+            System.out.println(titles);
+        }
+
     }
 
 }

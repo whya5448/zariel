@@ -5,10 +5,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.bean.WebData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,6 +55,103 @@ public class WebCrawler {
 
         return WebList;
     }
+
+
+    public void GetUSEPBookWebPage(WebData PageData) throws IOException {
+        GetUESPShalidorLibraryWebPage(PageData);
+        GetUESPEideticMemoryWebPage(PageData);
+    }
+
+    public void GetUESPShalidorLibraryWebPage(WebData PageData){
+        String url = "https://en.uesp.net/wiki/Online:Shalidor%27s_Library";
+        System.out.println(url);
+        Document HTMLdoc = null;
+        try {
+            HTMLdoc = Jsoup.connect(url).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ArrayList<String> CategoryStringList = new ArrayList<>();
+        Element Category = HTMLdoc.select("ul").first();
+        Elements Categorylist = Category.getElementsByTag("span");
+        for(Element oneCategory : Categorylist){
+            if("tocnumber".equals(oneCategory.attr("class"))) continue;
+            String categoryString = oneCategory.text();
+            categoryString = categoryString.replace("%27", "'");
+            CategoryStringList.add(categoryString);
+        }
+
+        Elements BookTbody = HTMLdoc.select("tbody");
+        int cnt = 0;
+        for(Element oneBookTable: BookTbody) {
+            ArrayList<String> titleList = new ArrayList<>();
+            Elements booktr = oneBookTable.getElementsByTag("tr");
+            for (Element onetr : booktr) {
+                Element td = onetr.getElementsByTag("a").first();
+                if (td != null) {
+                    String title = td.attr("title");
+                    title = title.substring(title.indexOf(":") + 1, title.length());
+                    if(title.contains("(")){
+                        title = title.substring(0,title.indexOf("("));
+                    }
+                    titleList.add(title);
+                }
+            }
+            PageData.putBookMap(CategoryStringList.get(cnt), titleList);
+            cnt++;
+        }
+
+
+    }
+
+    public void GetUESPEideticMemoryWebPage(WebData PageData){
+        String baseUrl = "https://en.uesp.net";
+        String url;
+        url = baseUrl+"/wiki/Online:Eidetic_Memory" ;
+        System.out.println(url);
+        Document HTMLdoc = null;
+        try {
+            HTMLdoc = Jsoup.connect(url).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Element Tag = HTMLdoc.select("tbody").first();
+        //System.out.println(Tag);
+        Elements PageElementlist = Tag.getElementsByTag("a");
+        for(Element SubCategoryElement : PageElementlist){
+            String linkhref =  SubCategoryElement.attr("href");
+            GetUESPEideticMemorySubWebPage(PageData, baseUrl ,linkhref);
+        }
+    }
+
+    public void GetUESPEideticMemorySubWebPage(WebData PageData, String baseUrl, String subCategory){
+        System.out.println(baseUrl+subCategory);
+        Document HTMLdoc = null;
+        try {
+            HTMLdoc = Jsoup.connect(baseUrl+subCategory).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ArrayList<String> bookList = new ArrayList<>();
+
+        Element Tag = HTMLdoc.select("tbody").first();
+        Elements PageElementlist = Tag.getElementsByTag("tr");
+        for(Element SubCategoryElement : PageElementlist){
+            Element td = SubCategoryElement.getElementsByTag("a").first();
+            if(td != null){
+                String title =  td.attr("title");
+                title = title.substring(title.indexOf(":")+1, title.length());
+                bookList.add(title);
+            }
+        }
+
+        String category = subCategory.substring(subCategory.indexOf("Online:") + 7, subCategory.length() );
+        category = category.replace("%27", "'");
+        PageData.putBookMap(category, bookList);
+    }
+
+
 
 
     public boolean GetUSEPCpWebPage(WebData PageData, String PageName) throws IOException {
@@ -210,6 +309,19 @@ public class WebCrawler {
         }
         return ret;
     }
+
+    public HashMap<String, ArrayList<String>> GetUESPBookMap(){
+        WebData USEPBookData = new WebData();
+        try {
+            GetUSEPBookWebPage(USEPBookData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return USEPBookData.getBookMap();
+    }
+
+
 
     private boolean ParseUSEPChampionSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
         CategoryCSV CCSV = null;

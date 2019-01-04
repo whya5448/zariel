@@ -12,7 +12,6 @@ import java.util.HashMap;
 @Data
 public class CategoryCSV {
 
-
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	private String zanataFileName;
 	private String type;
@@ -23,7 +22,6 @@ public class CategoryCSV {
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
 	HashMap<String, PO> PODataMap = new HashMap<>();
-
 
 	public void addPoIndex(String Index){
 		PoIndexList.add(Index);

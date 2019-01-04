@@ -42,7 +42,14 @@ public class CategoryGenerator {
         HashMap<String, PO> CSVMap = GetSelectedCSVMap();
         GenSubCategory(CSVMap);
         GenMainCategory(CSVMap);
+        for(CategoryCSV oneCSV : this.getCategorizedCSV()){
+            if("book".equals(oneCSV.getZanataFileName())){
+                GenBookSubCategory(oneCSV);
+            }
+        }
+
     }
+
 
     public void GenMainCategory(HashMap<String, PO> CSVMap){
 
@@ -180,6 +187,7 @@ public class CategoryGenerator {
             oneCSV.setType("item");
             CategorizedCSV.add(oneCSV);
         }
+
     }
 
     private boolean GenSkillCategory(ArrayList<CategoryCSV> SkillCSV){
@@ -198,6 +206,54 @@ public class CategoryGenerator {
         }
         return wbCrawlRet;
     }
+
+
+    private void GenBookSubCategory(CategoryCSV oneCSV) {
+        WebCrawler wc = new WebCrawler();
+        ArrayList<CategoryCSV> CategorizedBookCsvList = GenUESPBookSubCategory( wc.GetUESPBookMap(), oneCSV);
+    }
+
+    private ArrayList<CategoryCSV> GenUESPBookSubCategory(HashMap<String, ArrayList<String>> BookNameMap, CategoryCSV BookCSV){
+        ArrayList<CategoryCSV> bookList = new ArrayList<>();
+        HashMap<String, PO> BookPOMap = BookCSV.getPODataMap();
+        HashMap<String, PO> SourcePOMap = new HashMap<>();
+        for(PO po : BookPOMap.values()) {
+            SourcePOMap.put(po.getSource(), po);
+        }
+
+        for(String bookCategory : BookNameMap.keySet()){
+            CategoryCSV subCSV = new CategoryCSV();
+            subCSV.setZanataFileName(bookCategory);
+            subCSV.setType("book");
+            for(String title : BookNameMap.get(bookCategory)){
+                PO po = SourcePOMap.get(title);
+                ArrayList<String> indexList = getLinkedIndexList(BookCSV, po.getId());
+                for(String index : indexList){
+                    PO subpo = BookPOMap.get(index);
+                    if(subCSV != null){
+                        BookPOMap.remove(index);
+                        subCSV.putPoData(index, subpo);
+                    }
+                }
+            }
+            bookList.add(subCSV);
+        }
+        bookList.add(BookCSV);
+
+        return bookList;
+    }
+
+    private ArrayList<String> getLinkedIndexList(CategoryCSV CSV, String originFullIndex ){
+        ArrayList<String> LinkedMainIndex = CSV.getPoIndexList();
+        String originTailIndex = originFullIndex.substring(originFullIndex.indexOf("_"), originFullIndex.length());
+        ArrayList<String> LinkedFullIndex = new ArrayList<>();
+        for(String MainIndex : LinkedMainIndex){
+            LinkedFullIndex.add(MainIndex+originTailIndex);
+        }
+        return LinkedFullIndex;
+    }
+
+
 
     private boolean GetItemCategory(ArrayList<CategoryCSV> ItemCSV){
         boolean wbCrawlRet;
