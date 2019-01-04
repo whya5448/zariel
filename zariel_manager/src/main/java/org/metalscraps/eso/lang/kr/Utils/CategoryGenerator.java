@@ -42,12 +42,14 @@ public class CategoryGenerator {
         HashMap<String, PO> CSVMap = GetSelectedCSVMap();
         GenSubCategory(CSVMap);
         GenMainCategory(CSVMap);
+        CategoryCSV bookCSV = null;
         for(CategoryCSV oneCSV : this.getCategorizedCSV()){
             if("book".equals(oneCSV.getZanataFileName())){
-                GenBookSubCategory(oneCSV);
+                bookCSV = oneCSV;
+                break;
             }
         }
-
+        GenBookSubCategory(bookCSV);
     }
 
 
@@ -211,6 +213,9 @@ public class CategoryGenerator {
     private void GenBookSubCategory(CategoryCSV oneCSV) {
         WebCrawler wc = new WebCrawler();
         ArrayList<CategoryCSV> CategorizedBookCsvList = GenUESPBookSubCategory( wc.GetUESPBookMap(), oneCSV);
+        for(CategoryCSV subCSV : CategorizedBookCsvList) {
+            this.CategorizedCSV.add(subCSV);
+        }
     }
 
     private ArrayList<CategoryCSV> GenUESPBookSubCategory(HashMap<String, ArrayList<String>> BookNameMap, CategoryCSV BookCSV){
@@ -238,7 +243,6 @@ public class CategoryGenerator {
             }
             bookList.add(subCSV);
         }
-        bookList.add(BookCSV);
 
         return bookList;
     }
