@@ -151,7 +151,7 @@ class LangManager {
 			CustomPOmodify(oneCSV);
 			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
 			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
-			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "src", "ko", "pot");
+			makePotFile(poList, false, oneCSV.getZanataFileName(), oneCSV.getType(), "src", "ko", "pot");
 			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "trs", "ko", "po");
 		}
 
@@ -270,7 +270,7 @@ class LangManager {
 			if (outputTargetData) {
 				sb.append(p.toTranslatedPO());
 			} else {
-				sb.append(p.toPO());
+				sb.append(p.toPOT());
 			}
 			appendCount++;
 		}

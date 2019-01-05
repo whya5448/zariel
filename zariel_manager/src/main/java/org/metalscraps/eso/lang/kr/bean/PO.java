@@ -106,6 +106,15 @@ public class PO implements Comparable {
 		return sb;
 	}
 
+	public StringBuilder toPOT() {
+		StringBuilder sb = new StringBuilder("\n\n#: ").append(getId());
+		sb
+				.append("\nmsgctxt \"").append(getId()).append("\"")
+				.append("\nmsgid \"").append(getSource()).append("\"")
+				.append("\nmsgstr \"\"");
+		return sb;
+	}
+
 	public StringBuilder toTranslatedPO() {
 		StringBuilder sb = new StringBuilder("\n\n#: ").append(getId());
 		if(isFuzzy()) sb.append("\n#, fuzzy");
