@@ -148,6 +148,7 @@ class LangManager {
 		merge.MergeCSV(categorizedCSV, targetCSV, false);
 
 		for(CategoryCSV oneCSV : categorizedCSV){
+			CustomPOmodify(oneCSV);
 			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
 			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
 			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "src", "ko", "pot");
@@ -164,6 +165,24 @@ class LangManager {
 		}
 
 	}
+
+	private void CustomPOmodify(CategoryCSV targetCSV){
+		HashMap<String, PO> targetPO = targetCSV.getPODataMap();
+		if("book".equals(targetCSV.getType())){
+			for(PO po : targetPO.values()){
+				if(po.getSource().equals(po.getTarget())){
+					po.setTarget("");
+				}
+			}
+		} else if ("skill".equals(targetCSV.getType())){
+			for(PO po : targetPO.values()){
+				if(po.getId1() == 198758357){
+					po.setTarget(po.getSource());
+				}
+			}
+		}
+	}
+
 
 
 	ArrayList<PO> reOrderAsMatchFirst(ArrayList<PO> poArrayList){

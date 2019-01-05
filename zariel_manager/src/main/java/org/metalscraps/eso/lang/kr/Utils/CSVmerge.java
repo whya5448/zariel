@@ -15,7 +15,7 @@ public class CSVmerge {
 
     public void MergeCSV (HashSet<CategoryCSV> CategorizedClientCSV, HashMap<String, PO> targetPO, boolean isJapMerge){
         for(CategoryCSV oneCSV : CategorizedClientCSV){
-            System.out.println("oncCSV name ["+oneCSV.getZanataFileName());
+            //System.out.println("oncCSV name ["+oneCSV.getZanataFileName());
             HashMap<String, PO> clientPO = oneCSV.getPODataMap();
             MergePO(clientPO, targetPO, isJapMerge);
             if("book".equals(oneCSV.getType()) || "story".equals(oneCSV.getType())) {
@@ -28,7 +28,7 @@ public class CSVmerge {
     private void MergePO(HashMap<String, PO> CategorizedClientPO, HashMap<String, PO> FullPO, boolean isJapPO){
         for(String index : CategorizedClientPO.keySet()){
             PO basePO = CategorizedClientPO.get(index);
-            System.out.println(index + "] po ["+ basePO);
+            //System.out.println(index + "] po ["+ basePO);
 
             if(basePO.getSource().equals(basePO.getTarget())){
                 basePO.setTarget("");
