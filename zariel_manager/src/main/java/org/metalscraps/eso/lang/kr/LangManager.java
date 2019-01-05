@@ -181,6 +181,11 @@ class LangManager {
 				}
 			}
 		}
+
+		for(PO po : targetPO.values()){
+			po.setTarget(po.getTarget().replace("\"\"", "\"") );
+			po.setSource(po.getSource().replace("\"\"", "\"") );
+		}
 	}
 
 
