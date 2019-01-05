@@ -101,11 +101,11 @@ public class Utils {
     }
 
     public static void downloadPOs(AppWorkConfig appWorkConfig){
-        downloadPO(appWorkConfig, "ESO-Item");
-        downloadPO(appWorkConfig, "ESO-Skill");
-        downloadPO(appWorkConfig, "ESO-System");
-        downloadPO(appWorkConfig, "ESO-Book");
-        downloadPO(appWorkConfig, "ESO-Story");
+        downloadPO(appWorkConfig, "ESO-item");
+        downloadPO(appWorkConfig, "ESO-skill");
+        downloadPO(appWorkConfig, "ESO-system");
+        downloadPO(appWorkConfig, "ESO-book");
+        downloadPO(appWorkConfig, "ESO-story");
     }
 
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
