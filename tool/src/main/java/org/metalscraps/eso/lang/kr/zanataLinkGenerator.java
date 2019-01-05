@@ -22,6 +22,7 @@ public class zanataLinkGenerator {
     private static AppWorkConfig appWorkConfig = new AppWorkConfig();
     SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.POPattern);
     HashMap<String, String> urlMap = new HashMap<>();
+    HashMap<String, StringBuilder> fileMap = new HashMap<>();
     private final Scanner sc;
 
     public zanataLinkGenerator() {
@@ -75,8 +76,16 @@ public class zanataLinkGenerator {
         HashMap<String, PO> poMap = new HashMap<>();
         poMap.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
         for(String index : poMap.keySet()){
+            PO po = poMap.get(index);
+            StringBuilder sb = new StringBuilder();
             String fullURL = BaseURL+ProjectURL+DocURL+";msgcontext:"+index;
-            urlMap.put(index, fullURL);
+            sb.append(index +"      "+po.getSource()+"      "+fullURL+"     \n");
+            StringBuilder mapsb = fileMap.get(projectCategory);
+            if(mapsb == null){
+                fileMap.put(projectCategory, sb);
+            }else {
+                mapsb.append(sb);
+            }
         }
     }
 
@@ -97,11 +106,22 @@ public class zanataLinkGenerator {
         Utils.downloadPOs(appWorkConfig);
         */
 
+        for(String filename : zlg.fileMap.keySet()) {
+            StringBuilder sb = zlg.fileMap.get(filename);
+            try {
+                FileUtils.writeStringToFile(FileUtils.getFile(filename+".txt"), sb.toString(), AppConfig.CHARSET);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /*
         while(true){
             String index = zlg.getCommand();
             System.out.println("--------------------");
             System.out.println(zlg.urlMap.get(index));
             System.out.println("--------------------");
         }
+        */
     }
 }
