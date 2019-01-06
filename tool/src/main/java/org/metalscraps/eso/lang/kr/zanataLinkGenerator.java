@@ -62,7 +62,7 @@ public class zanataLinkGenerator {
         }
 
         String BaseURL = "http://www.dostream.com/zanata/webtrans/translate?";
-        String ProjectURL = "project=ESO-" + projectCategory +"&iteration=1.0&localeId=ko&locale=ko-KR&dswid=-5074";
+        String ProjectURL = "project=ESO-" + projectCategory +"&iteration=1.0&localeId=ko&locale=ko-KR";
         String fileUrl = null;
         try {
             fileUrl = URLEncoder.encode(filename, "UTF-8");
