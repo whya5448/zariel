@@ -167,7 +167,18 @@ class LangManager {
 	}
 
 	private void CustomPOmodify(CategoryCSV targetCSV){
+
+
 		HashMap<String, PO> targetPO = targetCSV.getPODataMap();
+
+		for(PO po : targetPO.values()){
+			if(po.getSource().equals(po.getTarget())){
+				po.setTarget("");
+			}
+			po.setTarget(po.getTarget().replace("\"\"", "\"") );
+			po.setSource(po.getSource().replace("\"\"", "\"") );
+		}
+
 		if("book".equals(targetCSV.getType())){
 			for(PO po : targetPO.values()){
 				if(po.getSource().equals(po.getTarget())){
@@ -182,10 +193,7 @@ class LangManager {
 			}
 		}
 
-		for(PO po : targetPO.values()){
-			po.setTarget(po.getTarget().replace("\"\"", "\"") );
-			po.setSource(po.getSource().replace("\"\"", "\"") );
-		}
+
 	}
 
 
