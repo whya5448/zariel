@@ -79,7 +79,7 @@ public class zanataLinkGenerator {
             PO po = poMap.get(index);
             StringBuilder sb = new StringBuilder();
             String fullURL = BaseURL+ProjectURL+DocURL+";msgcontext:"+index;
-            sb.append(filename+"        "+ index +"      "+po.getSource()+"      "+fullURL+"     \n");
+            sb.append(filename+"        "+ po.getId1()+"_"+po.getId2()+"_"+po.getId3() +"      "+po.getSource()+"      "+fullURL+"     \n");
             StringBuilder mapsb = fileMap.get(projectCategory);
             if(mapsb == null){
                 fileMap.put(projectCategory, sb);
