@@ -51,9 +51,9 @@ public class zanataLinkGenerator {
         String[] pathSplit = path.split(pattern);
 
         if(filename.equals(pathSplit[pathSplit.length-1])){
-            projectCategory = pathSplit[pathSplit.length-3];
-            if(filename.contains(".po")){
-                filename = filename.substring(0, filename.indexOf(".po"));
+            projectCategory = pathSplit[pathSplit.length-2];
+            if(filename.contains(".pot")){
+                filename = filename.substring(0, filename.indexOf(".pot"));
             }else {
                 return;
             }
@@ -79,7 +79,7 @@ public class zanataLinkGenerator {
             PO po = poMap.get(index);
             StringBuilder sb = new StringBuilder();
             String fullURL = BaseURL+ProjectURL+DocURL+";msgcontext:"+index;
-            sb.append(index +"      "+po.getSource()+"      "+fullURL+"     \n");
+            sb.append(filename+"        "+ index +"      "+po.getSource()+"      "+fullURL+"     \n");
             StringBuilder mapsb = fileMap.get(projectCategory);
             if(mapsb == null){
                 fileMap.put(projectCategory, sb);
