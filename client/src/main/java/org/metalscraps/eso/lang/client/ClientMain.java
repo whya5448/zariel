@@ -111,7 +111,7 @@ public class ClientMain {
                 LOG.info("업데이트 성공");
                 properties.setProperty("ver", String.valueOf(serverVer));
                 try(var fos = new FileOutputStream(configPath.toFile())) { properties.store(fos, ""); } catch (IOException e) { e.printStackTrace(); }
-                var f = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()+"/Elder Scrolls Online/live/AddOns/");
+                var f = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()+"/Elder Scrolls Online/live/AddOns/gamedata/lang");
                 f.mkdirs();
                 try {
                     Files.find(appPath, 1, (path, attr) -> attr.isRegularFile()).forEach(x->{
