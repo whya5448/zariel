@@ -66,15 +66,6 @@ public class CompressServerMain {
             Utils.processRun(appWorkConfig.getBaseDirectory(),"scp ./ver.html "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_VERSION_DOCUMENT_PATH"));
             logger.info("잔여 파일 삭제");
             deleteTemp();
-
-            logger.info("서버 종료");
-            new Thread(()->{
-                try {
-                    Thread.sleep(600*1000);
-                    Utils.processRun(appWorkConfig.getBaseDirectory(),"shutdown -h");
-                }
-                catch (IOException | InterruptedException e) { logger.error(e.getMessage()); e.printStackTrace();}
-            }).start();
             System.exit(0);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
