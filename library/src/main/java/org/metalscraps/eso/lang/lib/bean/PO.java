@@ -78,17 +78,9 @@ public class PO implements Comparable {
 
 		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
 
-		if(toCSVConfig.isWriteFileName()) {
-			t = (stringFileName +  "_" + id2 + "_" + id3 + "_" + target);
-		}else if (toCSVConfig.isBeta()){
-				t = target;
-		}else {
-			if(isFuzzy() && target.contains("-G-")){
-				t = source;
-			}else {
-				t = target;
-			}
-		}
+		if(toCSVConfig.isWriteFileName()) t = (stringFileName +  "_" + id2 + "_" + id3 + "_" + target);
+		else if(!toCSVConfig.isBeta() && isFuzzy() && target.contains("-G-")) t = source;
+		else t = target;
 
 		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+t+"\"\n";
 

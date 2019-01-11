@@ -4,7 +4,6 @@ import org.metalscraps.eso.lang.lib.util.Utils;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -23,7 +23,7 @@ public class ClientMain {
     private static final Logger LOG = Logger.getGlobal();
     private String serverFileName = null;
     private String crc32 = null;
-    private Properties properties = new Properties();
+    private Properties properties;
 
 
     public static void main(String[] args) {
@@ -31,15 +31,6 @@ public class ClientMain {
         System.exit(0);
     }
 
-    private void setConfig(Path configPath) {
-        if (configPath.toFile().exists() && configPath.toFile().length() > 0)
-            try(var fis = new FileInputStream(configPath.toFile())) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
-        else try(var fos = new FileOutputStream(configPath.toFile())) {
-            LOG.info("설정 데이터 없음. 초기화");
-            properties.setProperty("ver", "0");
-            properties.store(fos, "init");
-        } catch (Exception e) { e.printStackTrace(); }
-    }
     private void run() {
 
         LOG.info("앱 설정 폴더 확인");
@@ -71,8 +62,7 @@ public class ClientMain {
         }
 
         LOG.info("설정 불러오기");
-        setConfig(configPath);
-
+        properties = Utils.setConfig(configPath, Map.of("ver", "0"));
         long localVer = Long.parseLong(properties.get("ver").toString());
 
         LOG.info("서버 버전 확인 중...");
@@ -110,7 +100,7 @@ public class ClientMain {
             if(update()) {
                 LOG.info("업데이트 성공");
                 properties.setProperty("ver", String.valueOf(serverVer));
-                try(var fos = new FileOutputStream(configPath.toFile())) { properties.store(fos, ""); } catch (IOException e) { e.printStackTrace(); }
+                Utils.storeConfig(configPath, properties);
                 var f = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()+"/Elder Scrolls Online/live/AddOns/gamedata/lang");
                 f.mkdirs();
                 try {

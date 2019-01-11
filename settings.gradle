@@ -3,4 +3,4 @@ include 'client'
 include 'server'
 include 'tool'
 include 'library'
-
+include 'compress-server'

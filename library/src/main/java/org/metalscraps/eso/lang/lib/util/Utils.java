@@ -9,19 +9,19 @@ import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
-import org.metalscraps.eso.lang.lib.config.FileNames;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -29,7 +29,9 @@ import java.util.regex.Matcher;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+@SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "unused"})
 public class Utils {
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     private static String serverVersion = null;
     public static String getLatestVersion(String projectName) {
@@ -74,7 +76,7 @@ public class Utils {
         JsonNode jsonNode = null;
 
         try {
-            jsonNode = objectMapper.readTree(response.body());
+            jsonNode = objectMapper.readTree(Objects.requireNonNull(response).body());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -101,11 +103,13 @@ public class Utils {
     }
 
     public static void downloadPOs(AppWorkConfig appWorkConfig){
+        LocalTime timeTaken = LocalTime.now();
         downloadPO(appWorkConfig, "ESO-item");
         downloadPO(appWorkConfig, "ESO-skill");
         downloadPO(appWorkConfig, "ESO-system");
         downloadPO(appWorkConfig, "ESO-book");
         downloadPO(appWorkConfig, "ESO-story");
+        logger.info("총 " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
@@ -119,7 +123,6 @@ public class Utils {
         try {
 
             ArrayList<String > fileNames = getFileNames(projectName);
-            LocalTime timeTaken = LocalTime.now();
 
             for (String fileName : fileNames) {
 
@@ -129,17 +132,15 @@ public class Utils {
                 LocalTime ltStart = LocalTime.now();
                 String fileURL = url+fileName;
                 fileURL =  fileURL.replace(" ", "%20");
-                System.out.println("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po ");
+                System.out.print("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
 
                 fPO = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
-                if (!fPO.exists()) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
+                if (!fPO.exists() || fPO.length() <= 0) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
                 fPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
                 System.out.println(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
             }
-
-            System.out.println("총 " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
 
         } catch (IOException e) {
             if(e.getMessage().contains("Premature EOF")) {
@@ -192,21 +193,27 @@ public class Utils {
         @link convertCN_PO_to_KO 쓰셈
      */
     @Deprecated
-    public static void Mapping(AppWorkConfig appWorkConfig) { convertCN_PO_to_KO(appWorkConfig); }
+    public static void Mapping(AppWorkConfig appWorkConfig) { convertKO_PO_to_CN(appWorkConfig); }
 
-    public static void convertCN_PO_to_KO(AppWorkConfig appWorkConfig) {
+    public static void convertKO_PO_to_CN(AppWorkConfig appWorkConfig) {
 
         Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
 
         try {
             for (File file : fileList) {
                 File po2 = new File(file.getAbsolutePath() + "2");
-                if(!po2.exists()) FileUtils.write(po2, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
+                if(!po2.exists() || po2.length() <= 0) FileUtils.write(po2, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    /*
+    @link convertKO_PO_to_CN 쓰셈 이름 잘못지음ㅎㅎ
+    */
+    @Deprecated
+    public static void convertCN_PO_to_KO(AppWorkConfig appWorkConfig) { convertKO_PO_to_CN(appWorkConfig); }
 
     public static String KOToCN(String string) {
         char[] c = string.toCharArray();
@@ -265,11 +272,11 @@ public class Utils {
             e.printStackTrace();
         }
 
-        if (config.isToLowerCase()) source = source.toLowerCase();
+        if (config.isToLowerCase()) source = Objects.requireNonNull(source).toLowerCase();
 
         if (config.isProcessText()) {
-            if (config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
-            source = source.replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+            if (config.isProcessItemName()) source = Objects.requireNonNull(source).replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
+            source = Objects.requireNonNull(source).replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
                     .replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
                     .replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
                     .replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
@@ -284,7 +291,7 @@ public class Utils {
 
     private void processRun(String command, File directory) throws IOException, InterruptedException { processRun(command, ProcessBuilder.Redirect.INHERIT, directory); }
 
-    private void processRun(String command, ProcessBuilder.Redirect redirect, File directory) throws IOException, InterruptedException {
+    private void processRun(String command, @SuppressWarnings("SameParameterValue") ProcessBuilder.Redirect redirect, File directory) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder()
                 .directory(directory)
                 .command((command).split("\\s+"))
@@ -293,4 +300,25 @@ public class Utils {
         pb.start().waitFor();
     }
 
+    public static Properties setConfig(Path configPath, Map<String, String> config) {
+        Properties properties = new Properties();
+        try {
+            if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = new FileInputStream(configPath.toFile())) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
+            else try(var fos = new FileOutputStream(configPath.toFile())) {
+                logger.info("설정 데이터 없음. 초기화");
+                for(var entry : config.entrySet()) properties.setProperty(entry.getKey(), entry.getValue());
+                properties.store(fos, "init");
+            } catch (Exception e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties;
+    }
+
+
+    public static void storeConfig(Path configPath, Properties properties) {
+        try(var fos = new FileOutputStream(configPath.toFile())) {
+            properties.store(fos, String.valueOf(new Date().getTime()));
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 }
