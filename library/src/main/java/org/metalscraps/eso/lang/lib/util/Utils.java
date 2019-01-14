@@ -132,19 +132,19 @@ public class Utils {
                 LocalTime ltStart = LocalTime.now();
                 String fileURL = url+fileName;
                 fileURL =  fileURL.replace(" ", "%20");
-                System.out.print("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
+                logger.trace("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
 
                 fPO = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
                 if (!fPO.exists() || fPO.length() <= 0) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
                 fPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
-                System.out.println(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
+                logger.info(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
             }
 
         } catch (IOException e) {
             if(e.getMessage().contains("Premature EOF")) {
-                System.out.println("EOF 재시도");
+                logger.warn("EOF 재시도");
                 if(fPO.exists()) fPO.delete();
                 try { Thread.sleep(1800000); } catch (InterruptedException e1) {  e1.printStackTrace(); }
                 Utils.downloadPO(appWorkConfig, projectName);
