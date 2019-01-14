@@ -139,7 +139,7 @@ public class Utils {
                 fPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
-                logger.info(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
+                logger.trace(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
             }
 
         } catch (IOException e) {
