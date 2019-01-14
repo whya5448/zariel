@@ -91,14 +91,14 @@ class ServerMain {
                 sourceList.sort(null);
 
                 LocalTime timeTaken = LocalTime.now();
-                Utils.makeFile(new File(appWorkConfig.getPODirectory() + "/kr.csv"), csvConfig, sourceList);
-                logger.info("kr.csv" + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + " 초");
+                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/kr.csv"), csvConfig, sourceList);
+                logger.info("kr.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
                 timeTaken = LocalTime.now();
-                Utils.makeFile(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), csvConfig.setBeta(true), sourceList);
-                logger.info("kr_beta.csv" + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + " 초");
+                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), csvConfig.setBeta(true), sourceList);
+                logger.info("kr_beta.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
                 timeTaken = LocalTime.now();
-                Utils.makeFile(new File(appWorkConfig.getPODirectory() + "/tr.csv"), csvConfig.setWriteFileName(true), sourceList);
-                logger.info("tr.csv" + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + " 초");
+                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/tr.csv"), csvConfig.setWriteFileName(true), sourceList);
+                logger.info("tr.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
             }
 
         } catch (Exception e) { e.printStackTrace(); }
