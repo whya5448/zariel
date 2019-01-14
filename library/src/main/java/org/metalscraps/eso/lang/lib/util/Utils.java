@@ -183,11 +183,17 @@ public class Utils {
         pb.start().waitFor();
     }
 
-    public static void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
+    public static void makeCSV(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
         StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
         for (PO p : poList) sb.append(p.toCSV(toCSVConfig));
         try { FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET); } catch (IOException e) { e.printStackTrace(); }
     }
+
+    /*
+        @link makeCSV ㅎㅅㅎ
+     */
+    @Deprecated
+    public static void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) { makeCSV(file, toCSVConfig, poList); }
 
     /*
         @link convertCN_PO_to_KO 쓰셈
