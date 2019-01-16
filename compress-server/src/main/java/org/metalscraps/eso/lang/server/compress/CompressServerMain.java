@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +44,7 @@ public class CompressServerMain {
     public static void main(String[] args) { new CompressServerMain().run(); }
     private void run() {
 
+        logger.info(LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
 
         String mainServerAccount = properties.getProperty("MAIN_SERVER_ACCOUNT");
         String mainServer = properties.getProperty("MAIN_SERVER");
@@ -58,6 +62,8 @@ public class CompressServerMain {
             Utils.processRun(appWorkConfig.getBaseDirectory(),"7za a -mx=7 " + lang.getAbsolutePath() + " " + appWorkConfig.getBaseDirectory() + "/*.csv");
             logger.info("SFX 생성");
             Utils.processRun(appWorkConfig.getBaseDirectory(),"cat 7zCon.sfx "+lang.getAbsolutePath(), ProcessBuilder.Redirect.to(new File(lang.getAbsolutePath()+".exe")));
+            logger.info("기존 업로드된 SFX 삭제");
+            Utils.processRun(appWorkConfig.getBaseDirectory(),"gsutil rm gs://dcinside-esok-cdn/lang*.exe");
             logger.info("SFX 업로드");
             Utils.processRun(appWorkConfig.getBaseDirectory(),"gsutil cp "+lang.getAbsolutePath()+".exe gs://dcinside-esok-cdn/");
             logger.info("버전 문서 생성");
