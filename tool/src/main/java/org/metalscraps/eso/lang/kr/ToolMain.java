@@ -55,15 +55,15 @@ class ToolMain {
 		switch(this.getCommand()) {
 			case 0: lm.CsvToPo(); break;
 			case 1: Utils.downloadPOs(appWorkConfig); break;
-			case 2: Utils.convertCN_PO_to_KO(appWorkConfig); break;
-			case 3: lm.makeCSV(true); break;
-			case 33: lm.makeCSV(false); break;
+			case 2: Utils.convertKO_PO_to_CN(appWorkConfig); break;
+			case 3: lm.makeCSVs(true); break;
+			case 33: lm.makeCSVs(false); break;
 			case 4: lm.makeLang(); break;
 			case 44: lm.makeLangToJSON(); break;
 			case 5:
 				Utils.downloadPOs(appWorkConfig);
-				Utils.convertCN_PO_to_KO(appWorkConfig);
-				lm.makeCSV(true);
+				Utils.convertKO_PO_to_CN(appWorkConfig);
+				lm.makeCSVs(true);
 				lm.makeLang();
 				break;
 			case 6:

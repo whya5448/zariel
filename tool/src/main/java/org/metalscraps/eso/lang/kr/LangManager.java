@@ -167,7 +167,12 @@ class LangManager {
 		}
 	}
 
-	void makeCSV(boolean usePO2) {
+	/*
+	@link MakeCSVs
+	 */
+	@Deprecated
+	void makeCSV(boolean usePO2) { makeCSVs(usePO2); }
+	void makeCSVs(boolean usePO2) {
 
 		ArrayList<PO> sourceList = new ArrayList<>();
 
@@ -192,9 +197,9 @@ class LangManager {
 		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(true);
 		sourceList.sort(null);
 
-		Utils.makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
-		Utils.makeFile(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setBeta(true), sourceList);
-		Utils.makeFile(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setBeta(true), sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
 
 	}
 
