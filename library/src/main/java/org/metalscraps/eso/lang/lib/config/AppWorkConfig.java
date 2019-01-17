@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -16,14 +17,17 @@ import java.time.format.DateTimeFormatter;
 public class AppWorkConfig {
 
 	public AppWorkConfig() {
-		LocalDate today = LocalDate.now();
-		this.today = today.format(DateTimeFormatter.ofPattern("MMdd"));
-		this.todayWithYear = today.format(DateTimeFormatter.ofPattern("yyMMdd"));
+		this.today = dateTime.format(DateTimeFormatter.ofPattern("MMdd"));
+		this.todayWithYear = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"));
 	}
+
 
 	@Getter(AccessLevel.PUBLIC) @Setter(AccessLevel.PUBLIC)
 	private File baseDirectory, PODirectory;
 
 	@Getter(AccessLevel.PUBLIC)
 	private final String today, todayWithYear;
+
+	@Getter(AccessLevel.PUBLIC)
+	private LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 }

@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
@@ -44,7 +42,7 @@ public class CompressServerMain {
     public static void main(String[] args) { new CompressServerMain().run(); }
     private void run() {
 
-        logger.info(LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
+        logger.info(appWorkConfig.getDateTime().format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
 
         String mainServerAccount = properties.getProperty("MAIN_SERVER_ACCOUNT");
         String mainServer = properties.getProperty("MAIN_SERVER");
