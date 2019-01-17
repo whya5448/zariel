@@ -7,9 +7,6 @@ import lombok.Setter;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.FileNames;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Created by 안병길 on 2018-01-18.
  * Whya5448@gmail.com
