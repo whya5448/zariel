@@ -21,9 +21,8 @@ public class AppWorkConfig {
 		this.todayWithYear = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"));
 	}
 
-
 	@Getter(AccessLevel.PUBLIC) @Setter(AccessLevel.PUBLIC)
-	private File baseDirectory, PODirectory;
+	private File baseDirectory, PODirectory, ZanataCategoryConfigDirectory;
 
 	@Getter(AccessLevel.PUBLIC)
 	private final String today, todayWithYear;

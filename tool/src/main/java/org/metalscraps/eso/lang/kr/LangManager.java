@@ -12,6 +12,12 @@ import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.kr.Utils.*;
+import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.kr.bean.PO;
+import org.metalscraps.eso.lang.kr.bean.ToCSVConfig;
+import org.metalscraps.eso.lang.kr.config.AppConfig;
+import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -111,21 +117,138 @@ class LangManager {
 			}
 		}
 
-		HashMap<String, StringBuilder> builderMap = new HashMap<>();
-		String fileName;
+		ArrayList<PO> poList = new ArrayList<>(map.values());
+		makePotFile(poList, false);
+	}
 
-		ArrayList<PO> sort = new ArrayList<>(map.values());
-		sort.sort(null);
-		for (PO p : sort) {
-			if(p.getFileName() == null) {
-				var s = p.getSource();
-				var t = p.getTarget();
 
-				for(PO pp : sort) if(pp.getSource().equals(s) && pp.getTarget().equals(t)) p.setFileName(pp.getFileName());
+	void GenZanataUploadSet(){
+		CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
+		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+		originCG.GenCategory();
+		HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
 
+		CSVmerge merge = new CSVmerge();
+		HashMap<String, PO> targetCSV = new HashMap<>();
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+		for (File file : fileList) {
+
+			String fileName = FilenameUtils.getBaseName(file.getName());
+			// pregame 쪽 데이터
+			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+
+			targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
+			System.out.println("zanata po parsed ["+file+"] ");
+		}
+
+		merge.MergeCSV(categorizedCSV, targetCSV, false);
+
+		for(CategoryCSV oneCSV : categorizedCSV){
+			CustomPOmodify(oneCSV);
+			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
+			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
+			makePotFile(poList, false, oneCSV.getZanataFileName(), oneCSV.getType(), "src", "ko", "pot");
+			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "trs", "ko", "po");
+		}
+
+		System.out.println("Select Csv file for generate ja-JP locale");
+		targetCSV = originCG.GetSelectedCSVMap();
+		merge.MergeCSV(categorizedCSV, targetCSV, true);
+		for(CategoryCSV oneCSV : categorizedCSV){
+			HashMap<String, PO> mergedPO = oneCSV.getPODataMap();
+			ArrayList<PO> poList = new ArrayList<>(mergedPO.values());
+			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "trs", "ja-JP", "po");
+		}
+
+	}
+
+	private void CustomPOmodify(CategoryCSV targetCSV){
+
+
+		HashMap<String, PO> targetPO = targetCSV.getPODataMap();
+
+		for(PO po : targetPO.values()){
+			if(po.getSource().equals(po.getTarget())){
+				po.setTarget("");
 			}
-			fileName = p.getFileName() == null ? String.valueOf(p.getId1()) : p.getFileName().getName();
-			StringBuilder sb = builderMap.get(fileName);
+			po.setTarget(po.getTarget().replace("\"\"", "\"") );
+			po.setSource(po.getSource().replace("\"\"", "\"") );
+		}
+
+		if("book".equals(targetCSV.getType())){
+			for(PO po : targetPO.values()){
+				if(po.getSource().equals(po.getTarget())){
+					po.setTarget("");
+				}
+			}
+		} else if ("skill".equals(targetCSV.getType())){
+			for(PO po : targetPO.values()){
+				if(po.getId1() == 198758357){
+					po.setTarget(po.getSource());
+				}
+			}
+		}
+
+
+	}
+
+
+
+	ArrayList<PO> reOrderAsMatchFirst(ArrayList<PO> poArrayList){
+		Collections.sort(poArrayList);
+		ArrayList<PO> Match = new ArrayList<>();
+		ArrayList<PO> NonMatch = new ArrayList<>();
+		ArrayList<PO> Reordered = new ArrayList<>();
+		if(poArrayList.size() < 1) {
+            return Reordered;
+        }
+        PO checkPO = poArrayList.get(0);
+
+		boolean isChecked = false;
+		for(PO TargetPo : poArrayList){
+			String checkidx = Integer.toString(checkPO.getId2()) + Integer.toString(checkPO.getId3());
+			String targetidx = Integer.toString(TargetPo.getId2()) + Integer.toString(TargetPo.getId3());
+			if(checkidx.equals(targetidx)){
+				Match.add(TargetPo);
+				isChecked = true;
+			}else{
+				if(isChecked){
+					Match.add(TargetPo);
+				}else {
+					NonMatch.add(TargetPo);
+				}
+				isChecked = false;
+			}
+			checkPO = TargetPo;
+		}
+		Reordered.addAll(Match);
+		Reordered.addAll(NonMatch);
+		Reordered.remove(0);
+		return Reordered;
+	}
+
+	void makePotFile(ArrayList<PO> origin, boolean outputTargetData , String fileName, String type, String folder, String language, String fileExtension) {
+		HashMap<String, StringBuilder> builderMap = new HashMap<>();
+		ArrayList<PO> sort =  reOrderAsMatchFirst(origin);
+		int splitLimit = 0;
+		if("item".equals(type)){
+			splitLimit = 5000;
+		} else if ("skill".equals(type)){
+			splitLimit = 10000;
+		} else if ("story".equals(type)){
+			splitLimit = 6000;
+		} else if ("book".equals(type)){
+			splitLimit = 500;
+		} else if ("system".equals(type)){
+			splitLimit = 4000;
+		}
+		int fileCount = 0;
+		int appendCount = 0;
+		String splitFile = fileName;
+		StringBuilder sb = new StringBuilder();
+
+		for (PO p : sort) {
+			sb = builderMap.get(splitFile);
 			if (sb == null) {
 				sb = new StringBuilder(
 						"# Administrator <admin@the.gg>, 2017. #zanata\n" +
@@ -137,14 +260,90 @@ class LangManager {
 								"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
 								"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
 								"\"Language-Team: Korean\\n\"\n" +
-								"\"Language: ko\\n\"\n" +
+								"\"Language: "+language+"\\n\"\n" +
 								"\"X-Generator: Zanata 4.2.4\\n\"\n" +
 								"\"Plural-Forms: nplurals=1; plural=0\\n\""
 				);
-				builderMap.put(fileName, sb);
+				builderMap.put(splitFile, sb);
 			}
+			if(appendCount > splitLimit) {
+				fileCount++;
+				splitFile = fileName + Integer.toString(fileCount);
+				appendCount = 0;
+			}
+			if (outputTargetData) {
+				sb.append(p.toTranslatedPO());
+			} else {
+				sb.append(p.toPOT());
+			}
+			appendCount++;
+		}
 
-			sb.append(Utils.CNtoKO(p.toPO().toString()));
+		for (StringBuilder Onesb : builderMap.values()) {
+			Pattern p = Pattern.compile("\\\\(?!n)");
+			Matcher m = p.matcher(Onesb);
+			String x = m.replaceAll("\\\\$0");
+			Onesb.delete(0, Onesb.length());
+			Onesb.append(x);
+		}
+
+		try {
+			for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
+				if("trs".equals(folder)) {
+					FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + folder + "/" + type + "/" + language + "/" + entry.getKey() + "." + fileExtension), entry.getValue().toString(), AppConfig.CHARSET);
+				}else {
+					FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + folder + "/" + type + "/" + entry.getKey() + "." + fileExtension), entry.getValue().toString(), AppConfig.CHARSET);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	void makePotFile(ArrayList<PO> sort, boolean outputTargetData ){
+		HashMap<String, StringBuilder> builderMap = new HashMap<>();
+		String fileName;
+		Collections.sort(sort);
+
+
+		for (PO p : sort) {
+			fileName = p.getFileName().getName();
+			boolean isLargeFile = true;
+			int fileCount = 0;
+			StringBuilder sb = new StringBuilder();
+			String splitFile = fileName;
+			while(isLargeFile){
+				sb = builderMap.get(splitFile);
+				if (sb == null) {
+					sb = new StringBuilder(
+							"# Administrator <admin@the.gg>, 2017. #zanata\n" +
+									"msgid \"\"\n" +
+									"msgstr \"\"\n" +
+									"\"MIME-Version: 1.0\\n\"\n" +
+									"\"Content-Transfer-Encoding: 8bit\\n\"\n" +
+									"\"Content-Type: text/plain; charset=UTF-8\\n\"\n" +
+									"\"PO-Revision-Date: 2018-01-24 02:12+0900\\n\"\n" +
+									"\"Last-Translator: Administrator <admin@the.gg>\\n\"\n" +
+									"\"Language-Team: Korean\\n\"\n" +
+									"\"Language: ko\\n\"\n" +
+									"\"X-Generator: Zanata 4.2.4\\n\"\n" +
+									"\"Plural-Forms: nplurals=1; plural=0\\n\""
+					);
+					builderMap.put(splitFile, sb);
+					break;
+				} else if(sb.length() > 1024*1024){
+					fileCount++;
+					splitFile = fileName + Integer.toString(fileCount);
+				} else {
+					break;
+				}
+			}
+			if(outputTargetData){
+				sb.append(p.toTranslatedPO());
+			}else {
+				sb.append(p.toPO());
+			}
 		}
 
 		for (StringBuilder sb : builderMap.values()) {
@@ -251,6 +450,16 @@ class LangManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+
+	}
+
+	void makeNewLang(){
+		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
+		System.out.println("select eso client csv file");
+		HashMap<String, PO> originCSVMap = CG.GetSelectedCSVMap();
+		System.out.println("select csv file to merge");
+		HashMap<String, PO> zanataCSVMap = CG.GetSelectedCSVMap();
 
 
 	}

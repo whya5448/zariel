@@ -8,38 +8,27 @@ import lombok.Setter;
 import org.metalscraps.eso.lang.lib.bean.PO;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Data
 public class CategoryCSV {
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
-	private String Category;
+	private String zanataFileName;
+	private String type;
+	private int linkCount;
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
-	ArrayList<String> PoIndexList, CSVList = null;
+	ArrayList<String> PoIndexList = new ArrayList<>();
 
 	@Setter(AccessLevel.PUBLIC) @Getter(AccessLevel.PUBLIC)
-	ArrayList<PO> PODataList = null;
-
+	HashMap<String, PO> PODataMap = new HashMap<>();
 
 	public void addPoIndex(String Index){
-		if(this.PoIndexList == null){
-			this.PoIndexList = new ArrayList<>();
-		}
 		PoIndexList.add(Index);
 	}
 
-	public void addCSV(String oneCSVItem){
-		if(this.PoIndexList == null){
-			this.PoIndexList = new ArrayList<>();
-		}
-		PoIndexList.add(oneCSVItem);
-	}
-
-	public void addPoData(PO po){
-		if(this.PODataList == null){
-			this.PODataList = new ArrayList<>();
-		}
-		PODataList.add(po);
+	public void putPoData(String index, PO po){
+		PODataMap.put(index, po);
 	}
 }
