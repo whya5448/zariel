@@ -12,6 +12,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,12 +49,8 @@ class TamrielTradeCentre {
 			if (!(o instanceof LuaClass)) return false;
 			final LuaClass other = (LuaClass) o;
 			if (!other.canEqual(this)) return false;
-			final Object this$first = this.first;
-			final Object other$first = other.first;
-			if (this$first == null ? other$first != null : !this$first.equals(other$first)) return false;
-			final Object this$second = this.second;
-			final Object other$second = other.second;
-			return this$second == null ? other$second == null : this$second.equals(other$second);
+			if (!Objects.equals(this.first, other.first)) return false;
+			return Objects.equals(this.second, other.second);
 		}
 
 		protected boolean canEqual(final Object other) {

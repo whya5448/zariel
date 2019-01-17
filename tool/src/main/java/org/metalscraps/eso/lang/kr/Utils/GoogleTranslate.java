@@ -130,7 +130,7 @@ public class GoogleTranslate implements Runnable {
 
     private String parseResult(String inputJson) throws Exception
     {
-        String ret ="";
+        StringBuilder ret = new StringBuilder();
         int idx = 0;
         JSONArray jsonArray = new JSONArray(inputJson);
 
@@ -139,11 +139,11 @@ public class GoogleTranslate implements Runnable {
 
         while(!jsonArray2.isNull(idx)){
             oneData = (JSONArray) jsonArray2.get(idx);
-            ret = ret+ oneData.get(0).toString();
+            ret.append(oneData.get(0).toString());
             idx++;
         }
 
-        return ret;
+        return ret.toString();
     }
 
     private String ReplaceSpecialChar(String origin){

@@ -1,20 +1,18 @@
 package org.metalscraps.eso.lang.kr;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 
-
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -31,12 +29,10 @@ public class zanataLinkGenerator {
 
     public void getPO(File file ){
         if(file.isDirectory()){
-            File []arrFS=file.listFiles();
-            for(int i = 0 ; i<arrFS.length;i++){
-                getPO(arrFS[i] );
-            }
+            File[] arrFS = file.listFiles();
+            for (File arrF : Objects.requireNonNull(arrFS)) getPO(arrF);
         }
-        else{
+        else {
             if(file.getPath().contains("ja-JP"));
             addFileURL(file);
         }
@@ -64,26 +60,21 @@ public class zanataLinkGenerator {
         String BaseURL = "http://www.dostream.com/zanata/webtrans/translate?";
         String ProjectURL = "project=ESO-" + projectCategory +"&iteration=1.0&localeId=ko&locale=ko-KR";
         String fileUrl = null;
-        try {
-            fileUrl = URLEncoder.encode(filename, "UTF-8");
-            fileUrl = fileUrl.replace("+" , "%20");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        fileUrl = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+        fileUrl = fileUrl.replace("+" , "%20");
         String DocURL = "#view:doc;doc:"+ fileUrl;
         String indexURL = null;
 
-        HashMap<String, PO> poMap = new HashMap<>();
-        poMap.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
+        HashMap<String, PO> poMap = new HashMap<>(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
         for(String index : poMap.keySet()){
             PO po = poMap.get(index);
             StringBuilder sb = new StringBuilder();
             String fullURL = BaseURL+ProjectURL+DocURL+";msgcontext:"+index;
-            sb.append(filename+"        "+ po.getId1()+"_"+po.getId2()+"_"+po.getId3() +"      "+po.getSource()+"      "+fullURL+"     \n");
+            sb.append(filename).append("        ").append(po.getId1()).append("_").append(po.getId2()).append("_").append(po.getId3()).append("      ").append(po.getSource()).append("      ").append(fullURL).append("     \n");
             StringBuilder mapsb = fileMap.get(projectCategory);
-            if(mapsb == null){
+            if(mapsb == null) {
                 fileMap.put(projectCategory, sb);
-            }else {
+            } else {
                 mapsb.append(sb);
             }
         }
@@ -96,7 +87,7 @@ public class zanataLinkGenerator {
         return comm;
     }
 
-    public static void main(String args[]){
+    public static void main(String[] args){
         zanataLinkGenerator zlg = new zanataLinkGenerator();
         zlg.getPO(FileUtils.getFile("./zanataFile"));
         /*

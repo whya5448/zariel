@@ -83,7 +83,7 @@ public class Utils {
     }
 
     public static ArrayList<String> getFileNames(String projectName){
-        ArrayList<String> filenames = new ArrayList<>();
+        ArrayList<String> fileNames = new ArrayList<>();
         final String url = AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -95,10 +95,10 @@ public class Utils {
         for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
             JsonNode node = it.next();
             String Trim= node.get("name").toString().replaceAll("^\"|\"$", "");
-            filenames.add(Trim);
+            fileNames.add(Trim);
         }
 
-        return filenames;
+        return fileNames;
     }
 
     public static void downloadPOs(AppWorkConfig appWorkConfig){
@@ -281,8 +281,8 @@ public class Utils {
 
         if (config.isProcessText()) {
             if (config.isProcessItemName()) source = Objects.requireNonNull(source).replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
-            source = Objects.requireNonNull(source).replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
-                    .replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extactor 에서 에러남.
+            source = Objects.requireNonNull(source).replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
+                    .replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
                     .replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
                     .replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
 

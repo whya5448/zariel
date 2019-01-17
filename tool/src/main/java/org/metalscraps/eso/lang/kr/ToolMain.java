@@ -1,6 +1,8 @@
 package org.metalscraps.eso.lang.kr;
 
 import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
+import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
+import org.metalscraps.eso.lang.lib.util.Utils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -105,6 +107,7 @@ class ToolMain {
 		//noinspection ResultOfMethodCallIgnored
 		workDir.mkdirs();
 
+		//noinspection InfiniteLoopStatement
 		while(true) {
 			showMessage();
 			workLangManager(jFileChooser);

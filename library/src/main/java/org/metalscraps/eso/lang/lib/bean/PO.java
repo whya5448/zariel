@@ -126,15 +126,15 @@ public class PO implements Comparable {
 */
 
 	@Override
-	public int compareTo(@Nonnull Object o) {
+	public int compareTo(Object o) {
+
 		PO x = (PO) o;
 		PO t = this;
-		String src  = Integer.toString(x.id2)+Integer.toString(x.id3);
-		String trg  = Integer.toString(t.id2)+Integer.toString(t.id3);
-		if(src.equals(trg)) {
+		String src = Integer.toString(x.id2) + x.id3;
+		String trg = Integer.toString(t.id2) + t.id3;
+		if (src.equals(trg)) {
 			return t.id1.compareTo(x.id1);
 		} else return src.compareTo(trg);
-
 	}
 
 }

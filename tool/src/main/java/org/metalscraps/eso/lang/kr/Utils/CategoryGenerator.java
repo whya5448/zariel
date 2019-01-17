@@ -1,18 +1,26 @@
 package org.metalscraps.eso.lang.kr.Utils;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
+import org.metalscraps.eso.lang.lib.config.FileNames;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 
 @AllArgsConstructor
@@ -141,9 +149,7 @@ public class CategoryGenerator {
             categoryCSV.putPoData(onePO.getId(), onePO);
         }
 
-        for(CategoryCSV categoryCSV : this.getCategoryMap().values()){
-            this.CategorizedCSV.add(categoryCSV);
-        }
+        this.CategorizedCSV.addAll(this.getCategoryMap().values());
     }
 
     public void GenSubCategory(HashMap<String, PO> MainPoMap){
@@ -153,10 +159,10 @@ public class CategoryGenerator {
             System.out.println("SkillCSV Size : "+CategorizedSkillCsvList.size());
             for(CategoryCSV oneCSV : CategorizedSkillCsvList){
                 for(String index: oneCSV.getPoIndexList() ){
-                    PO podata = MainPoMap.get(index);
-                    if(podata != null) {
-                        podata.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
-                        oneCSV.putPoData(index, podata);
+                    PO poData = MainPoMap.get(index);
+                    if(poData != null) {
+                        poData.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
+                        oneCSV.putPoData(index, poData);
                         MainPoMap.remove(index);
                     }
                 }
@@ -174,10 +180,10 @@ public class CategoryGenerator {
             System.out.println("ItemCSV Size : "+CategorizedItemCsvList.size());
             for(CategoryCSV oneCSV : CategorizedItemCsvList){
                 for(String index: oneCSV.getPoIndexList() ){
-                    PO podata = MainPoMap.get(index);
-                    if(podata != null) {
-                        podata.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
-                        oneCSV.putPoData(index, podata);
+                    PO poData = MainPoMap.get(index);
+                    if(poData != null) {
+                        poData.setFileName(FileNames.fromString(oneCSV.getZanataFileName()));
+                        oneCSV.putPoData(index, poData);
                         MainPoMap.remove(index);
                     }
                 }
@@ -212,9 +218,7 @@ public class CategoryGenerator {
     private void GenBookSubCategory(CategoryCSV oneCSV) {
         WebCrawler wc = new WebCrawler();
         ArrayList<CategoryCSV> CategorizedBookCsvList = GenUESPBookSubCategory( wc.GetUESPBookMap(), oneCSV);
-        for(CategoryCSV subCSV : CategorizedBookCsvList) {
-            this.CategorizedCSV.add(subCSV);
-        }
+        this.CategorizedCSV.addAll(CategorizedBookCsvList);
     }
 
     private ArrayList<CategoryCSV> GenUESPBookSubCategory(HashMap<String, ArrayList<String>> BookNameMap, CategoryCSV BookCSV){
@@ -257,10 +261,10 @@ public class CategoryGenerator {
 
                 ArrayList<String> indexList = getLinkedIndexList(BookCSV, po.getId());
                 for(String index : indexList){
-                    PO subpo = BookPOMap.get(index);
-                    if(subpo != null){
+                    PO subPO = BookPOMap.get(index);
+                    if(subPO != null){
                         BookPOMap.remove(index);
-                        subCSV.putPoData(index, subpo);
+                        subCSV.putPoData(index, subPO);
                     }
                 }
             }
@@ -298,9 +302,9 @@ public class CategoryGenerator {
         }
 
         for(String oneTitle : title){
-            PO titlepo = SourcePOMap.get(oneTitle);
+            PO titlePO = SourcePOMap.get(oneTitle);
             SourcePOMap.remove(oneTitle);
-            ArrayList<String> indexList = getLinkedIndexList(BookCSV, titlepo.getId());
+            ArrayList<String> indexList = getLinkedIndexList(BookCSV, titlePO.getId());
             for(String index : indexList) {
                 PO bookPO = BookPOMap.get(index);
                 if(bookPO != null) {
@@ -316,7 +320,7 @@ public class CategoryGenerator {
 
     private ArrayList<String> getLinkedIndexList(CategoryCSV CSV, String originFullIndex ){
         ArrayList<String> LinkedMainIndex = CSV.getPoIndexList();
-        String originTailIndex = originFullIndex.substring(originFullIndex.indexOf("-"), originFullIndex.length());
+        String originTailIndex = originFullIndex.substring(originFullIndex.indexOf("-"));
         ArrayList<String> LinkedFullIndex = new ArrayList<>();
         for(String MainIndex : LinkedMainIndex){
             LinkedFullIndex.add(MainIndex+originTailIndex);

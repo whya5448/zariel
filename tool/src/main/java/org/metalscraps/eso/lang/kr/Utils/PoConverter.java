@@ -25,8 +25,7 @@ public class PoConverter {
             Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
             ArrayList<PO> LtransList = new ArrayList<>();
             for (File file : fileList) {
-                ArrayList<PO> fileItems = new ArrayList<>();
-                fileItems.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+                ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
                 System.out.println("target : " + file);
 
                 int requestCount = 0;
@@ -90,7 +89,7 @@ public class PoConverter {
             if(p.isFuzzy()){
                 sb.append("#, fuzzy\n");
             }
-            sb.append("msgctxt \""+p.getId()+"\"\nmsgid \""+p.getSource()+"\"\nmsgstr \""+p.getTarget()+"\"\n\n");
+            sb.append("msgctxt \"").append(p.getId()).append("\"\nmsgid \"").append(p.getSource()).append("\"\nmsgstr \"").append(p.getTarget()).append("\"\n\n");
         }
 
         try {

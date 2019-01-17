@@ -2,12 +2,9 @@ package org.metalscraps.eso.lang.kr.Utils;
 
 import org.junit.Test;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.WebData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static org.junit.Assert.*;
 
 public class WebCrawlerTest {
 

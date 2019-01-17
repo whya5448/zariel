@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr.Utils;
+package org.metalscraps.eso.lang.lib.config;
 
 public class zanataLinkGenetrator {
     

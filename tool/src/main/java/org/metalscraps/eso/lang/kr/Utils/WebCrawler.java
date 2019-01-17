@@ -5,7 +5,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.PO;
 import org.metalscraps.eso.lang.kr.bean.WebData;
 
 import java.io.IOException;
@@ -91,7 +90,7 @@ public class WebCrawler {
                 Element td = onetr.getElementsByTag("a").first();
                 if (td != null) {
                     String title = td.attr("title");
-                    title = title.substring(title.indexOf(":") + 1, title.length());
+                    title = title.substring(title.indexOf(":") + 1);
                     if(title.contains("(")){
                         title = title.substring(0,title.indexOf("("));
                     }
@@ -141,12 +140,12 @@ public class WebCrawler {
             Element td = SubCategoryElement.getElementsByTag("a").first();
             if(td != null){
                 String title =  td.attr("title");
-                title = title.substring(title.indexOf(":")+1, title.length());
+                title = title.substring(title.indexOf(":")+1);
                 bookList.add(title);
             }
         }
 
-        String category = subCategory.substring(subCategory.indexOf("Online:") + 7, subCategory.length() );
+        String category = subCategory.substring(subCategory.indexOf("Online:") + 7);
         category = category.replace("%27", "'");
         PageData.putBookMap(category, bookList);
     }
@@ -203,7 +202,7 @@ public class WebCrawler {
             Elements PageElementlist = Tag.getElementsByTag("a");
             for(Element MainElement : PageElementlist){
                 String linkhref =  MainElement.attr("href");
-                String ItemIndex = linkhref.substring(linkhref.indexOf("=")+1, linkhref.length());
+                String ItemIndex = linkhref.substring(linkhref.indexOf("=")+1);
                 //System.out.println("ItemIndex ["+ItemIndex+"]");
                 oneCategory.addPoIndex("242841733-0-"+ItemIndex);
                 oneCategory.addPoIndex("228378404-0-"+ItemIndex);
@@ -257,7 +256,7 @@ public class WebCrawler {
     private boolean ParseUSEPSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
         Set<String> SkillCategory = new HashSet<>();
 
-        CategoryCSV CCSV = null;
+        CategoryCSV categoryCSV = null;
 
         boolean sr;
         String Category;
@@ -276,22 +275,22 @@ public class WebCrawler {
                         continue;
                     }
                     if(sr){
-                        if(CCSV!=null) {
-                            //System.out.println("prev Set inserted : "+CCSV.getZanataFileName());
-                            skillCSV.add(CCSV);
+                        if(categoryCSV!=null) {
+                            //System.out.println("prev Set inserted : "+categoryCSV.getZanataFileName());
+                            skillCSV.add(categoryCSV);
                         }
-                        CCSV = new CategoryCSV();
-                        CCSV.setZanataFileName(cols.get(4).text());
+                        categoryCSV = new CategoryCSV();
+                        categoryCSV.setZanataFileName(cols.get(4).text());
                     }
-                    //skill name poindex
-                    CCSV.addPoIndex("198758357-0-"+cols.get(2).text());
-                    //skill desc poindex
-                    CCSV.addPoIndex("132143172-0-"+cols.get(2).text());
+                    //skill name PO Index
+                    categoryCSV.addPoIndex("198758357-0-"+cols.get(2).text());
+                    //skill desc PO Index
+                    categoryCSV.addPoIndex("132143172-0-"+cols.get(2).text());
                 }
             }
         }
         //final skill set
-        skillCSV.add(CCSV);
+        skillCSV.add(categoryCSV);
 
         return skillCSV.size() > 0;
     }
@@ -324,22 +323,22 @@ public class WebCrawler {
 
 
     private boolean ParseUSEPChampionSkillTable(WebData USEPWebData, ArrayList<CategoryCSV> skillCSV) {
-        CategoryCSV CCSV = null;
-        CCSV = new CategoryCSV();
-        CCSV.setZanataFileName("Champion::Champion Point");
+        CategoryCSV categoryCSV = null;
+        categoryCSV = new CategoryCSV();
+        categoryCSV.setZanataFileName("Champion::Champion Point");
         for(Element oneTable : USEPWebData.getWebTables()) {
             Elements skills = oneTable.select("tr");
             for(Element skill : skills){
                 Elements cols = skill.select("td");
                 if(cols.size() > 0) {
-                    //skill name poindex
-                    CCSV.addPoIndex("198758357-0-"+cols.get(2).text());
-                    //skill desc poindex
-                    CCSV.addPoIndex("132143172-0-"+cols.get(2).text());
+                    //skill name PO Index
+                    categoryCSV.addPoIndex("198758357-0-"+cols.get(2).text());
+                    //skill desc PO Index
+                    categoryCSV.addPoIndex("132143172-0-"+cols.get(2).text());
                 }
             }
         }
-        skillCSV.add(CCSV);
+        skillCSV.add(categoryCSV);
 
         return skillCSV.size() > 0;
     }

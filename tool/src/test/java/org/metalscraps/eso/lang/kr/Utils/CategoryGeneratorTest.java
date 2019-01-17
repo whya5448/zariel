@@ -2,9 +2,9 @@ package org.metalscraps.eso.lang.kr.Utils;
 
 
 import org.junit.Test;
-import org.metalscraps.eso.lang.kr.AppWorkConfig;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.PO;
+import org.metalscraps.eso.lang.lib.bean.PO;
+import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 
 import javax.swing.*;
 import java.io.File;
@@ -46,7 +46,7 @@ public class CategoryGeneratorTest {
     }
 
     public void printCategory(CategoryCSV item){
-        System.out.println("Catecory file name ["+item.getZanataFileName()+"] type ["+item.getType()+"] indexLinkCount ["+item.getLinkCount() +
+        System.out.println("Category file name ["+item.getZanataFileName()+"] type ["+item.getType()+"] indexLinkCount ["+item.getLinkCount() +
                 "] index ["+item.getPoIndexList().size()+"] po count [" +item.getPODataMap().size()+ "]" );
     }
 

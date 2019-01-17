@@ -4,20 +4,17 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
+import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.kr.Utils.PoConverter;
-import org.metalscraps.eso.lang.lib.config.FileNames;
-import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
+import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.kr.config.CSVmerge;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
+import org.metalscraps.eso.lang.lib.config.FileNames;
+import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
-import org.metalscraps.eso.lang.kr.Utils.*;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.PO;
-import org.metalscraps.eso.lang.kr.bean.ToCSVConfig;
-import org.metalscraps.eso.lang.kr.config.AppConfig;
-import org.metalscraps.eso.lang.kr.config.FileNames;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -195,7 +192,7 @@ class LangManager {
 
 
 	ArrayList<PO> reOrderAsMatchFirst(ArrayList<PO> poArrayList){
-		Collections.sort(poArrayList);
+		poArrayList.sort(null);
 		ArrayList<PO> Match = new ArrayList<>();
 		ArrayList<PO> NonMatch = new ArrayList<>();
 		ArrayList<PO> Reordered = new ArrayList<>();
@@ -206,8 +203,8 @@ class LangManager {
 
 		boolean isChecked = false;
 		for(PO TargetPo : poArrayList){
-			String checkidx = Integer.toString(checkPO.getId2()) + Integer.toString(checkPO.getId3());
-			String targetidx = Integer.toString(TargetPo.getId2()) + Integer.toString(TargetPo.getId3());
+			String checkidx = Integer.toString(checkPO.getId2()) + checkPO.getId3();
+			String targetidx = Integer.toString(TargetPo.getId2()) + TargetPo.getId3();
 			if(checkidx.equals(targetidx)){
 				Match.add(TargetPo);
 				isChecked = true;
@@ -268,7 +265,7 @@ class LangManager {
 			}
 			if(appendCount > splitLimit) {
 				fileCount++;
-				splitFile = fileName + Integer.toString(fileCount);
+				splitFile = fileName + fileCount;
 				appendCount = 0;
 			}
 			if (outputTargetData) {
@@ -304,7 +301,7 @@ class LangManager {
 	void makePotFile(ArrayList<PO> sort, boolean outputTargetData ){
 		HashMap<String, StringBuilder> builderMap = new HashMap<>();
 		String fileName;
-		Collections.sort(sort);
+		sort.sort(null);
 
 
 		for (PO p : sort) {
@@ -334,7 +331,7 @@ class LangManager {
 					break;
 				} else if(sb.length() > 1024*1024){
 					fileCount++;
-					splitFile = fileName + Integer.toString(fileCount);
+					splitFile = fileName + fileCount;
 				} else {
 					break;
 				}
