@@ -367,12 +367,12 @@ class LangManager {
 	@link MakeCSVs
 	 */
 	@Deprecated
-	void makeCSV(boolean usePO2) { makeCSVs(usePO2); }
-	void makeCSVs(boolean usePO2) {
+	void makeCSV(boolean usePO2) { makeCSVs(); }
+	void makeCSVs() {
 
 		ArrayList<PO> sourceList = new ArrayList<>();
 
-		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{usePO2?"po2":"po"}, false);
+		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
 		for (File file : fileList) {
 
 			String fileName = FilenameUtils.getBaseName(file.getName());
@@ -393,9 +393,9 @@ class LangManager {
 		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(true);
 		sourceList.sort(null);
 
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig, sourceList);
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setBeta(true), sourceList);
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + (usePO2?".po2":".po") + ".csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig, sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setBeta(true), sourceList);
+		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
 
 	}
 
@@ -545,28 +545,6 @@ class LangManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-/*
-		sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-		toCSVConfig.setRemoveComment(true);
-
-		for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
-
-		try {
-
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.no.comment.csv"), sb.toString(), AppConfig.CHARSET);
-
-			ProcessBuilder pb = new ProcessBuilder()
-					.directory(appWorkConfig.getBaseDirectory())
-					.command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + fileLinkedList.getLast().getName() + ".merged.no.comment.csv -p")
-					.redirectError(ProcessBuilder.Redirect.INHERIT)
-					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			pb.start().waitFor();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-*/
 
     }
 

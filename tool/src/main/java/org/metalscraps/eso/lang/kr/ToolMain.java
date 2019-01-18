@@ -1,5 +1,6 @@
 package org.metalscraps.eso.lang.kr;
 
+import lombok.Getter;
 import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
@@ -16,12 +17,9 @@ import java.util.Scanner;
 class ToolMain {
 
 	private final Scanner sc;
+
 	private final AppWorkConfig appWorkConfig = new AppWorkConfig();
 	private ToolMain() { sc = new Scanner(System.in); }
-
-	private AppWorkConfig getAppWorkConfig(){
-		return this.appWorkConfig;
-	}
 
 	public static void main(String[] args) {
 	    new ToolMain().start();
@@ -31,8 +29,7 @@ class ToolMain {
 		System.out.println("0. CSV To PO");
 		System.out.println("1. Zanata PO 다운로드");
 		System.out.println("2. PO 폰트 매핑/변환");
-		System.out.println("3. CSV 생성 (PO2)");
-		System.out.println("33. CSV 생성 (PO)");
+		System.out.println("3. CSV 생성");
 		System.out.println("4. 기존 번역물 합치기");
 		System.out.println("44. 기존 번역물 합치기 => JSON");
 		System.out.println("5. 다!");
@@ -48,7 +45,7 @@ class ToolMain {
 	}
 
 	private void workLangManager(JFileChooser jFileChooser) {
-		CategoryGenerator CG = new CategoryGenerator(this.getAppWorkConfig());
+		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
 
 		LangManager lm = new LangManager(appWorkConfig);
 
@@ -56,14 +53,13 @@ class ToolMain {
 			case 0: lm.CsvToPo(); break;
 			case 1: Utils.downloadPOs(appWorkConfig); break;
 			case 2: Utils.convertKO_PO_to_CN(appWorkConfig); break;
-			case 3: lm.makeCSVs(true); break;
-			case 33: lm.makeCSVs(false); break;
+			case 3: lm.makeCSVs(); break;
 			case 4: lm.makeLang(); break;
 			case 44: lm.makeLangToJSON(); break;
 			case 5:
 				Utils.downloadPOs(appWorkConfig);
 				Utils.convertKO_PO_to_CN(appWorkConfig);
-				lm.makeCSVs(true);
+				lm.makeCSVs();
 				lm.makeLang();
 				break;
 			case 6:
@@ -75,14 +71,11 @@ class ToolMain {
 				if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) break;
 				appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
 				break;
-			case 8:
-				System.gc();
-                Runtime.getRuntime().gc();
-                break;
 			case 9: System.exit(0);
 			case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
 			case 12: new Destinations(appWorkConfig).start(); break;
 			case 100: lm.translateGoogle(); break;
+			case 200: CG.GenCategory();
 			case 300: lm.GenZanataUploadSet(); break;
 		}
 	}
