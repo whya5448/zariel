@@ -1,10 +1,16 @@
 package org.metalscraps.eso.lang.client;
 
+import org.metalscraps.eso.lang.lib.bean.ID;
+import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.filechooser.FileSystemView;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -14,20 +20,26 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class ClientMain {
-
-    private final Path appPath = Paths.get(System.getenv("localappdata") + "/" + "dcinside_eso_client");
     private static final Logger logger = LoggerFactory.getLogger(ClientMain.class);
+    private static final Pattern IDPattern = Pattern.compile("([a-zA-Z]?[a-zA-Z\\d-_]+)[_-](\\d)[_-](\\d+)[_-]?");
+    private static final Path appPath = Paths.get(System.getenv("localappdata") + "/" + "dcinside_eso_client");
+    private static Path configPath = Paths.get(appPath.toString() + "/.config");
+    private static final Properties properties = Utils.setConfig(configPath,
+            Map.of("ver", "0", "x","0","y","0","width","100","height","24", "opacity", ".5f"));
     private String serverFileName = null;
     private String crc32 = null;
 
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         new ClientMain().run();
-        System.exit(0);
+        Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new Listener());
+        Thread.sleep(Long.MAX_VALUE);
     }
 
     private void run() {
@@ -61,7 +73,6 @@ public class ClientMain {
         }
 
         logger.info("설정 불러오기");
-        Properties properties = Utils.setConfig(configPath, Map.of("ver", "0"));
         long localVer = Long.parseLong(properties.get("ver").toString());
 
         logger.info("서버 버전 확인 중...");
@@ -117,7 +128,6 @@ public class ClientMain {
             else logger.error("업데이트 실패");
         } else {
             logger.info("최신 버전임");
-            System.exit(0);
         }
     }
 
@@ -214,4 +224,121 @@ public class ClientMain {
     }
 
 
+    // 몰아서 작업하는 경우가 있기에 로그 남겨주기
+    static class Listener implements FlavorListener {
+        private Frame frame;
+        private Panel panel;
+        private Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        private String dupCheck = "Hello World!";
+
+        Listener() {
+            // Owner 뺏기
+            StringSelection ss = new StringSelection("");
+            clipboard.setContents(ss, ss);
+
+            frame = new Frame();
+            frame.setAlwaysOnTop(true);
+            frame.setUndecorated(true);
+            frame.setResizable(false);
+            frame.setLayout(new BorderLayout());
+            frame.setOpacity(Float.parseFloat(properties.getProperty("opacity")));
+            frame.setBounds(
+                    Integer.parseInt(properties.getProperty("x")), Integer.parseInt(properties.getProperty("y")),
+                    Integer.parseInt(properties.getProperty("width")), Integer.parseInt(properties.getProperty("height"))
+            );
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+
+            panel = new Panel();
+            panel.setLayout(new GridLayout());
+            TextField textField = new TextField();
+            textField.addActionListener(e->{
+                String text = textField.getText();
+                if(!text.endsWith("_")) text += "_";
+                var m = IDPattern.matcher(text);
+                ArrayList<ID> arrayList = new ArrayList<>();
+                while (m.find()) arrayList.add(new ID(m.group(1), m.group(2), m.group(3)));
+                if(arrayList.size() == 1) openZanata(arrayList.get(0));
+                else if(arrayList.size() > 0) updatePane(arrayList);
+            });
+            frame.add(panel, BorderLayout.NORTH);
+            frame.add(textField, BorderLayout.SOUTH);
+            frame.setVisible(true);
+        }
+
+        void updatePane(List list) {
+            frame.setVisible(false);
+            panel.removeAll();
+            for(int i=0; i<list.size(); i++) {
+                Button button = new Button();
+                button.setLabel(String.valueOf(i));
+                button.setActionCommand(list.get(i).toString());
+                button.addActionListener(e->openZanata(new ID(e.getActionCommand())));
+                panel.add(button);
+            }
+            frame.setVisible(true);
+        }
+
+        @Override
+        public void flavorsChanged(FlavorEvent e) {
+
+            try {
+                getContent();
+            } catch (IOException | UnsupportedFlavorException e1) {
+                e1.printStackTrace();
+            } catch (IllegalStateException e1) {
+                try { getContent(); } catch (Exception ignored) {}
+            }
+
+        }
+
+        synchronized void getContent() throws IOException, UnsupportedFlavorException {
+
+            Transferable trans = clipboard.getContents(null);
+            if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+
+                String s = (String) trans.getTransferData(DataFlavor.stringFlavor);
+                StringSelection ss = new StringSelection(s);
+                clipboard.setContents(ss, ss);
+
+                if(!s.equals(dupCheck)) dupCheck = s;
+                else return;
+
+                var m = IDPattern.matcher(s);
+                ArrayList<ID> arrayList = new ArrayList<>();
+                while (m.find()) {
+                    var id = new ID(m.group(1), m.group(2), m.group(3));
+                    try { logger.info(id.toString() + "\t\t" + getURL(id)); }
+                    catch (ID.NotFileNameHead ignored) { continue; }
+                    catch (Exception e) { e.printStackTrace(); }
+                    arrayList.add(id);
+
+                }
+
+                if(arrayList.size() == 1) openZanata(arrayList.get(0));
+                else if(arrayList.size() > 0) updatePane(arrayList);
+            }
+        }
+
+        private void openZanata(ID id) {
+            try {
+                Desktop.getDesktop().browse(new URI(getURL(id)));
+            }
+            catch (ID.NotFileNameHead ignored) {}
+            catch (Exception e) {
+                logger.error(e.getMessage()+"/"+id.toString());
+                e.printStackTrace();
+            }
+        }
+
+        private String getURL(ID id) throws Exception {
+            String projectName = Utils.getProjectNameByDocument(id);
+            String latestVersion = Utils.getLatestVersion(projectName);
+            return AppConfig.ZANATA_DOMAIN+"webtrans/translate?dswid=-3784&iteration="+latestVersion+"&project="+projectName+"&locale=ko-KR&localeId=ko#view:doc;doc:"+id.getHead()+";msgcontext:"+id.getBody()+"-"+id.getTail();
+        }
+    }
 }

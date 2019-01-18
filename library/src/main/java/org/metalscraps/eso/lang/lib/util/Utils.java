@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.metalscraps.eso.lang.lib.bean.ID;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
@@ -32,13 +33,11 @@ import java.util.zip.Checksum;
 public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    private static String serverVersion = null;
+    private static HashMap<String, String> versionMap = new HashMap<>();
+    private static HashMap<String, ArrayList<String>> projectMap = new HashMap<>();
     public static String getLatestVersion(String projectName) {
-        if(serverVersion != null) return serverVersion;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://www.dostream.com/zanata/rest/projects/p/"+projectName))
-                .header("Accept","application/json")
-                .build();
+        if(versionMap.containsKey(projectName)) return versionMap.get(projectName);
+        HttpRequest request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+projectName);
 
         JsonNode jsonNode = getBodyFromHTTPsRequest(request);
         String[] serverVer = null;
@@ -58,38 +57,28 @@ public class Utils {
             }
         }
         if(serverVer == null) serverVer = new String[] {"0.0.0"};
-        return serverVersion = String.join(".", serverVer);
+        versionMap.put(projectName, String.join(".", serverVer));
+        return versionMap.get(projectName);
     }
 
     public static JsonNode getBodyFromHTTPsRequest(HttpRequest request){
 
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = null;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        try { response = client.send(request, HttpResponse.BodyHandlers.ofString()); }
+        catch (IOException | InterruptedException e) { e.printStackTrace(); }
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = null;
 
-        try {
-            jsonNode = objectMapper.readTree(Objects.requireNonNull(response).body());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        try { jsonNode = objectMapper.readTree(Objects.requireNonNull(response).body()); }
+        catch (IOException e) { e.printStackTrace(); }
         return jsonNode;
     }
 
     public static ArrayList<String> getFileNames(String projectName){
         ArrayList<String> fileNames = new ArrayList<>();
-        final String url = AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r";
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Accept","application/json")
-                .build();
-
+        var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r");
         JsonNode jsonNode = getBodyFromHTTPsRequest(request);
 
         for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
@@ -114,8 +103,7 @@ public class Utils {
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
 
         final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
-        final File baseDirectory = appWorkConfig.getBaseDirectory();
-        final File PODirectory = new File(baseDirectory.getAbsolutePath() + "/PO_" + appWorkConfig.getToday());
+        final File PODirectory = new File(appWorkConfig.getBaseDirectory() + "/PO_" + appWorkConfig.getToday());
         appWorkConfig.setPODirectory(PODirectory);
 
         File fPO = null;
@@ -130,8 +118,8 @@ public class Utils {
 
                 LocalTime ltStart = LocalTime.now();
                 String fileURL = url+fileName;
-                fileURL =  fileURL.replace(" ", "%20");
-                logger.trace("download zanata file  ["+fileName + "] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
+                fileURL = fileURL.replace(" ", "%20");
+                logger.trace("download zanata file  ["+fileName+"] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
 
                 fPO = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
                 if (!fPO.exists() || fPO.length() <= 0) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
@@ -149,13 +137,9 @@ public class Utils {
                 Utils.downloadPO(appWorkConfig, projectName);
             }
             else e.printStackTrace();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { logger.error(e.getMessage()); e.printStackTrace(); }
 
     }
-
 
     public static long CRC32(File f) {
         Checksum crc = new CRC32();
@@ -164,7 +148,6 @@ public class Utils {
         try(BufferedInputStream in = new BufferedInputStream(new FileInputStream(f))) {
             byte[] buffer = new byte[32768];
             int length;
-
             while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
         } catch (IOException e) { e.printStackTrace(); }
         return crc.getValue();
@@ -188,18 +171,6 @@ public class Utils {
         try { FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET); } catch (IOException e) { e.printStackTrace(); }
     }
 
-    /*
-        @link makeCSV ㅎㅅㅎ
-     */
-    @Deprecated
-    public static void makeFile(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) { makeCSV(file, toCSVConfig, poList); }
-
-    /*
-        @link convertCN_PO_to_KO 쓰셈
-     */
-    @Deprecated
-    public static void Mapping(AppWorkConfig appWorkConfig) { convertKO_PO_to_CN(appWorkConfig); }
-
     public static void convertKO_PO_to_CN(AppWorkConfig appWorkConfig) {
 
         Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
@@ -213,12 +184,6 @@ public class Utils {
             e.printStackTrace();
         }
     }
-
-    /*
-    @link convertKO_PO_to_CN 쓰셈 이름 잘못지음ㅎㅎ
-    */
-    @Deprecated
-    public static void convertCN_PO_to_KO(AppWorkConfig appWorkConfig) { convertKO_PO_to_CN(appWorkConfig); }
 
     public static String KOToCN(String string) {
         char[] c = string.toCharArray();
@@ -293,7 +258,6 @@ public class Utils {
 
     }
 
-
     private void processRun(String command, File directory) throws IOException, InterruptedException { processRun(command, ProcessBuilder.Redirect.INHERIT, directory); }
 
     private void processRun(String command, @SuppressWarnings("SameParameterValue") ProcessBuilder.Redirect redirect, File directory) throws IOException, InterruptedException {
@@ -326,4 +290,50 @@ public class Utils {
             properties.store(fos, String.valueOf(new Date().getTime()));
         } catch (Exception e) { e.printStackTrace(); }
     }
+
+    // projectMap 초기화. @RESTAPI
+    public static HashMap<String, ArrayList<String>> getProjects() {
+        if(projectMap.size()>0) return projectMap;
+        HttpRequest request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects");
+
+        JsonNode jsonNode = getBodyFromHTTPsRequest(request);
+        ArrayList<String> list = new ArrayList<>();
+        for(var x : jsonNode) if(x.get("id").toString().startsWith("\"ESO-") && x.get("status").toString().equals("\"ACTIVE\"")) projectMap.put(String.valueOf(x.get("id")).replace("\"",""), new ArrayList<>());
+        return projectMap;
+    }
+
+    // projectMap 초기화. @RESTAPI
+    @SuppressWarnings("UnusedReturnValue")
+    public static ArrayList<String> getDocuments(String projectName) {
+        var list = projectMap.get(projectName);
+        if(list.size() == 0) list.addAll(getFileNames(projectName));
+        return list;
+    }
+
+    private static HttpRequest getDefaultRestClient(String domain) {
+        return HttpRequest.newBuilder().uri(URI.create(domain)).header("Accept","application/json").build();
+    }
+
+    public static HashMap<String, ArrayList<String>> getProjectMap() {
+        if(projectMap.size() == 0) {
+            var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects");
+
+            JsonNode jsonNode = getBodyFromHTTPsRequest(request);
+
+            for(var x : jsonNode) {
+                var id = String.valueOf(x.get("id")).replace("\"","");
+                if(id.startsWith("ESO-") && String.valueOf(x.get("status")).equals("\"ACTIVE\"")) projectMap.put(id, getFileNames(id));
+            }
+        }
+
+        for(var x : getProjects().keySet()) getDocuments(x);
+        return projectMap;
+    }
+
+    public static String getProjectNameByDocument(ID id) throws Exception {
+        if(!id.isHeadFileName()) throw new ID.NotFileNameHead();
+        for(var x : getProjectMap().entrySet()) if(x.getValue().contains(id.getHead())) return x.getKey();
+        throw new Exception("프로젝트 못찾음 /" + id.toString());
+    }
+
 }
