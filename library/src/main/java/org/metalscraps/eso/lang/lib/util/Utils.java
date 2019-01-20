@@ -167,8 +167,14 @@ public class Utils {
 
     public static void makeCSV(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
         StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-        for (PO p : poList) sb.append(p.toCSV(toCSVConfig));
-        try { FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET); } catch (IOException e) { e.printStackTrace(); }
+        for (PO p : poList) {
+            sb.append(p.toCSV(toCSVConfig));
+        }
+        try {
+            FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void convertKO_PO_to_CN(AppWorkConfig appWorkConfig) {

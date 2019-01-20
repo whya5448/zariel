@@ -71,15 +71,24 @@ public class PO implements Comparable {
 
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
-		String t = "";
+		String translatedMsg = "";
 
-		if(toCSVConfig.isRemoveComment()) target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
+		if (toCSVConfig.isRemoveComment()) {
+			target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
+		}
 
-		if(toCSVConfig.isWriteFileName()) t = (stringFileName +  "_" + id2 + "_" + id3 + "_" + target);
-		else if(!toCSVConfig.isBeta() && isFuzzy() && target.contains("-G-")) t = source;
-		else t = target;
+		if (toCSVConfig.isWriteFileName()) {
+			translatedMsg = (stringFileName + "_" + id2 + "_" + id3 + "_" + target);
+		} else if (toCSVConfig.isBeta()){
+			translatedMsg = target;
+		} else {
+			translatedMsg = target;
+			if(isFuzzy() || target.contains("-G-")){
+				translatedMsg = source;
+			}
+		}
 
-		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+t+"\"\n";
+		return "\""+id+"\",\""+(toCSVConfig.isWriteSource()?source:"")+"\",\""+translatedMsg+"\"\n";
 
 	}
 
