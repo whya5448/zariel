@@ -224,7 +224,7 @@ public class Utils {
 
         HashMap<String, PO> poMap = new HashMap<>();
         String fileName = FilenameUtils.getBaseName(config.getFile().getName());
-        String source = sourceToMapParser(config);
+        String source = parseSourceToMap(config);
 
         Matcher m = config.getPattern().matcher(source);
         boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
@@ -239,7 +239,7 @@ public class Utils {
         return poMap;
     }
 
-    private static String sourceToMapParser(SourceToMapConfig config) {
+    private static String parseSourceToMap(SourceToMapConfig config) {
 
         String source = null;
         try {
