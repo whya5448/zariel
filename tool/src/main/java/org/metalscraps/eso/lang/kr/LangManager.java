@@ -363,39 +363,15 @@ class LangManager {
 		}
 	}
 
-	/*
-	@link MakeCSVs
-	 */
-	@Deprecated
-	void makeCSV(boolean usePO2) { makeCSVs(); }
 	void makeCSVs() {
 
-		ArrayList<PO> sourceList = new ArrayList<>();
-
 		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
-		for (File file : fileList) {
+		ArrayList<PO> sourceList = Utils.getMergedPO(fileList);
+		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
 
-			String fileName = FilenameUtils.getBaseName(file.getName());
-
-			// pregame 쪽 데이터
-			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
-
-			//41714900-0-345 tip.po "////"
-			//249936564-0-5081 quest-sub.po """Captain""
-			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
-			// 41714900-0-345|249936564-0-5081|265851556-0-4666
-
-			sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-			System.out.println(file);
-
-		}
-
-		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(true);
-		sourceList.sort(null);
-
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig, sourceList);
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setBeta(true), sourceList);
-		Utils.makeCSV(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
+		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig, sourceList);
+		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setBeta(true), sourceList);
+		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
 
 	}
 
