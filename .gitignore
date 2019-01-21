@@ -18,6 +18,7 @@ $RECYCLE.BIN/
 *.war
 *.ear
 *.zip
+*.iml
 *.tar.gz
 *.rar
 hs_err_pid*
