@@ -4,8 +4,10 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.FileNames;
+
+import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Created by 안병길 on 2018-01-18.
@@ -13,7 +15,13 @@ import org.metalscraps.eso.lang.lib.config.FileNames;
  */
 
 @Data
-public class PO implements Comparable {
+public class PO implements Comparable<PO> {
+
+    public static Comparator<PO> comparator = (o1, o2) -> {
+        if(!Objects.equals(o1.getId1(), o2.getId1())) return o1.getId1() - o2.getId1();
+        if(!Objects.equals(o1.getId2(), o2.getId2())) return o1.getId2() - o2.getId2();
+        return o1.getId3() - o2.getId3();
+    };
 
 	public enum POWrapType {
 		WRAP_ALL,
@@ -67,15 +75,10 @@ public class PO implements Comparable {
 	}
 
 	@Override
-	public String toString() { return toCSV(new ToCSVConfig(false, false, false, false)); }
-
+	public String toString() { return toCSV(new ToCSVConfig()); }
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
 		String translatedMsg = "";
-
-		if (toCSVConfig.isRemoveComment()) {
-			target = target.replaceAll(AppConfig.englishTitlePattern, "$1");
-		}
 
 		if (toCSVConfig.isWriteFileName()) {
 			translatedMsg = (stringFileName + "_" + id2 + "_" + id3 + "_" + target);
@@ -113,7 +116,7 @@ public class PO implements Comparable {
 
 	public StringBuilder toTranslatedPO() {
 		StringBuilder sb = new StringBuilder("\n\n#: ").append(getId());
-		if(isFuzzy()) sb.append("\n#, fuzzy");
+		if (isFuzzy()) sb.append("\n#, fuzzy");
 		sb
 				.append("\nmsgctxt \"").append(getId()).append("\"")
 				.append("\nmsgid \"").append(getSource()).append("\"")
@@ -121,29 +124,13 @@ public class PO implements Comparable {
 		return sb;
 	}
 
-/*
 	@Override
-	public int compareTo(Object o) {
-		PO x = (PO) o;
-		PO t = this;
-		if(t.id1.equals(x.id1)) {
-			if(t.id2.equals(x.id2)) return t.id3.compareTo(x.id3);
-			else return t.id2.compareTo(x.id2);
-		} else return t.id1.compareTo(x.id1);
-
+	public int compareTo(PO o) {
+		String src = Integer.toString(o.id2) + o.id3;
+		String trg = Integer.toString(this.id2) + this.id3;
+		if (src.equals(trg))
+			return this.id1.compareTo(o.id1);
+		else
+			return src.compareTo(trg);
 	}
-*/
-
-	@Override
-	public int compareTo(Object o) {
-
-		PO x = (PO) o;
-		PO t = this;
-		String src = Integer.toString(x.id2) + x.id3;
-		String trg = Integer.toString(t.id2) + t.id3;
-		if (src.equals(trg)) {
-			return t.id1.compareTo(x.id1);
-		} else return src.compareTo(trg);
-	}
-
 }
