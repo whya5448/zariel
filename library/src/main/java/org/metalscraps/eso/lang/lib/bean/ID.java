@@ -1,17 +1,15 @@
 package org.metalscraps.eso.lang.lib.bean;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
+@Data
+@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class ID {
-
-    public ID(String id) { this(id.split("[-_]")); }
-    private ID(String... args) {
-        setHead(args[0]);
-        setBody(args[1]);
-        setTail(args[2]);
-    }
 
     public ID(String head, String body, String tail) {
         setHead(head);
@@ -19,22 +17,17 @@ public class ID {
         setTail(tail);
     }
 
-    private void setHead(String head) {
+    public void setHead(String head) {
         this.head = head;
-        isHeadFileName = head.substring(0,1).matches("^[a-zA-Z]");
+        isFileNameHead = head.substring(0,1).matches("^[a-zA-Z]");
     }
 
     @Override
     public String toString() { return head+"-"+body+"-"+tail; }
 
-    @Getter
-    private boolean isHeadFileName;
+    private boolean isFileNameHead;
 
-    @Getter
-    private String head;
-
-    @Getter @Setter(AccessLevel.PRIVATE)
-    private String body, tail;
+    private String head, body, tail;
 
     public static class NotFileNameHead extends Exception {}
 
