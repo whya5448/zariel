@@ -35,7 +35,7 @@ class Destinations {
 			for(FileNames fileName : fileNames) poMap.putAll(Utils.sourceToMap(config.setFile(new File(appWorkConfig.getPODirectory() +"/"+ fileName.toStringPO2()))));
 
 			boolean init = false;
-			for(Map.Entry<String, PO> entry : ((Map<String, PO>)poMap.clone()).entrySet()) {
+			for(Map.Entry<String, PO> entry : new HashMap<>(poMap).entrySet()) {
 				if(!init) { poMap.clear(); init = true; }
 				PO po = entry.getValue();
 				if(po.isFuzzy()) po.setTarget(po.getSource());

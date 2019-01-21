@@ -97,7 +97,7 @@ class TamrielTradeCentre {
             }
 
             // 타이틀 버전
-            poHashMapWithTitle = (HashMap<String, PO>) poHashMap.clone();
+            poHashMapWithTitle = new HashMap<>(poHashMap);
             for(PO p : poHashMapWithTitle.values()) p.setTarget(p.getFileName().getShortName()+"_"+p.getId3()+"_"+p.getTarget());
 
 			// 룩업 테이블 정보화

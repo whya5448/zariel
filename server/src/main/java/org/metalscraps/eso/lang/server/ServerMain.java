@@ -10,9 +10,7 @@ import com.google.api.services.compute.model.Operation;
 import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
-import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
-import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -78,31 +74,18 @@ class ServerMain {
 
     private void makeAndUpload() {
 
-        ArrayList<PO> sourceList = new ArrayList<>();
         File lang = new File(appWorkConfig.getPODirectory()+"/lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
         Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
         try {
             if(!lang.exists() && lang.length() <= 0) {
-                for (File file : fileList) {
-                    sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-                    logger.trace("sourceToMap "+file.toString());
-                }
-
+                ArrayList<PO> sourceList = Utils.getMergedPO(fileList);
                 ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
-                sourceList.sort(null);
 
-                LocalTime timeTaken = LocalTime.now();
-                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/kr.csv"), csvConfig, sourceList);
-                logger.info("kr.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
-                timeTaken = LocalTime.now();
-                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), csvConfig.setBeta(true), sourceList);
-                logger.info("kr_beta.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
-                timeTaken = LocalTime.now();
-                Utils.makeCSV(new File(appWorkConfig.getPODirectory() + "/tr.csv"), csvConfig.setWriteFileName(true), sourceList);
-                logger.info("tr.csv " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr.csv"), csvConfig, sourceList);
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), csvConfig.setBeta(true), sourceList);
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/tr.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
             }
-
         } catch (Exception e) { e.printStackTrace(); }
     }
 
