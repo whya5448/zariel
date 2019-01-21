@@ -83,7 +83,7 @@ public class Utils {
 
         for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
             JsonNode node = it.next();
-            String Trim= node.get("name").toString().replaceAll("^\"|\"$", "");
+            String Trim = node.get("name").toString().replaceAll("^\"|\"$", "");
             fileNames.add(Trim);
         }
 
@@ -257,8 +257,6 @@ public class Utils {
                     .replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
                     .replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
 
-            // 주석삭제 안씀
-            // if (config.isRemoveComment()) source = source.replaceAll(AppConfig.englishTitlePattern, "$1");
         }
         return source;
 
@@ -297,31 +295,19 @@ public class Utils {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // projectMap 초기화. @RESTAPI
-    public static HashMap<String, ArrayList<String>> getProjects() {
-        if(projectMap.size()>0) return projectMap;
-        HttpRequest request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects");
-
-        JsonNode jsonNode = getBodyFromHTTPsRequest(request);
-        ArrayList<String> list = new ArrayList<>();
-        for(var x : jsonNode) if(x.get("id").toString().startsWith("\"ESO-") && x.get("status").toString().equals("\"ACTIVE\"")) projectMap.put(String.valueOf(x.get("id")).replace("\"",""), new ArrayList<>());
-        return projectMap;
+    private static HttpRequest getDefaultRestClient(String domain) {
+        return HttpRequest.newBuilder().uri(URI.create(domain)).header("Accept","application/json").build();
     }
 
-    // projectMap 초기화. @RESTAPI
-    @SuppressWarnings("UnusedReturnValue")
     public static ArrayList<String> getDocuments(String projectName) {
         var list = projectMap.get(projectName);
         if(list.size() == 0) list.addAll(getFileNames(projectName));
         return list;
     }
 
-    private static HttpRequest getDefaultRestClient(String domain) {
-        return HttpRequest.newBuilder().uri(URI.create(domain)).header("Accept","application/json").build();
-    }
-
     public static HashMap<String, ArrayList<String>> getProjectMap() {
         if(projectMap.size() == 0) {
+            logger.info("rest/projects");
             var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects");
 
             JsonNode jsonNode = getBodyFromHTTPsRequest(request);
@@ -332,14 +318,39 @@ public class Utils {
             }
         }
 
-        for(var x : getProjects().keySet()) getDocuments(x);
+        for(var x : projectMap.keySet()) getDocuments(x);
         return projectMap;
     }
 
     public static String getProjectNameByDocument(ID id) throws Exception {
-        if(!id.isHeadFileName()) throw new ID.NotFileNameHead();
-        for(var x : getProjectMap().entrySet()) if(x.getValue().contains(id.getHead())) return x.getKey();
+        if(!id.isFileNameHead()) throw new ID.NotFileNameHead();
+        for(var x : getProjectMap().entrySet())
+            for(var y : x.getValue())
+                if(y.equalsIgnoreCase(id.getHead())) {
+                    id.setHead(y);
+                    return x.getKey();
+                }
         throw new Exception("프로젝트 못찾음 /" + id.toString());
+    }
+
+    public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
+        ArrayList<PO> sourceList = new ArrayList<>();
+
+        for (File file : fileList) {
+            String fileName = FilenameUtils.getBaseName(file.getName());
+            // pregame 쪽 데이터
+            if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
+            sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+            logger.trace(file.toString());
+        }
+        sourceList.sort(PO.comparator);
+        return sourceList;
+    }
+
+    public static void makeCSVwithLog(File file, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
+        LocalTime timeTaken = LocalTime.now();
+        Utils.makeCSV(file, csvConfig, sourceList);
+        logger.info(file.getName() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
 }
