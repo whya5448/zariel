@@ -1,5 +1,7 @@
 package org.metalscraps.eso.lang.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.metalscraps.eso.lang.lib.bean.ID;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
@@ -28,16 +30,17 @@ import java.util.regex.Pattern;
 
 public class ClientMain {
     private static final Logger logger = LoggerFactory.getLogger(ClientMain.class);
-    private static final Pattern IDPattern = Pattern.compile("([a-zA-Z]?[a-zA-Z\\d-_]+)[_-](\\d)[_-](\\d+)[_-]?");
+    private static final Pattern IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'()]+)[_-](\\d)[_-](\\d+)[_-]?");
     private static final Path appPath = Paths.get(System.getenv("localappdata") + "/" + "dcinside_eso_client");
     private static Path configPath = Paths.get(appPath.toString() + "/.config");
     private static final Properties properties = Utils.setConfig(configPath,
             Map.of("ver", "0", "x","0","y","0","width","100","height","24", "opacity", ".5f"));
     private String serverFileName = null;
     private String crc32 = null;
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) throws InterruptedException {
-        new ClientMain().run();
+        //new ClientMain().run();
         Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new Listener());
         Thread.sleep(Long.MAX_VALUE);
     }
@@ -231,7 +234,18 @@ public class ClientMain {
         private Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         private String dupCheck = "Hello World!";
 
+        private void removeDuplicateItem(ArrayList<ID> list) {
+            for (ID id : new ArrayList<>(list))  {
+                var dup = new ArrayList<ID>();
+                // 내용, toString 결과는 같지만 다른 객체.
+                for (ID id2 : list) if (id.toString().equals(id2.toString()) && id != id2) dup.add(id2);
+                for(var x : dup) list.remove(x);
+            }
+        }
+
         Listener() {
+            Utils.getProjectMap();
+
             // Owner 뺏기
             StringSelection ss = new StringSelection("");
             clipboard.setContents(ss, ss);
@@ -262,6 +276,7 @@ public class ClientMain {
                 var m = IDPattern.matcher(text);
                 ArrayList<ID> arrayList = new ArrayList<>();
                 while (m.find()) arrayList.add(new ID(m.group(1), m.group(2), m.group(3)));
+                removeDuplicateItem(arrayList);
                 if(arrayList.size() == 1) openZanata(arrayList.get(0));
                 else if(arrayList.size() > 0) updatePane(arrayList);
             });
@@ -276,8 +291,18 @@ public class ClientMain {
             for(int i=0; i<list.size(); i++) {
                 Button button = new Button();
                 button.setLabel(String.valueOf(i));
-                button.setActionCommand(list.get(i).toString());
-                button.addActionListener(e->openZanata(new ID(e.getActionCommand())));
+                try {
+                    button.setActionCommand(objectMapper.writeValueAsString(list.get(i)));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                button.addActionListener(e->{
+                    try {
+                        openZanata(objectMapper.readValue(e.getActionCommand(), ID.class));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                });
                 panel.add(button);
             }
             frame.setVisible(true);
@@ -316,9 +341,9 @@ public class ClientMain {
                     catch (ID.NotFileNameHead ignored) { continue; }
                     catch (Exception e) { e.printStackTrace(); }
                     arrayList.add(id);
-
                 }
 
+                removeDuplicateItem(arrayList);
                 if(arrayList.size() == 1) openZanata(arrayList.get(0));
                 else if(arrayList.size() > 0) updatePane(arrayList);
             }
@@ -326,7 +351,9 @@ public class ClientMain {
 
         private void openZanata(ID id) {
             try {
-                Desktop.getDesktop().browse(new URI(getURL(id)));
+                var x = getURL(id);
+                logger.trace("GOTO : "+x);
+                Desktop.getDesktop().browse(new URI(x));
             }
             catch (ID.NotFileNameHead ignored) {}
             catch (Exception e) {
