@@ -29,7 +29,7 @@ subprojects {
 
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
         // 안되면 compile group 해보셈
-        compile group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
+        runtime group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
 
         testCompile group: 'junit', name: 'junit', version: '4.12'
 
@@ -53,6 +53,24 @@ project(':compress-server') {
 }
 
 project(':client') {
+
+    ext {
+        moduleName = 'org.metalscraps.eso.lang.client'
+        moduleLaunchPoint = 'org.metalscraps.eso.lang.client.ClientMain'
+    }
+
+    task jlink(type: Exec, dependsOn: ['clean', 'jar']) {
+        def javaHome = System.properties.'java.home'
+
+        workingDir 'build'
+
+        commandLine "${javaHome}/bin/jlink", '--module-path', "libs${File.pathSeparatorChar}${javaHome}/jmods",
+                '--strip-debug', '--no-header-files', '--no-man-pages', '--compress', '2',
+                '--add-modules', "${moduleName}",
+                '--launcher', "launch=${moduleName}/${moduleLaunchPoint}",
+                '--output', 'dist'
+    }
+
     jar.manifest { attributes 'Main-Class': 'org.metalscraps.eso.lang.client.ClientMain' }
 
     dependencies {

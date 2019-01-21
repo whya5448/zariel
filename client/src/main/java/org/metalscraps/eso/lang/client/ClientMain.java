@@ -33,47 +33,20 @@ public class ClientMain {
     private static final Pattern IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'()]+)[_-](\\d)[_-](\\d+)[_-]?");
     private static final Path appPath = Paths.get(System.getenv("localappdata") + "/" + "dcinside_eso_client");
     private static Path configPath = Paths.get(appPath.toString() + "/.config");
-    private static final Properties properties = Utils.setConfig(configPath,
+    private static final Properties properties = Utils.setConfig(appPath, configPath,
             Map.of("ver", "0", "x","0","y","0","width","100","height","24", "opacity", ".5f"));
     private String serverFileName = null;
     private String crc32 = null;
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) throws InterruptedException {
-        //new ClientMain().run();
+        new ClientMain().run();
         Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new Listener());
         Thread.sleep(Long.MAX_VALUE);
     }
 
     private void run() {
 
-        logger.info("앱 설정 폴더 확인");
-        if(!appPath.toFile().exists()) {
-            logger.info("폴더 존재하지 않음 생성.");
-            if(appPath.toFile().mkdirs()) logger.info(appPath.toString() + "생성 성공");
-            else {
-                logger.error("설정 폴더 생성 실패. 앱 종료");
-                System.exit(AppErrorCode.CANNOT_CREATE_CONFIG_PATH.getErrCode());
-            }
-        }
-
-        logger.info("설정 파일 확인");
-
-        var configPath = Paths.get(appPath.toString() + "/.config");
-        if(!configPath.toFile().exists()) {
-            logger.info("설정 존재하지 않음 생성.");
-            try {
-                if(configPath.toFile().createNewFile()) logger.info(appPath.toString() + "생성 성공");
-                else {
-                    logger.error("설정 생성 실패. 앱 종료");
-                    System.exit(AppErrorCode.CANNOT_CREATE_CONFIG_FILE.getErrCode());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                logger.error("설정 생성 실패. 앱 종료");
-                System.exit(AppErrorCode.CANNOT_CREATE_CONFIG_FILE.getErrCode());
-            }
-        }
 
         logger.info("설정 불러오기");
         long localVer = Long.parseLong(properties.get("ver").toString());
@@ -108,7 +81,8 @@ public class ClientMain {
         logger.info("서버 버전 : " + serverVer);
         logger.info("로컬 버전 : " + localVer);
 
-        if(serverVer > localVer) {
+        // 임시절단
+        if(serverVer > localVer && false) {
             logger.info("업데이트 필요함.");
             if(update()) {
                 logger.info("업데이트 성공");

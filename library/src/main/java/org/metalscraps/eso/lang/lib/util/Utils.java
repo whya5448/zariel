@@ -273,7 +273,35 @@ public class Utils {
         pb.start().waitFor();
     }
 
-    public static Properties setConfig(Path configPath, Map<String, String> config) {
+    public static Properties setConfig(Path appPath, Path configPath, Map<String, String> config) {
+
+        logger.info("앱 설정 폴더 확인");
+        if(!appPath.toFile().exists()) {
+            logger.info("폴더 존재하지 않음 생성.");
+            if(appPath.toFile().mkdirs()) logger.info(appPath.toString() + "생성 성공");
+            else {
+                logger.error("설정 폴더 생성 실패. 앱 종료");
+                System.exit(0);
+            }
+        }
+
+        logger.info("설정 파일 확인");
+
+        if(!configPath.toFile().exists()) {
+            logger.info("설정 존재하지 않음 생성.");
+            try {
+                if(configPath.toFile().createNewFile()) logger.info(appPath.toString() + "생성 성공");
+                else {
+                    logger.error("설정 생성 실패. 앱 종료");
+                    System.exit(0);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error("설정 생성 실패. 앱 종료");
+                System.exit(0);
+            }
+        }
+
         Properties properties = new Properties();
         try {
             if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = new FileInputStream(configPath.toFile())) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
