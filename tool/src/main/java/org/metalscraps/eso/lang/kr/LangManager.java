@@ -161,7 +161,6 @@ class LangManager {
 
 	private void CustomPOmodify(CategoryCSV targetCSV){
 
-
 		HashMap<String, PO> targetPO = targetCSV.getPODataMap();
 
 		for(PO po : targetPO.values()){
@@ -445,6 +444,8 @@ class LangManager {
 		LinkedList<File> fileLinkedList = new LinkedList<>();
 		ArrayList<PO> sourceList = new ArrayList<>();
 		HashMap<String, PO> ko;
+		ArrayList<PO> originList;
+		HashMap<String, PO> zanataPO;
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
@@ -469,11 +470,14 @@ class LangManager {
 
 
 		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
-		ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
-		ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
+		//ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
 
-		ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
+
+		//ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
+		//ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
+
+		/*
 		HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
 		for (PO p : ko.values()) {
 			HashMap<String, ArrayList<PO>> childMap;
@@ -501,12 +505,27 @@ class LangManager {
 		for (Map<String, ArrayList<PO>> childMap : motherMap.values())
 			for (List childList : childMap.values()) sourceList.addAll(childList);
 		sourceList.sort(null);
+*/
+
+		originList = Utils.sourceToArray(sourceToMapConfig.setFile(fileLinkedList.get(0)));
+		zanataPO = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1)));
+		zanataPO.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
+
+		for(PO mergedPO : originList){
+			PO target = zanataPO.get(mergedPO.getId());
+			if(target != null){
+				mergedPO.setSource(target.getSource());
+				mergedPO.setTarget(target.getTarget());
+			}
+		}
 
 
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
 		ToCSVConfig toCSVConfig = new ToCSVConfig();
 		toCSVConfig.setWriteSource(true);
-		for (PO p : sourceList) sb.append(p.toCSV(toCSVConfig));
+		for (PO p : originList) {
+			sb.append(p.toCSV(toCSVConfig));
+		}
 
 		if (fileLinkedList.getLast().getName().contains(".po.")) return;
 

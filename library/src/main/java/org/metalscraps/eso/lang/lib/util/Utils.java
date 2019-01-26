@@ -239,6 +239,22 @@ public class Utils {
         return poMap;
     }
 
+    public static ArrayList<PO> sourceToArray(SourceToMapConfig config){
+        ArrayList<PO> poArray = new ArrayList<>();
+        String fileName = FilenameUtils.getBaseName(config.getFile().getName());
+        String source = parseSourceToMap(config);
+        Matcher m = config.getPattern().matcher(source);
+        boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
+        while (m.find()) {
+            PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
+            //po.setFileName(FileNames.fromString(fileName));
+            po.setStringFileName(fileName);
+            if(isPOPattern && m.group(1) != null && m.group(1).equals("#, fuzzy")) po.setFuzzy(true);
+            poArray.add(po);
+        }
+        return poArray;
+    }
+
     private static String parseSourceToMap(SourceToMapConfig config) {
 
         String source = null;
