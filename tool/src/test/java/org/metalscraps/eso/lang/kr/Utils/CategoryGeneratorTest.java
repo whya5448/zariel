@@ -8,6 +8,7 @@ import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -67,5 +68,37 @@ public class CategoryGeneratorTest {
             PO po = CSVMap.get(key);
             System.out.println("key [" + key+"] , filename ["+po.getFileName()+"] source ["+po.getSource()+"] target ["+po.getTarget()+"]");
         }
+    }
+
+
+    @Test
+    public void genCategoryConfigMap() {
+    }
+
+    @Test
+    public void parseMainCategorizedCSV() {
+    }
+
+    @Test
+    public void genSubCategory() {
+        AppWorkConfig appWorkConfig = new AppWorkConfig();
+        JFileChooser jFileChooser = new JFileChooser();
+        File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
+        jFileChooser.setCurrentDirectory(workDir);
+        appWorkConfig.setBaseDirectory(workDir);
+        appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
+
+        CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
+        ArrayList<CategoryCSV> CategorizedSkillCsvList = new ArrayList<>();
+        CG.GenSkillCategory(CategorizedSkillCsvList);
+        for(CategoryCSV oneCSV : CategorizedSkillCsvList){
+            System.out.println("------------------------------------------");
+            System.out.println("file name : "+oneCSV.getZanataFileName());
+            for(String key: oneCSV.getPoIndexList()){
+                System.out.println("index : "+key);
+            }
+            System.out.println("------------------------------------------");
+        }
+
     }
 }

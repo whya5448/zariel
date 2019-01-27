@@ -146,7 +146,7 @@ public class GoogleTranslate implements Runnable {
         return ret.toString();
     }
 
-    private String ReplaceSpecialChar(String origin){
+    public static String ReplaceSpecialChar(String origin){
         String ret = origin.replace("<< ", "<<");
         ret =  ret.replace(" >>", ">>");
         ret  = ret.replace(" : ", ":");

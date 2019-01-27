@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr;
+package org.metalscraps.eso.lang.kr.config;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -6,7 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.config.CSVmerge;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
@@ -23,8 +22,7 @@ import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
-public class LangManagerTest {
-    public static LangManager LMG;
+public class CSVmergeTest {
     public static AppWorkConfig appWorkConfig;
     public static CategoryGenerator CG;
     @BeforeClass
@@ -45,36 +43,29 @@ public class LangManagerTest {
         appWorkConfig.setBaseDirectory(workDir);
         appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
         appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
-
-        LMG = new LangManager(appWorkConfig);
         CG = new CategoryGenerator(appWorkConfig);
 
     }
 
     @Test
-    public void localCSVcountTest() {
-        HashMap<String, PO> CSVMap = CG.GetSelectedCSVMap();
-        System.out.println("local csv count:"+CSVMap.size());
-
-    }
-
-
-    @Test
-    public void genCatecoryCSV(){
+    public void mergeCSV() {
+        /*
         CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
         originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
         originCG.GenCategory();
         HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
-        int total = 0;
-        for(CategoryCSV oneCsv : categorizedCSV){
-            total += oneCsv.getPODataMap().size();
-            if(oneCsv.getZanataFileName().contains("Dragonknight")){
-                for(String key : oneCsv.getPODataMap().keySet()){
-                    System.out.println("key [" +key +"] data ["+oneCsv.getPODataMap().get(key).getTarget());
-                }
+        */
+
+        ArrayList<CategoryCSV> CategorizedSkillCsvList = new ArrayList<>();
+        CG.GenSkillCategory(CategorizedSkillCsvList);
+        for(CategoryCSV oneCSV : CategorizedSkillCsvList){
+            System.out.println("------------------------------------------");
+            System.out.println("file name : "+oneCSV.getZanataFileName());
+            for(String key: oneCSV.getPoIndexList()){
+                System.out.println("index : "+key);
             }
+            System.out.println("------------------------------------------");
         }
-        System.out.println("categorized count :"+total);
 
         CSVmerge merge = new CSVmerge();
         HashMap<String, PO> targetCSV = new HashMap<>();
@@ -86,25 +77,13 @@ public class LangManagerTest {
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
             targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
-            //System.out.println("zanata po parsed ["+file+"] ");
+            System.out.println("zanata po parsed ["+file+"] ");
         }
 
+        HashSet<CategoryCSV> categorizedCSV = new HashSet<>();
+        categorizedCSV.addAll(CategorizedSkillCsvList);
         merge.MergeCSV(categorizedCSV, targetCSV, false);
-        int mergedcount = 0;
-        for(CategoryCSV oneCsv : categorizedCSV){
-            mergedcount += oneCsv.getPODataMap().size();
-
-            if(oneCsv.getZanataFileName().contains("Dragonknight") && oneCsv.getZanataFileName().contains("Flame") ){
-                for(String key : oneCsv.getPODataMap().keySet()){
-                    System.out.println("key [" +key +"] data src["+oneCsv.getPODataMap().get(key).getSource()+"] trg["+oneCsv.getPODataMap().get(key).getTarget());
-                }
-            }
-        }
-        System.out.println("merged count :"+mergedcount);
-
 
 
     }
-
-
 }

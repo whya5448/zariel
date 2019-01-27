@@ -21,62 +21,103 @@ public class PoConverter {
 
     public void translateGoogle() {
 
-            //File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
-            Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
-            ArrayList<PO> LtransList = new ArrayList<>();
-            for (File file : fileList) {
-                ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-                System.out.println("target : " + file);
+        //File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
+        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+        ArrayList<PO> LtransList = new ArrayList<>();
+        for (File file : fileList) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + file);
 
-                int requestCount = 0;
+            int requestCount = 0;
 
-                ArrayList<PO> skippedItem = new ArrayList<>();
-                ArrayList<Thread> workerList = new ArrayList<>();
+            ArrayList<PO> skippedItem = new ArrayList<>();
+            ArrayList<Thread> workerList = new ArrayList<>();
 
-                GoogleTranslate worker = new GoogleTranslate();
-                for (PO oneItem : fileItems) {
-                    if (oneItem.getSource().equals(oneItem.getTarget())) {
-                        oneItem.modifyDoubleQuart();
-                        worker.addJob(oneItem);
-                        Thread transWork = new Thread(worker);
-                        transWork.start();
-                        workerList.add(transWork);
-                        requestCount++;
-                    } else {
-                        skippedItem.add(oneItem);
-                    }
+            GoogleTranslate worker = new GoogleTranslate();
+            for (PO oneItem : fileItems) {
+                if (oneItem.getSource().equals(oneItem.getTarget())) {
+                    oneItem.modifyDoubleQuart();
+                    worker.addJob(oneItem);
+                    Thread transWork = new Thread(worker);
+                    transWork.start();
+                    workerList.add(transWork);
+                    requestCount++;
+                } else {
+                    skippedItem.add(oneItem);
+                }
 
 
-                    if (requestCount > 0) {
-                            System.out.println("wait for Google translate....");
-                            for (Thread t : workerList) {
-                                try {
-                                    t.join();
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                            requestCount = 0;
-                    }
-
-                        for (Thread t : workerList) {
-                            try {
-                                t.join();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
+                if (requestCount > 0) {
+                    System.out.println("wait for Google translate....");
+                    for (Thread t : workerList) {
+                        try {
+                            t.join();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
                     }
+                    requestCount = 0;
+                }
 
-                    //LtransList.addAll(skippedItem);
-                    LtransList.addAll(worker.getResult());
-
-                    String outputName = LtransList.get(1).getFileName() + "_conv.po";
-                    this.makePOFile(outputName, LtransList);
-                    LtransList.clear();
+                for (Thread t : workerList) {
+                    try {
+                        t.join();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
 
+            //LtransList.addAll(skippedItem);
+            LtransList.addAll(worker.getResult());
+
+            String outputName = LtransList.get(1).getFileName() + "_conv.po";
+            this.makePOFile(outputName, LtransList);
+            LtransList.clear();
+        }
+    }
+
+    public void filterNewPO() {
+        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+        ArrayList<PO> LtransList = new ArrayList<>();
+
+        for (File file : fileList) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + file);
+            for (PO oneItem : fileItems) {
+                if (oneItem.getSource().equals(oneItem.getTarget())) {
+                    oneItem.setTarget("");
+                    LtransList.add(oneItem);
+                }
+            }
+            System.out.println("target size: " + LtransList.size());
+
+            String outputName = file.getName() + "_conv.po";
+            this.makePOFile(outputName, LtransList);
+            LtransList.clear();
+        }
+    }
+
+    public void setFuzzyNbyG() {
+        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+        ArrayList<PO> LtransList = new ArrayList<>();
+
+        for (File file : fileList) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + file);
+            for (PO oneItem : fileItems) {
+                oneItem.setFuzzy(true);
+                oneItem.setTarget(GoogleTranslate.ReplaceSpecialChar(oneItem.getTarget())+"-G-");
+                LtransList.add(oneItem);
+
+            }
+            System.out.println("target size: " + LtransList.size());
+
+            String outputName = file.getName() + "_trans.po";
+            this.makePOFile(outputName, LtransList);
+            LtransList.clear();
+        }
+    }
 
 
 

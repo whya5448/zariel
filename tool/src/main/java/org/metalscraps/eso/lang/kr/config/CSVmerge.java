@@ -35,7 +35,7 @@ public class CSVmerge {
             }
             PO targetPO = FullPO.get(index);
             if(targetPO == null){
-                continue;
+                System.out.println("no index in target:"+index);
             } else {
                 if(basePO.getSource().equals(targetPO.getSource())) {
                     basePO.setTarget(targetPO.getTarget());

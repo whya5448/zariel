@@ -197,7 +197,7 @@ public class CategoryGenerator {
 
     }
 
-    private boolean GenSkillCategory(ArrayList<CategoryCSV> SkillCSV){
+    public boolean GenSkillCategory(ArrayList<CategoryCSV> SkillCSV){
         boolean wbCrawlRet;
         WebCrawler wc = new WebCrawler();
         try {

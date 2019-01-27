@@ -219,7 +219,7 @@ class LangManager {
 		}
 		Reordered.addAll(Match);
 		Reordered.addAll(NonMatch);
-		Reordered.remove(0);
+		//Reordered.remove(0);
 		return Reordered;
 	}
 
@@ -511,6 +511,30 @@ class LangManager {
 		zanataPO = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1)));
 		zanataPO.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
+		zanataPO.remove("41714900-0-307");
+		zanataPO.remove("41714900-0-337");
+		zanataPO.remove("41714900-0-339");
+		zanataPO.remove("41714900-0-340");
+		zanataPO.remove("41714900-0-342");
+		zanataPO.remove("41714900-0-343");
+		zanataPO.remove("41714900-0-345");
+		zanataPO.remove("41714900-0-346");
+		zanataPO.remove("41714900-0-348");
+		zanataPO.remove("41714900-0-349");
+		zanataPO.remove("41714900-0-351");
+		zanataPO.remove("41714900-0-352");
+		zanataPO.remove("41714900-0-354");
+		zanataPO.remove("41714900-0-355");
+		zanataPO.remove("41714900-0-357");
+		zanataPO.remove("41714900-0-358");
+		zanataPO.remove("41714900-0-360");
+		zanataPO.remove("41714900-0-361");
+		zanataPO.remove("41714900-0-363");
+		zanataPO.remove("41714900-0-364");
+
+
+
+
 		for(PO mergedPO : originList){
 			PO target = zanataPO.get(mergedPO.getId());
 			if(target != null){
@@ -518,6 +542,7 @@ class LangManager {
 				mergedPO.setTarget(target.getTarget());
 			}
 		}
+
 
 
 		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
@@ -547,7 +572,9 @@ class LangManager {
 
 	void translateGoogle() {
 		this.PC.setAppWorkConfig(this.appWorkConfig);
-		this.PC.translateGoogle();
+		//this.PC.translateGoogle();
+		//this.PC.filterNewPO();
+		this.PC.setFuzzyNbyG();
 	}
 
 }
