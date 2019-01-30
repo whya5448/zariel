@@ -1,0 +1,5 @@
+def moduleName = 'dc-eso-client'
+def mainClass = 'org.metalscraps.eso.lang.server.compress.CompressServerMain'
+jar.manifest { attributes 'Implementation-Title': moduleName, 'Main-Class': mainClass }
+
+dependencies { compile project(':library') }

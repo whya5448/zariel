@@ -378,15 +378,48 @@ public class Utils {
     }
 
     public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
-        ArrayList<PO> sourceList = new ArrayList<>();
+        var map = new HashMap<String, PO>();
+        var config = new SourceToMapConfig();
 
         for (File file : fileList) {
             String fileName = FilenameUtils.getBaseName(file.getName());
+            String ext = FilenameUtils.getExtension(file.getName());
+            config.setFile(file);
+
+            if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
+            else if(ext.startsWith("po")) config.setPattern(AppConfig.POPattern);
+
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
-            sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+
+            map.putAll(Utils.sourceToMap(config));
             logger.trace(file.toString());
         }
+
+        map.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
+
+        map.remove("41714900-0-307");
+        map.remove("41714900-0-337");
+        map.remove("41714900-0-339");
+        map.remove("41714900-0-340");
+        map.remove("41714900-0-342");
+        map.remove("41714900-0-343");
+        map.remove("41714900-0-345");
+        map.remove("41714900-0-346");
+        map.remove("41714900-0-348");
+        map.remove("41714900-0-349");
+        map.remove("41714900-0-351");
+        map.remove("41714900-0-352");
+        map.remove("41714900-0-354");
+        map.remove("41714900-0-355");
+        map.remove("41714900-0-357");
+        map.remove("41714900-0-358");
+        map.remove("41714900-0-360");
+        map.remove("41714900-0-361");
+        map.remove("41714900-0-363");
+        map.remove("41714900-0-364");
+
+        var sourceList = new ArrayList<>(map.values());
         sourceList.sort(PO.comparator);
         return sourceList;
     }

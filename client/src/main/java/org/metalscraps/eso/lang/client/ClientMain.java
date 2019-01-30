@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 public class ClientMain {
+    private static final boolean isWhya = System.getenv().getOrDefault("debug", "false").equals("whya5448");
     private static final Logger logger = LoggerFactory.getLogger(ClientMain.class);
     private static final Pattern IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'()]+)[_-](\\d)[_-](\\d+)[_-]?");
     private static final Path appPath = Paths.get(System.getenv("localappdata") + "/" + "dcinside_eso_client");
@@ -47,29 +48,27 @@ public class ClientMain {
 
     private void run() {
 
-
         logger.info("설정 불러오기");
         long localVer = Long.parseLong(properties.get("ver").toString());
 
         logger.info("서버 버전 확인 중...");
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://eso.metalscraps.org/ver.html"))
-                .GET() //used by default if we don't specify
-                .build();
-
-        //sending request and receiving response via HttpClient
-        HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = null;
+
         try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            response = HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://eso.metalscraps.org/ver.html")).GET().build(), HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             logger.error("서버 버전 확인 실패");
-            System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.getErrCode());
+            for(var x : e.getStackTrace()) logger.error(x.toString());
             e.printStackTrace();
+            System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.getErrCode());
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+            e.printStackTrace();
+            System.exit(-1);
         }
 
         if(response.statusCode() != 200) {
-            logger.error("서버 버전 확인 실패");
+            logger.error("서버 버전 확인 실패 / STATUS : " + response.statusCode());
             System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.getErrCode());
         }
         String[] resData = response.body().trim().split("/");
@@ -82,7 +81,7 @@ public class ClientMain {
         logger.info("로컬 버전 : " + localVer);
 
         // 임시절단
-        if(serverVer > localVer && false) {
+        if(serverVer > localVer) {
             logger.info("업데이트 필요함.");
             if(update()) {
                 logger.info("업데이트 성공");
@@ -122,7 +121,7 @@ public class ClientMain {
         downloadLang();
         try {
             Utils.processRun(appPath.toFile(), tool.toString()+" -p -x kr.csv -o kr.lang");
-            Utils.processRun(appPath.toFile(), tool.toString()+" -p -x kr.csv -o kr_beta.lang");
+            Utils.processRun(appPath.toFile(), tool.toString()+" -p -x kr_beta.csv -o kr_beta.lang");
             Utils.processRun(appPath.toFile(), tool.toString()+" -p -x tr.csv -o tr.lang");
         } catch (Exception e) {
             logger.error("LANG 생성 실패");
@@ -154,7 +153,7 @@ public class ClientMain {
         }
 
         if(!crc32.equals(String.valueOf(Utils.CRC32(langPath.toFile())))) {
-            logger.error("LANG 파일 CRC 불일치");
+            logger.warn("LANG 파일 CRC 불일치");
             try { Files.deleteIfExists(langPath); } catch (IOException e) { e.printStackTrace(); }
             downloadLang();
         }
@@ -166,8 +165,7 @@ public class ClientMain {
             logger.error("언어파일 압축해제 실패");
             System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.getErrCode());
         }
-
-        langPath.toFile().deleteOnExit();
+        if(!isWhya) langPath.toFile().deleteOnExit();
     }
 
     private boolean downloadTool() {

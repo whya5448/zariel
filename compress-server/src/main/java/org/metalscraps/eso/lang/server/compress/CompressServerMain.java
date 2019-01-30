@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -18,7 +17,7 @@ import java.util.Properties;
 public class CompressServerMain {
     private static final Logger logger = LoggerFactory.getLogger(CompressServerMain.class);
     private final AppWorkConfig appWorkConfig = new AppWorkConfig();
-    private final Properties properties = Utils.setConfig(Path.of("./.config"), Map.of());
+    private final Properties properties = Utils.setConfig(appWorkConfig.getBaseDirectory().toPath(), Paths.get("./.config"), Map.of());
 
     private void deleteTemp() {
 

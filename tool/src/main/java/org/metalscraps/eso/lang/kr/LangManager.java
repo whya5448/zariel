@@ -442,10 +442,6 @@ class LangManager {
 		// EsoExtractData.exe -l en_0124.lang -p
 
 		LinkedList<File> fileLinkedList = new LinkedList<>();
-		ArrayList<PO> sourceList = new ArrayList<>();
-		HashMap<String, PO> ko;
-		ArrayList<PO> originList;
-		HashMap<String, PO> zanataPO;
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
@@ -468,102 +464,17 @@ class LangManager {
 		}
 		if (fileLinkedList.size() != 2) return;
 
+		var list = Utils.getMergedPO(fileLinkedList);
+		var config = new ToCSVConfig().setWriteSource(false);
 
-		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
-		//ko = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(0)));
-
-
-
-		//ko.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1))));
-		//ko.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
-
-		/*
-		HashMap<FileNames, HashMap<String, ArrayList<PO>>> motherMap = new HashMap<>();
-		for (PO p : ko.values()) {
-			HashMap<String, ArrayList<PO>> childMap;
-			ArrayList<PO> childList;
-
-			if (motherMap.containsKey(p.getFileName())) childMap = motherMap.get(p.getFileName());
-			else motherMap.put(p.getFileName(), childMap = new HashMap<>());
-
-			if (childMap.containsKey(p.getSource())) childList = childMap.get(p.getSource());
-			else childMap.put(p.getSource(), childList = new ArrayList<>());
-
-			childList.add(p);
-		}
-
-		for (HashMap<String, ArrayList<PO>> childMap : motherMap.values()) {
-			for (ArrayList<PO> childList : childMap.values()) {
-				PO p = null;
-				for (PO x : childList) if (!x.getSource().equals(x.getTarget())) p = x;
-				if (p != null)
-					for (PO x : childList) if (x.getSource().equals(x.getTarget())) x.setTarget(p.getTarget());
-			}
-		}
-
-
-		for (Map<String, ArrayList<PO>> childMap : motherMap.values())
-			for (List childList : childMap.values()) sourceList.addAll(childList);
-		sourceList.sort(null);
-*/
-
-		originList = Utils.sourceToArray(sourceToMapConfig.setFile(fileLinkedList.get(0)));
-		zanataPO = Utils.sourceToMap(sourceToMapConfig.setFile(fileLinkedList.get(1)));
-		zanataPO.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
-
-		zanataPO.remove("41714900-0-307");
-		zanataPO.remove("41714900-0-337");
-		zanataPO.remove("41714900-0-339");
-		zanataPO.remove("41714900-0-340");
-		zanataPO.remove("41714900-0-342");
-		zanataPO.remove("41714900-0-343");
-		zanataPO.remove("41714900-0-345");
-		zanataPO.remove("41714900-0-346");
-		zanataPO.remove("41714900-0-348");
-		zanataPO.remove("41714900-0-349");
-		zanataPO.remove("41714900-0-351");
-		zanataPO.remove("41714900-0-352");
-		zanataPO.remove("41714900-0-354");
-		zanataPO.remove("41714900-0-355");
-		zanataPO.remove("41714900-0-357");
-		zanataPO.remove("41714900-0-358");
-		zanataPO.remove("41714900-0-360");
-		zanataPO.remove("41714900-0-361");
-		zanataPO.remove("41714900-0-363");
-		zanataPO.remove("41714900-0-364");
-
-
-
-
-		for(PO mergedPO : originList){
-			PO target = zanataPO.get(mergedPO.getId());
-			if(target != null){
-				mergedPO.setSource(target.getSource());
-				mergedPO.setTarget(target.getTarget());
-			}
-		}
-
-
-
-		StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-		ToCSVConfig toCSVConfig = new ToCSVConfig();
-		toCSVConfig.setWriteSource(true);
-		for (PO p : originList) {
-			sb.append(p.toCSV(toCSVConfig));
-		}
-
-		if (fileLinkedList.getLast().getName().contains(".po.")) return;
+		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr.csv"), config, list);
+		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), config.setBeta(true), list);
+		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/tr.csv"), config.setWriteFileName(true).setBeta(false), list);
 
 		try {
-
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + fileLinkedList.getLast().getName() + ".merged.csv"), sb.toString(), AppConfig.CHARSET);
-
-			ProcessBuilder pb = new ProcessBuilder()
-					.directory(appWorkConfig.getBaseDirectory())
-					.command(appWorkConfig.getBaseDirectory() + "/EsoExtractData.exe\" -x " + fileLinkedList.getLast().getName() + ".merged.csv -p")
-					.redirectError(ProcessBuilder.Redirect.INHERIT)
-					.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			pb.start().waitFor();
+			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/kr.csv -o kr.lang");
+			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/kr_beta.csv -o kr_beta.lang");
+			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/tr.csv -o tr.lang");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
-
 public class CSVmergeTest {
     public static AppWorkConfig appWorkConfig;
     public static CategoryGenerator CG;
@@ -80,8 +78,7 @@ public class CSVmergeTest {
             System.out.println("zanata po parsed ["+file+"] ");
         }
 
-        HashSet<CategoryCSV> categorizedCSV = new HashSet<>();
-        categorizedCSV.addAll(CategorizedSkillCsvList);
+        HashSet<CategoryCSV> categorizedCSV = new HashSet<>(CategorizedSkillCsvList);
         merge.MergeCSV(categorizedCSV, targetCSV, false);
 
 

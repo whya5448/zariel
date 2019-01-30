@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+def moduleName = 'dc-eso-server'
+def mainClass = 'org.metalscraps.eso.lang.server.ServerMain'
+
+jar {
+    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest { attributes 'Implementation-Title': moduleName, 'Main-Class': mainClass }
+}
+
+dependencies {
+    compile project(':library')
+    compile 'com.google.apis:google-api-services-compute:v1-rev199-1.25.0'
+}
+

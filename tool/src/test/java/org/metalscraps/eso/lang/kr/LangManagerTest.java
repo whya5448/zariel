@@ -16,12 +16,9 @@ import org.metalscraps.eso.lang.lib.util.Utils;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import static org.junit.Assert.*;
 
 public class LangManagerTest {
     public static LangManager LMG;

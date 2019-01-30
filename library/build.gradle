@@ -1,0 +1,47 @@
+plugins {
+    id 'org.beryx.jlink' version '2.4.4'
+    id "org.javamodularity.moduleplugin" version "1.4.0"
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    implementation 'commons-io:commons-io:2.6'
+}
+
+def sImageName = 'dc-eso-library'
+def sModuleName = 'org.metalscraps.eso.lang.library'
+//def sMainClass = 'org.metalscraps.eso.lang.lib.Main'
+def sMainClass = ''
+mainClassName = "${sModuleName}/${sMainClass}"
+jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
+
+jlink {
+    mergedModuleName = "${sModuleName}.merged"
+    imageName = sImageName
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    imageZip = file("$buildDir/${sImageName}-${version}.zip")
+    launcher {
+        name = 'launch'
+        jvmArgs = ['-Dlogback.configurationFile=./logback.xml']
+    }
+    mergedModule {
+        requires 'java.management'
+        requires 'java.naming'
+        requires 'java.logging'
+        requires 'java.sql'
+        requires 'java.xml'
+        requires 'java.desktop'
+        requires 'jdk.unsupported'
+        uses 'java.nio.file.spi.FileSystemProvider'
+        provides 'com.fasterxml.jackson.core.JsonFactory' with 'com.fasterxml.jackson.core.JsonFactory'
+        provides 'com.fasterxml.jackson.core.ObjectCodec' with 'com.fasterxml.jackson.databind.ObjectMapper'
+    }
+}
+
+tasks.jlink.doLast {
+    copy {
+        from('src/main/resources')
+        into("$buildDir/${sImageName}/bin")
+    }
+}
+

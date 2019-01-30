@@ -1,0 +1,13 @@
+def moduleName = 'dc-eso-tool'
+def mainClass = 'org.metalscraps.eso.lang.kr.ToolMain'
+
+jar.manifest { attributes 'Implementation-Title': moduleName, 'Main-Class': mainClass }
+
+dependencies {
+    compile project(':library')
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation 'org.apache.commons:commons-text:1.2'
+    implementation 'com.google.cloud:google-cloud-translate:1.14.0'
+    implementation 'org.jsoup:jsoup:1.11.2'
+}
