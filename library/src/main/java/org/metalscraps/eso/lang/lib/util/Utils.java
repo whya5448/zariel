@@ -141,6 +141,7 @@ public class Utils {
 
     }
 
+    @Deprecated
     public static long CRC32(File f) {
         Checksum crc = new CRC32();
         if(!f.exists() || f.length() <= 0) return -1;
@@ -153,8 +154,22 @@ public class Utils {
         return crc.getValue();
     }
 
+    public static long CRC32(Path p) {
+        Checksum crc = new CRC32();
+        try { if(Files.notExists(p) || Files.size(p) <= 0) return -1; }
+        catch (IOException e) { e.printStackTrace(); }
+
+        try(BufferedInputStream in = new BufferedInputStream(Files.newInputStream(p))) {
+            byte[] buffer = new byte[32768];
+            int length;
+            while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
+        } catch (IOException e) { e.printStackTrace(); }
+        return crc.getValue();
+    }
+
 
     public static void processRun(File baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory, command, ProcessBuilder.Redirect.INHERIT); }
+    public static void processRun(Path baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory.toFile(), command, ProcessBuilder.Redirect.INHERIT); }
 
     public static void processRun(File baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder()
@@ -292,21 +307,25 @@ public class Utils {
     public static Properties setConfig(Path appPath, Path configPath, Map<String, String> config) {
 
         logger.info("앱 설정 폴더 확인");
-        if(!appPath.toFile().exists()) {
+        if(Files.notExists(appPath)) {
             logger.info("폴더 존재하지 않음 생성.");
-            if(appPath.toFile().mkdirs()) logger.info(appPath.toString() + "생성 성공");
-            else {
+            try {
+                Files.createDirectories(appPath);
+                logger.info(appPath + " 생성 성공");
+            } catch (IOException e) {
                 logger.error("설정 폴더 생성 실패. 앱 종료");
+                e.printStackTrace();
                 System.exit(0);
             }
         }
 
         logger.info("설정 파일 확인");
 
-        if(!configPath.toFile().exists()) {
+        if(Files.notExists(configPath)) {
             logger.info("설정 존재하지 않음 생성.");
             try {
-                if(configPath.toFile().createNewFile()) logger.info(appPath.toString() + "생성 성공");
+                Files.createFile(configPath);
+                if(Files.exists(configPath)) logger.info(configPath + " 생성 성공");
                 else {
                     logger.error("설정 생성 실패. 앱 종료");
                     System.exit(0);
@@ -320,8 +339,9 @@ public class Utils {
 
         Properties properties = new Properties();
         try {
-            if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = new FileInputStream(configPath.toFile())) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
-            else try(var fos = new FileOutputStream(configPath.toFile())) {
+
+            if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = Files.newInputStream(configPath)) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
+            else try(var fos = Files.newOutputStream(configPath)) {
                 logger.info("설정 데이터 없음. 초기화");
                 for(var entry : config.entrySet()) properties.setProperty(entry.getKey(), entry.getValue());
                 properties.store(fos, "init");
@@ -331,7 +351,6 @@ public class Utils {
         }
         return properties;
     }
-
 
     public static void storeConfig(Path configPath, Properties properties) {
         try(var fos = new FileOutputStream(configPath.toFile())) {
