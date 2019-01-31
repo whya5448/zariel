@@ -8,7 +8,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.model.Operation;
 import org.apache.commons.io.FileUtils;
-import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
@@ -30,13 +29,12 @@ class ServerMain {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
     private final AppWorkConfig appWorkConfig = new AppWorkConfig();
-    private final Properties properties = Utils.setConfig(Path.of(".config"), Map.of());
+    private final Properties properties = Utils.setConfig(Paths.get("."), Paths.get(".config"), Map.of());
 
     private void run() {
 
         logger.info(appWorkConfig.getDateTime().format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
-        File workDir = new File(".");
-        appWorkConfig.setBaseDirectory(workDir);
+        appWorkConfig.setBaseDirectory(new File(properties.getProperty("WORK_DIR")));
         appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
 
         // 이전 데이터 삭제
@@ -46,8 +44,8 @@ class ServerMain {
         Utils.downloadPOs(appWorkConfig);
         logger.info("다운로드 된 PO 파일 문자셋 변경");
         Utils.convertKO_PO_to_CN(appWorkConfig);
-        logger.info("CSV 생성 및 업로드");
-        makeAndUpload();
+        logger.info("CSV 생성");
+        makeCSV();
 
         logger.info("인스턴스 시작");
         var res = startCompressServer();
@@ -72,19 +70,20 @@ class ServerMain {
 
     }
 
-    private void makeAndUpload() {
+    private void makeCSV() {
 
         File lang = new File(appWorkConfig.getPODirectory()+"/lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
+        var listFiles = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
+
         try {
             if(!lang.exists() && lang.length() <= 0) {
-                ArrayList<PO> sourceList = Utils.getMergedPO(fileList);
-                ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
+                var list = Utils.getMergedPO(listFiles);
+                var config = new ToCSVConfig().setWriteSource(false);
 
-                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr.csv"), csvConfig, sourceList);
-                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), csvConfig.setBeta(true), sourceList);
-                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/tr.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr.csv"), config, list);
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), config.setBeta(true), list);
+                Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/tr.csv"), config.setWriteFileName(true).setBeta(false), list);
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
