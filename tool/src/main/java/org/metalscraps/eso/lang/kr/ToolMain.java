@@ -1,6 +1,5 @@
 package org.metalscraps.eso.lang.kr;
 
-import lombok.Getter;
 import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
