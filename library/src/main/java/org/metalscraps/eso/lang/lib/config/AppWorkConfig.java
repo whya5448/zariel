@@ -1,6 +1,7 @@
 package org.metalscraps.eso.lang.lib.config;
 
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

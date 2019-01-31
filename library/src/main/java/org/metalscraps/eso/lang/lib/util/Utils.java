@@ -26,6 +26,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -400,7 +401,7 @@ public class Utils {
         var map = new HashMap<String, PO>();
         var config = new SourceToMapConfig();
 
-        for (File file : fileList) {
+        for (var file : fileList) {
             String fileName = FilenameUtils.getBaseName(file.getName());
             String ext = FilenameUtils.getExtension(file.getName());
             config.setFile(file);
@@ -447,6 +448,28 @@ public class Utils {
         LocalTime timeTaken = LocalTime.now();
         Utils.makeCSV(file, csvConfig, sourceList);
         logger.info(file.getName() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+    }
+
+    public static String getName(Path path) {
+        if(Files.isDirectory(path)) logger.error("파일 아님 " + path.toAbsolutePath());
+        var x = path.getFileName().toString();
+        return x.substring(0, x.lastIndexOf('.'));
+    }
+
+    public static String getExtension(Path path) {
+        if(Files.isDirectory(path)) logger.error("파일 아님 " + path.toAbsolutePath());
+        var x = path.getFileName().toString();
+        return x.substring(x.lastIndexOf('.')+1);
+    }
+
+    public static Collection<Path> listFiles(Path path, String ext) {
+
+        try {
+            return Files.list(path).filter(x -> !Files.isDirectory(x) && getExtension(x).equals(ext)).collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
