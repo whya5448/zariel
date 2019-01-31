@@ -1,6 +1,6 @@
-package org.metalscraps.eso.lang.kr;
+package org.metalscraps.eso.lang.tool;
 
-import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
+import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 

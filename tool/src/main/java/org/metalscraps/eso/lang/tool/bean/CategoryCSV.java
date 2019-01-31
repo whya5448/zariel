@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr.bean;
+package org.metalscraps.eso.lang.tool.bean;
 
 
 import lombok.AccessLevel;

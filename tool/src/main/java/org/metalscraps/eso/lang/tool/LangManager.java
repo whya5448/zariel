@@ -1,13 +1,9 @@
-package org.metalscraps.eso.lang.kr;
+package org.metalscraps.eso.lang.tool;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
-import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
-import org.metalscraps.eso.lang.kr.Utils.PoConverter;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.config.CSVmerge;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
@@ -15,6 +11,10 @@ import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.config.FileNames;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
+import org.metalscraps.eso.lang.tool.Utils.PoConverter;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
+import org.metalscraps.eso.lang.tool.config.CSVmerge;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -30,11 +30,12 @@ import java.util.regex.Pattern;
  */
 
 @AllArgsConstructor
+public
 class LangManager {
 	private PoConverter PC = new PoConverter();
 	private final AppWorkConfig appWorkConfig;
 
-	LangManager(AppWorkConfig appWorkConfig) {
+	public LangManager(AppWorkConfig appWorkConfig) {
 		this.appWorkConfig = appWorkConfig;
 	}
 

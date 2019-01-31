@@ -1,8 +1,8 @@
-package org.metalscraps.eso.lang.kr.config;
+package org.metalscraps.eso.lang.tool.config;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 
 import java.util.ArrayList;

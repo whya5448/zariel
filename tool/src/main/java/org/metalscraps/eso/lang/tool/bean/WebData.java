@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr.bean;
+package org.metalscraps.eso.lang.tool.bean;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.metalscraps.eso.lang.kr.config.WebPageNames;
+import org.metalscraps.eso.lang.tool.config.WebPageNames;
 
 import java.util.ArrayList;
 import java.util.HashMap;

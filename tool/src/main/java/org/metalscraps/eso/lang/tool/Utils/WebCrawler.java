@@ -1,11 +1,11 @@
-package org.metalscraps.eso.lang.kr.Utils;
+package org.metalscraps.eso.lang.tool.Utils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
-import org.metalscraps.eso.lang.kr.bean.WebData;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
+import org.metalscraps.eso.lang.tool.bean.WebData;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,11 +1,11 @@
-package org.metalscraps.eso.lang.kr.config;
+package org.metalscraps.eso.lang.tool.config;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.metalscraps.eso.lang.kr.Utils.CategoryGenerator;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import static org.junit.Assert.*;
 
 public class CSVmergeTest {
     public static AppWorkConfig appWorkConfig;

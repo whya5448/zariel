@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr.config;
+package org.metalscraps.eso.lang.tool.config;
 
 public enum WebPageNames {
 	ChampionPointDisciplines("ChampionPointDisciplines"),

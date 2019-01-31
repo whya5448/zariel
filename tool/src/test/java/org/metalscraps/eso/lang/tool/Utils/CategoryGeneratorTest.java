@@ -1,8 +1,8 @@
-package org.metalscraps.eso.lang.kr.Utils;
+package org.metalscraps.eso.lang.tool.Utils;
 
 
 import org.junit.Test;
-import org.metalscraps.eso.lang.kr.bean.CategoryCSV;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 

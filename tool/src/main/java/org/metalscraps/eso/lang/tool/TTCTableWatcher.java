@@ -1,4 +1,4 @@
-package org.metalscraps.eso.lang.kr;
+package org.metalscraps.eso.lang.tool;
 
 import java.io.IOException;
 import java.nio.file.*;
