@@ -4,16 +4,11 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.20'
 }
 
-dependencies {
-    compile project(':library')
-    implementation 'com.google.apis:google-api-services-compute:v1-rev199-1.25.0'
-    implementation 'commons-io:commons-io:2.6'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-}
+dependencies { compile project(':library') }
 
-def sImageName = 'dc-eso-server'
-def sModuleName = 'org.metalscraps.eso.lang.server'
-def sMainClass = 'org.metalscraps.eso.lang.server.ServerMain'
+def sImageName = 'dc-eso-server-compress'
+def sModuleName = 'org.metalscraps.eso.lang.server.compress'
+def sMainClass = 'org.metalscraps.eso.lang.server.compress.CompressServerMain'
 mainClassName = "${sModuleName}/${sMainClass}"
 jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
 

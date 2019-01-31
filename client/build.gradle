@@ -47,9 +47,6 @@ tasks.jlink.doLast {
         into("$buildDir/${sImageName}/bin")
     }
 }
-repositories {
-    mavenCentral()
-}
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
