@@ -141,6 +141,7 @@ public class Utils {
 
     }
 
+    @Deprecated
     public static long CRC32(File f) {
         Checksum crc = new CRC32();
         if(!f.exists() || f.length() <= 0) return -1;
@@ -153,8 +154,22 @@ public class Utils {
         return crc.getValue();
     }
 
+    public static long CRC32(Path p) {
+        Checksum crc = new CRC32();
+        try { if(Files.notExists(p) || Files.size(p) <= 0) return -1; }
+        catch (IOException e) { e.printStackTrace(); }
+
+        try(BufferedInputStream in = new BufferedInputStream(Files.newInputStream(p))) {
+            byte[] buffer = new byte[32768];
+            int length;
+            while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
+        } catch (IOException e) { e.printStackTrace(); }
+        return crc.getValue();
+    }
+
 
     public static void processRun(File baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory, command, ProcessBuilder.Redirect.INHERIT); }
+    public static void processRun(Path baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory.toFile(), command, ProcessBuilder.Redirect.INHERIT); }
 
     public static void processRun(File baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder()
@@ -292,21 +307,25 @@ public class Utils {
     public static Properties setConfig(Path appPath, Path configPath, Map<String, String> config) {
 
         logger.info("앱 설정 폴더 확인");
-        if(!appPath.toFile().exists()) {
+        if(Files.notExists(appPath)) {
             logger.info("폴더 존재하지 않음 생성.");
-            if(appPath.toFile().mkdirs()) logger.info(appPath.toString() + "생성 성공");
-            else {
+            try {
+                Files.createDirectories(appPath);
+                logger.info(appPath + " 생성 성공");
+            } catch (IOException e) {
                 logger.error("설정 폴더 생성 실패. 앱 종료");
+                e.printStackTrace();
                 System.exit(0);
             }
         }
 
         logger.info("설정 파일 확인");
 
-        if(!configPath.toFile().exists()) {
+        if(Files.notExists(configPath)) {
             logger.info("설정 존재하지 않음 생성.");
             try {
-                if(configPath.toFile().createNewFile()) logger.info(appPath.toString() + "생성 성공");
+                Files.createFile(configPath);
+                if(Files.exists(configPath)) logger.info(configPath + " 생성 성공");
                 else {
                     logger.error("설정 생성 실패. 앱 종료");
                     System.exit(0);
@@ -320,8 +339,9 @@ public class Utils {
 
         Properties properties = new Properties();
         try {
-            if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = new FileInputStream(configPath.toFile())) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
-            else try(var fos = new FileOutputStream(configPath.toFile())) {
+
+            if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = Files.newInputStream(configPath)) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
+            else try(var fos = Files.newOutputStream(configPath)) {
                 logger.info("설정 데이터 없음. 초기화");
                 for(var entry : config.entrySet()) properties.setProperty(entry.getKey(), entry.getValue());
                 properties.store(fos, "init");
@@ -331,7 +351,6 @@ public class Utils {
         }
         return properties;
     }
-
 
     public static void storeConfig(Path configPath, Properties properties) {
         try(var fos = new FileOutputStream(configPath.toFile())) {
@@ -378,15 +397,48 @@ public class Utils {
     }
 
     public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
-        ArrayList<PO> sourceList = new ArrayList<>();
+        var map = new HashMap<String, PO>();
+        var config = new SourceToMapConfig();
 
         for (File file : fileList) {
             String fileName = FilenameUtils.getBaseName(file.getName());
+            String ext = FilenameUtils.getExtension(file.getName());
+            config.setFile(file);
+
+            if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
+            else if(ext.startsWith("po")) config.setPattern(AppConfig.POPattern);
+
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
-            sourceList.addAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
+
+            map.putAll(Utils.sourceToMap(config));
             logger.trace(file.toString());
         }
+
+        map.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
+
+        map.remove("41714900-0-307");
+        map.remove("41714900-0-337");
+        map.remove("41714900-0-339");
+        map.remove("41714900-0-340");
+        map.remove("41714900-0-342");
+        map.remove("41714900-0-343");
+        map.remove("41714900-0-345");
+        map.remove("41714900-0-346");
+        map.remove("41714900-0-348");
+        map.remove("41714900-0-349");
+        map.remove("41714900-0-351");
+        map.remove("41714900-0-352");
+        map.remove("41714900-0-354");
+        map.remove("41714900-0-355");
+        map.remove("41714900-0-357");
+        map.remove("41714900-0-358");
+        map.remove("41714900-0-360");
+        map.remove("41714900-0-361");
+        map.remove("41714900-0-363");
+        map.remove("41714900-0-364");
+
+        var sourceList = new ArrayList<>(map.values());
         sourceList.sort(PO.comparator);
         return sourceList;
     }
