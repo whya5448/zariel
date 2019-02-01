@@ -47,25 +47,25 @@ public class CompressServerMain {
         String mainServer = properties.getProperty("MAIN_SERVER");
         String mainServerCredential = mainServerAccount+"@"+mainServer;
 
-        appWorkConfig.setBaseDirectory(new File(properties.getProperty("WORK_DIR")));
-        appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
-        var lang = Paths.get(appWorkConfig.getBaseDirectory()+"/lang_"+appWorkConfig.getTodayWithYear()+".7z").toAbsolutePath();
+        appWorkConfig.setBaseDirectory2(Paths.get(properties.getProperty("WORK_DIR")));
+        appWorkConfig.setPODirectory2(appWorkConfig.getBaseDirectory2().resolve("/PO_"+appWorkConfig.getToday()));
+        var lang = appWorkConfig.getBaseDirectory2().resolve("/lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
         try {
             logger.info("CSV 다운로드");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"scp "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_PO_PATH")+appWorkConfig.getToday()+"/*.csv .");
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"scp "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_PO_PATH")+appWorkConfig.getToday()+"/*.csv .");
             logger.info("CSV 압축");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"7za a -mx=7 " + lang + " " + appWorkConfig.getBaseDirectory() + "/*.csv");
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"7za a -mx=7 " + lang + " " + appWorkConfig.getBaseDirectory2() + "/*.csv");
             logger.info("SFX 생성");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"cat 7zCon.sfx "+lang, ProcessBuilder.Redirect.to(new File(lang+".exe")));
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"cat 7zCon.sfx "+lang, ProcessBuilder.Redirect.to(new File(lang+".exe")));
             logger.info("기존 업로드된 SFX 삭제");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"gsutil rm gs://dcinside-esok-cdn/lang*.exe");
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"gsutil rm gs://dcinside-esok-cdn/lang*.exe");
             logger.info("SFX 업로드");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"gsutil cp "+lang+".exe gs://dcinside-esok-cdn/");
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"gsutil cp "+lang+".exe gs://dcinside-esok-cdn/");
             logger.info("버전 문서 생성");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"echo "+new Date().getTime()+"/"+appWorkConfig.getTodayWithYear()+"/"+Utils.CRC32(Paths.get(lang+".exe")), ProcessBuilder.Redirect.to(new File("./ver.html")));
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"echo "+new Date().getTime()+"/"+appWorkConfig.getTodayWithYear()+"/"+Utils.CRC32(Paths.get(lang+".exe")), ProcessBuilder.Redirect.to(new File("./ver.html")));
             logger.info("버전 문서 업로드");
-            Utils.processRun(appWorkConfig.getBaseDirectory(),"scp ./ver.html "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_VERSION_DOCUMENT_PATH"));
+            Utils.processRun(appWorkConfig.getBaseDirectory2(),"scp ./ver.html "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_VERSION_DOCUMENT_PATH"));
             logger.info("잔여 파일 삭제");
             deleteTemp();
             System.exit(0);

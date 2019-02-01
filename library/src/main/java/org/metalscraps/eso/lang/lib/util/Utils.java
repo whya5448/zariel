@@ -22,6 +22,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -104,8 +105,8 @@ public class Utils {
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
 
         final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
-        final File PODirectory = new File(appWorkConfig.getBaseDirectory() + "/PO_" + appWorkConfig.getToday());
-        appWorkConfig.setPODirectory(PODirectory);
+        final Path PODirectory = appWorkConfig.getBaseDirectory2().resolve("/PO_" + appWorkConfig.getToday());
+        appWorkConfig.setPODirectory2(PODirectory);
 
         File fPO = null;
         try {
@@ -120,9 +121,9 @@ public class Utils {
                 LocalTime ltStart = LocalTime.now();
                 String fileURL = url+fileName;
                 fileURL = fileURL.replace(" ", "%20");
-                logger.trace("download zanata file  ["+fileName+"] to local ["+PODirectory.getAbsolutePath()+"/"+fileName+".po] ");
+                logger.trace("download zanata file  ["+fileName+"] to local ["+PODirectory+"/"+fileName+".po] ");
 
-                fPO = new File(PODirectory.getAbsolutePath() + "/" + fileName + ".po");
+                fPO = new File(PODirectory.toFile().getAbsolutePath() + "/" + fileName + ".po");
                 if (!fPO.exists() || fPO.length() <= 0) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
                 fPO = null;
 
@@ -169,9 +170,11 @@ public class Utils {
     }
 
 
+    @Deprecated
     public static void processRun(File baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory, command, ProcessBuilder.Redirect.INHERIT); }
     public static void processRun(Path baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory.toFile(), command, ProcessBuilder.Redirect.INHERIT); }
 
+    @Deprecated
     public static void processRun(File baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder()
                 .directory(baseDirectory)
@@ -181,6 +184,29 @@ public class Utils {
         pb.start().waitFor();
     }
 
+    public static void processRun(Path baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder()
+                .directory(baseDirectory.toFile())
+                .command((command).split("\\s+"))
+                .redirectError(redirect)
+                .redirectOutput(redirect);
+        pb.start().waitFor();
+    }
+
+
+    public static void makeCSV(Path path, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
+        StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
+        for (PO p : poList) {
+            sb.append(p.toCSV(toCSVConfig));
+        }
+        try {
+            FileUtils.writeStringToFile(path.toFile(), sb.toString(), AppConfig.CHARSET);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Deprecated
     public static void makeCSV(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
         StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
         for (PO p : poList) {
@@ -195,12 +221,12 @@ public class Utils {
 
     public static void convertKO_PO_to_CN(AppWorkConfig appWorkConfig) {
 
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+        var fileList = Utils.listFiles(appWorkConfig.getPODirectory2(), "po");
 
         try {
-            for (File file : fileList) {
-                File po2 = new File(file.getAbsolutePath() + "2");
-                if(!po2.exists() || po2.length() <= 0) FileUtils.write(po2, Utils.KOToCN(FileUtils.readFileToString(file, AppConfig.CHARSET)), AppConfig.CHARSET);
+            for (Path file : fileList) {
+                Path po2 = Paths.get(file.toString()+"2");
+                if(!Files.exists(po2) || Files.size(po2) <= 0) FileUtils.write(po2.toFile(), Utils.KOToCN(FileUtils.readFileToString(file.toFile(), AppConfig.CHARSET)), AppConfig.CHARSET);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -444,10 +470,17 @@ public class Utils {
         return sourceList;
     }
 
+    @Deprecated
     public static void makeCSVwithLog(File file, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
         LocalTime timeTaken = LocalTime.now();
         Utils.makeCSV(file, csvConfig, sourceList);
         logger.info(file.getName() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+    }
+
+    public static void makeCSVwithLog(Path path, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
+        LocalTime timeTaken = LocalTime.now();
+        Utils.makeCSV(path, csvConfig, sourceList);
+        logger.info(path.getFileName().toString() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
     public static String getName(Path path) {
