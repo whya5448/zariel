@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
-    implementation 'commons-io:commons-io:2.6'
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jackson}"
+    implementation "commons-io:commons-io:${commonsio}"
 }
 
 def sImageName = 'dc-eso-library'
