@@ -1,13 +1,19 @@
 package org.metalscraps.eso.lang.tool;
 
-import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
+import org.jsoup.helper.StringUtil;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.util.Scanner;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Created by 안병길 on 2018-01-17.
@@ -15,75 +21,54 @@ import java.util.Scanner;
  */
 class ToolMain {
 
-	private final Scanner sc;
-
 	private final AppWorkConfig appWorkConfig = new AppWorkConfig();
-	private ToolMain() { sc = new Scanner(System.in); }
+	private static final Logger logger = LoggerFactory.getLogger(ToolMain.class);
 
 	public static void main(String[] args) {
-	    new ToolMain().start();
+		var tool = new ToolMain();
+		var config = tool.appWorkConfig;
+
+		config.setBaseDirectory2(FileSystemView.getFileSystemView().getDefaultDirectory().toPath().toAbsolutePath().resolve("Elder Scrolls Online/EsoKR"));
+		config.setPODirectory2(config.getBaseDirectory2().resolve("PO_"+config.getToday()));
+		config.setZanataCategoryConfigDirectory2(config.getBaseDirectory2().resolve("ZanataCategory"));
+		try {  Files.createDirectories(config.getBaseDirectory2()); }
+		catch (IOException e) {
+			logger.error("작업 폴더 생성 실패" + e.getMessage());
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
+		String command = "";
+		logger.info(StringUtil.join(args, " "));
+		for(var x : args) {
+			if(x.startsWith("-opt")) command = x.substring(x.indexOf('=')+1);
+			else if(x.startsWith("-base")) config.setBaseDirectory2(Paths.get(x.substring(x.indexOf('=') + 1)));
+			else if(x.startsWith("-po")) config.setPODirectory2(Paths.get(x.substring(x.indexOf('=')+1)));
+		}
+		tool.start(command);
 	}
 
 	private void showMessage() {
-		System.out.println("0. CSV To PO");
-		System.out.println("1. Zanata PO 다운로드");
-		System.out.println("2. PO 폰트 매핑/변환");
-		System.out.println("3. CSV 생성");
-		System.out.println("4. 기존 번역물 합치기");
-		System.out.println("44. 기존 번역물 합치기 => JSON");
-		System.out.println("5. 다!");
-		System.out.print("6. 작업폴더 변경 ");
-		System.out.println(appWorkConfig.getBaseDirectory());
-		System.out.print("7. PO 폴더 변경 ");
-		System.out.println(appWorkConfig.getPODirectory());
-		System.out.println("9. 종료");
-		System.out.println("11. TTC");
-		System.out.println("12. Destinations");
-		System.out.println("100. PO -> 구글 번역 (beta)");
-		System.out.println("300. Zanata upload용 csv category 생성");
+		logger.info("baseDir : "+appWorkConfig.getBaseDirectory2());
+		logger.info("PODir : "+appWorkConfig.getPODirectory2());
+		logger.info("0. CSV To PO");
+		logger.info("1. Zanata PO 다운로드");
+		logger.info("2. PO 폰트 매핑/변환");
+		logger.info("3. CSV 생성");
+		logger.info("4. 기존 번역물 합치기");
+		logger.info("44. 기존 번역물 합치기 => JSON");
+		logger.info("5. 다!");
+
+		logger.info("9. 종료");
+		logger.info("11. TTC");
+		logger.info("12. Destinations");
+		logger.info("100. PO -> 구글 번역 (beta)");
+		logger.info("300. Zanata upload용 csv category 생성");
 	}
 
-	private void workLangManager(JFileChooser jFileChooser) {
-		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
-
-		LangManager lm = new LangManager(appWorkConfig);
-
-		switch(this.getCommand()) {
-			case 0: lm.CsvToPo(); break;
-			case 1: Utils.downloadPOs(appWorkConfig); break;
-			case 2: Utils.convertKO_PO_to_CN(appWorkConfig); break;
-			case 3: lm.makeCSVs(); break;
-			case 4: lm.makeLang(); break;
-			case 44: lm.makeLangToJSON(); break;
-			case 5:
-				Utils.downloadPOs(appWorkConfig);
-				Utils.convertKO_PO_to_CN(appWorkConfig);
-				lm.makeCSVs();
-				lm.makeLang();
-				break;
-			case 6:
-				if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) break;
-				appWorkConfig.setBaseDirectory(jFileChooser.getSelectedFile());
-				appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
-				break;
-			case 7:
-				if (jFileChooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) break;
-				appWorkConfig.setPODirectory(jFileChooser.getSelectedFile());
-				break;
-			case 9: System.exit(0);
-			case 11: new TamrielTradeCentre(appWorkConfig).start(); break;
-			case 12: new Destinations(appWorkConfig).start(); break;
-			case 100: lm.translateGoogle(); break;
-			case 200: CG.GenCategory(); break;
-			case 300: lm.GenZanataUploadSet(); break;
-		}
-	}
-
-	private void start() {
+	private void start(String command) {
 
 		JFileChooser jFileChooser = new JFileChooser();
-		File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
-
 		jFileChooser.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File f) { return f.isDirectory(); }
@@ -92,32 +77,31 @@ class ToolMain {
 		});
 		jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(workDir);
-		appWorkConfig.setBaseDirectory(workDir);
-		appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
-		appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
-		//noinspection ResultOfMethodCallIgnored
-		workDir.mkdirs();
-
-		//noinspection InfiniteLoopStatement
-		while(true) {
-			showMessage();
-			workLangManager(jFileChooser);
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory2().toFile());
+		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
+		LangManager lm = new LangManager(appWorkConfig);
+		switch (command) {
+			case "help": showMessage(); break;
+			case "0": lm.CsvToPo(); break;
+			case "1": Utils.downloadPOs(appWorkConfig); break;
+			case "2": Utils.convertKO_PO_to_CN(appWorkConfig); break;
+			case "3": lm.makeCSVs(); break;
+			case "4": lm.makeLang(); break;
+			case "44":lm.makeLangToJSON(); break;
+			case "5":
+				Utils.downloadPOs(appWorkConfig);
+				Utils.convertKO_PO_to_CN(appWorkConfig);
+				lm.makeCSVs();
+				lm.makeLang();
+				break;
+			case "9": System.exit(0);
+			case "11": new TamrielTradeCentre(appWorkConfig).start(); break;
+			case "12": new Destinations(appWorkConfig).start(); break;
+			case "100": lm.translateGoogle(); break;
+			case "200": CG.GenCategory(); break;
+			case "300": lm.GenZanataUploadSet(); break;
 		}
 
-
-	}
-
-	private int getCommand() {
-		System.out.print("명령:");
-		String comm = sc.nextLine();
-		try {
-			return Integer.parseInt(comm);
-		} catch (Exception e) {
-			System.out.println("올바르지 않은 명령입니다.");
-			System.err.println(e.getMessage());
-			return getCommand();
-		}
 	}
 
 }
