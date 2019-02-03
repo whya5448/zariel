@@ -28,10 +28,10 @@ class ToolMain {
 		var tool = new ToolMain();
 		var config = tool.appWorkConfig;
 
-		config.setBaseDirectory2(FileSystemView.getFileSystemView().getDefaultDirectory().toPath().toAbsolutePath().resolve("Elder Scrolls Online/EsoKR"));
-		config.setPODirectory2(config.getBaseDirectory2().resolve("PO_"+config.getToday()));
-		config.setZanataCategoryConfigDirectory2(config.getBaseDirectory2().resolve("ZanataCategory"));
-		try {  Files.createDirectories(config.getBaseDirectory2()); }
+		config.setBaseDirectoryToPath(FileSystemView.getFileSystemView().getDefaultDirectory().toPath().toAbsolutePath().resolve("Elder Scrolls Online/EsoKR"));
+		config.setPODirectoryToPath(config.getBaseDirectoryToPath().resolve("PO_"+config.getToday()));
+		config.setZanataCategoryConfigDirectoryToPath(config.getBaseDirectoryToPath().resolve("ZanataCategory"));
+		try {  Files.createDirectories(config.getBaseDirectoryToPath()); }
 		catch (IOException e) {
 			logger.error("작업 폴더 생성 실패" + e.getMessage());
 			e.printStackTrace();
@@ -42,15 +42,15 @@ class ToolMain {
 		logger.info(StringUtil.join(args, " "));
 		for(var x : args) {
 			if(x.startsWith("-opt")) command = x.substring(x.indexOf('=')+1);
-			else if(x.startsWith("-base")) config.setBaseDirectory2(Paths.get(x.substring(x.indexOf('=') + 1)));
-			else if(x.startsWith("-po")) config.setPODirectory2(Paths.get(x.substring(x.indexOf('=')+1)));
+			else if(x.startsWith("-base")) config.setBaseDirectoryToPath(Paths.get(x.substring(x.indexOf('=') + 1)));
+			else if(x.startsWith("-po")) config.setPODirectoryToPath(Paths.get(x.substring(x.indexOf('=')+1)));
 		}
 		tool.start(command);
 	}
 
 	private void showMessage() {
-		logger.info("baseDir : "+appWorkConfig.getBaseDirectory2());
-		logger.info("PODir : "+appWorkConfig.getPODirectory2());
+		logger.info("baseDir : "+appWorkConfig.getBaseDirectoryToPath());
+		logger.info("PODir : "+appWorkConfig.getPODirectoryToPath());
 		logger.info("0. CSV To PO");
 		logger.info("1. Zanata PO 다운로드");
 		logger.info("2. PO 폰트 매핑/변환");
@@ -77,7 +77,7 @@ class ToolMain {
 		});
 		jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory2().toFile());
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
 		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
 		LangManager lm = new LangManager(appWorkConfig);
 		switch (command) {

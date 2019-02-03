@@ -33,27 +33,27 @@ public class AppWorkConfig {
 	@Getter(AccessLevel.PUBLIC)
 	private LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
-	public Path getBaseDirectory2() {
+	public Path getBaseDirectoryToPath() {
 		return baseDirectory;
 	}
 
-	public void setBaseDirectory2(Path baseDirectory) {
+	public void setBaseDirectoryToPath(Path baseDirectory) {
 		this.baseDirectory = baseDirectory;
 	}
 
-	public Path getPODirectory2() {
+	public Path getPODirectoryToPath() {
 		return PODirectory;
 	}
 
-	public void setPODirectory2(Path PODirectory) {
+	public void setPODirectoryToPath(Path PODirectory) {
 		this.PODirectory = PODirectory;
 	}
 
-	public Path getZanataCategoryConfigDirectory2() {
+	public Path getZanataCategoryConfigDirectoryToPath() {
 		return ZanataCategoryConfigDirectory;
 	}
 
-	public void setZanataCategoryConfigDirectory2(Path zanataCategoryConfigDirectory) {
+	public void setZanataCategoryConfigDirectoryToPath(Path zanataCategoryConfigDirectory) {
 		ZanataCategoryConfigDirectory = zanataCategoryConfigDirectory;
 	}
 

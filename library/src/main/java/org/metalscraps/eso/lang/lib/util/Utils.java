@@ -105,8 +105,8 @@ public class Utils {
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
 
         final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
-        final Path PODirectory = appWorkConfig.getBaseDirectory2().resolve("/PO_" + appWorkConfig.getToday());
-        appWorkConfig.setPODirectory2(PODirectory);
+        final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("/PO_" + appWorkConfig.getToday());
+        appWorkConfig.setPODirectoryToPath(PODirectory);
 
         File fPO = null;
         try {
@@ -221,7 +221,7 @@ public class Utils {
 
     public static void convertKO_PO_to_CN(AppWorkConfig appWorkConfig) {
 
-        var fileList = Utils.listFiles(appWorkConfig.getPODirectory2(), "po");
+        var fileList = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
 
         try {
             for (Path file : fileList) {

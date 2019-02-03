@@ -32,7 +32,7 @@ class Destinations {
 			StringBuilder destinationQuestSource = new StringBuilder(FileUtils.readFileToString(new File(target.getPath().replace("kr","en")), AppConfig.CHARSET));
 			SourceToMapConfig config = new SourceToMapConfig().setPattern(AppConfig.POPattern).setKeyGroup(6).setPrefix("{\"").setSuffix("\"}").setProcessItemName(false);
 
-			for(FileNames fileName : fileNames) poMap.putAll(Utils.sourceToMap(config.setFile(new File(appWorkConfig.getPODirectory() +"/"+ fileName.toStringPO2()))));
+			for(FileNames fileName : fileNames) poMap.putAll(Utils.sourceToMap(config.setPath(appWorkConfig.getPODirectoryToPath().resolve(fileName.toStringPO2()))));
 
 			boolean init = false;
 			for(Map.Entry<String, PO> entry : new HashMap<>(poMap).entrySet()) {

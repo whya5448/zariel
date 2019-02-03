@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import org.metalscraps.eso.lang.lib.bean.PO;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 /**
@@ -16,7 +17,26 @@ import java.util.regex.Pattern;
 @Accessors(chain = true)
 public class SourceToMapConfig {
 
-	private File file = null;
+	private Path path = null;
+
+	public File getFile() {
+		return path.toFile();
+	}
+
+	public SourceToMapConfig setFile(File file) {
+		this.path = file.toPath();
+		return this;
+	}
+
+	public Path getPath() {
+		return path;
+	}
+
+	public SourceToMapConfig setPath(Path path) {
+		this.path = path;
+		return this;
+	}
+
 	private int keyGroup = 2;
 	private boolean
 			processText = true,

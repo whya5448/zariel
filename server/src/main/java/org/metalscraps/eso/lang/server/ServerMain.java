@@ -36,8 +36,8 @@ class ServerMain {
     private void run() {
 
         logger.info(appWorkConfig.getDateTime().format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
-        appWorkConfig.setBaseDirectory2(Paths.get(properties.getProperty("WORK_DIR")));
-        appWorkConfig.setPODirectory2(appWorkConfig.getBaseDirectory2().resolve("/PO_"+appWorkConfig.getToday()));
+        appWorkConfig.setBaseDirectoryToPath(Paths.get(properties.getProperty("WORK_DIR")));
+        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("/PO_"+appWorkConfig.getToday()));
 
         // 이전 데이터 삭제
         logger.info("이전 데이터 삭제");
@@ -74,18 +74,18 @@ class ServerMain {
 
     private void makeCSV() {
 
-        var lang = appWorkConfig.getPODirectory2().resolve("lang_"+appWorkConfig.getTodayWithYear()+".7z");
+        var lang = appWorkConfig.getPODirectoryToPath().resolve("lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
-        var listFiles = FileUtils.listFiles(appWorkConfig.getPODirectory2().toFile(), new String[]{"po2"}, false);
+        var listFiles = FileUtils.listFiles(appWorkConfig.getPODirectoryToPath().toFile(), new String[]{"po2"}, false);
 
         try {
             if(!Files.exists(lang) && Files.size(lang) <= 0) {
                 var list = Utils.getMergedPO(listFiles);
                 var config = new ToCSVConfig().setWriteSource(false);
 
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectory2().resolve("kr.csv"), config, list);
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectory2().resolve("kr_beta.csv"), config.setBeta(true), list);
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectory2().resolve("tr.csv"), config.setWriteFileName(true).setBeta(false), list);
+                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr.csv"), config, list);
+                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr_beta.csv"), config.setBeta(true), list);
+                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("tr.csv"), config.setWriteFileName(true).setBeta(false), list);
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
