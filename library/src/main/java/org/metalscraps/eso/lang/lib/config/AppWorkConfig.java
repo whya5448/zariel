@@ -1,9 +1,6 @@
 package org.metalscraps.eso.lang.lib.config;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -16,6 +13,7 @@ import java.time.format.DateTimeFormatter;
  * Whya5448@gmail.com
  */
 
+@Data
 public class AppWorkConfig {
 
 	public AppWorkConfig() {
