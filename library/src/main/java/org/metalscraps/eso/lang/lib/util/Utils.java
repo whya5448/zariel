@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.filechooser.FileSystemView;
-import java.awt.datatransfer.StringSelection;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -86,7 +85,10 @@ public class Utils {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = null;
 
-        try { jsonNode = objectMapper.readTree(Objects.requireNonNull(response).body()); }
+        var body = Objects.requireNonNull(response).body();
+        logger.trace(body);
+
+        try { jsonNode = objectMapper.readTree(body); }
         catch (IOException e) { e.printStackTrace(); }
         return jsonNode;
     }
@@ -116,15 +118,16 @@ public class Utils {
     }
 
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
-
-        final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
-        final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("PO_" + appWorkConfig.getToday());
-        appWorkConfig.setPODirectoryToPath(PODirectory);
-
         Path pPO = null;
+
         try {
 
-            ArrayList<String > fileNames = getFileNames(projectName);
+            final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
+            final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("PO_" + appWorkConfig.getToday());
+            final ArrayList<String> fileNames = getFileNames(projectName);
+            appWorkConfig.setPODirectoryToPath(PODirectory);
+            if(!Files.exists(PODirectory)) Files.createDirectories(PODirectory);
+
 
             for (String fileName : fileNames) {
 
@@ -143,7 +146,6 @@ public class Utils {
                     var out = FileChannel.open(pPO, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                     out.transferFrom(server, 0, Long.MAX_VALUE);
                 }
-                pPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
                 logger.trace(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
