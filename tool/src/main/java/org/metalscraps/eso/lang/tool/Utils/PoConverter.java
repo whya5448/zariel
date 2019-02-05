@@ -1,6 +1,5 @@
 package org.metalscraps.eso.lang.tool.Utils;
 
-import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
@@ -9,8 +8,8 @@ import org.metalscraps.eso.lang.lib.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class PoConverter {
     private AppWorkConfig appWorkConfig;
@@ -22,7 +21,10 @@ public class PoConverter {
     public void translateGoogle() {
 
         //File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+
+        var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
+        var fileList = new ArrayList<File>();
+        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
         for (File file : fileList) {
             ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
@@ -78,7 +80,10 @@ public class PoConverter {
     }
 
     public void filterNewPO() {
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+
+        var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
+        var fileList = new ArrayList<File>();
+        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
 
         for (File file : fileList) {
@@ -99,7 +104,10 @@ public class PoConverter {
     }
 
     public void setFuzzyNbyG() {
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+
+        var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
+        var fileList = new ArrayList<File>();
+        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
 
         for (File file : fileList) {
@@ -134,7 +142,7 @@ public class PoConverter {
         }
 
         try {
-            FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
+            Files.writeString(file.toPath(), sb.toString(), AppConfig.CHARSET);
         } catch (IOException e) {
             e.printStackTrace();
         }

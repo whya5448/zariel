@@ -80,6 +80,9 @@ class ToolMain {
 		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
 		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
 		LangManager lm = new LangManager(appWorkConfig);
+		if(!Files.exists(appWorkConfig.getPODirectoryToPath()))
+			try { Files.createDirectories(appWorkConfig.getPODirectoryToPath()); } catch (IOException ignored) {}
+
 		switch (command) {
 			case "help": showMessage(); break;
 			case "0": lm.CsvToPo(); break;
@@ -87,6 +90,7 @@ class ToolMain {
 			case "2": Utils.convertKO_PO_to_CN(appWorkConfig); break;
 			case "3": lm.makeCSVs(); break;
 			case "4": lm.makeLang(); break;
+			case "34": lm.makeCSVs(); lm.makeLang(); break;
 			case "44":lm.makeLangToJSON(); break;
 			case "5":
 				Utils.downloadPOs(appWorkConfig);

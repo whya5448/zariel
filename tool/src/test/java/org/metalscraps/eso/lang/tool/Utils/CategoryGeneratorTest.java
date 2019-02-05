@@ -2,12 +2,14 @@ package org.metalscraps.eso.lang.tool.Utils;
 
 
 import org.junit.Test;
-import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
+import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 
 import javax.swing.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,10 +20,10 @@ public class CategoryGeneratorTest {
     public void genMainCategory() {
         AppWorkConfig appWorkConfig = new AppWorkConfig();
         JFileChooser jFileChooser = new JFileChooser();
-        File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
-        jFileChooser.setCurrentDirectory(workDir);
-        appWorkConfig.setBaseDirectory(workDir);
-        appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
+        Path workDir = Utils.getESODir().resolve("EsoKR");
+        jFileChooser.setCurrentDirectory(workDir.toFile());
+        appWorkConfig.setBaseDirectoryToPath(workDir);
+        appWorkConfig.setZanataCategoryConfigDirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("ZanataCategory"));
 
         CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
         CG.GenCategory();

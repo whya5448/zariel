@@ -1,8 +1,6 @@
 package org.metalscraps.eso.lang.tool;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
@@ -15,11 +13,14 @@ import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
 import org.metalscraps.eso.lang.tool.Utils.PoConverter;
 import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.tool.config.CSVmerge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ public
 class LangManager {
 	private PoConverter PC = new PoConverter();
 	private final AppWorkConfig appWorkConfig;
+	private final Logger logger = LoggerFactory.getLogger(LangManager.class);
 
 	public LangManager(AppWorkConfig appWorkConfig) {
 		this.appWorkConfig = appWorkConfig;
@@ -56,7 +58,7 @@ class LangManager {
 		jFileChooser.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File f) {
-				return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
+				return Utils.getExtension(f.toPath()).equals("csv") | f.isDirectory();
 			}
 
 			@Override
@@ -78,9 +80,13 @@ class LangManager {
 			map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
 		}
 
-		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+
+		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po2");
+		var fileList = new ArrayList<File>();
+		listFiles.forEach(e->fileList.add(e.toFile()));
+
 		for (File file : fileList) {
-			String fileName = FilenameUtils.getBaseName(file.getName());
+			String fileName = Utils.getName(file.toPath());
 
 			// pregame 쪽 데이터
 			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
@@ -128,10 +134,14 @@ class LangManager {
 
 		CSVmerge merge = new CSVmerge();
 		HashMap<String, PO> targetCSV = new HashMap<>();
-		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
+
+
+		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
+		var fileList = new ArrayList<File>();
+		listFiles.forEach(e->fileList.add(e.toFile()));
 		for (File file : fileList) {
 
-			String fileName = FilenameUtils.getBaseName(file.getName());
+			String fileName = Utils.getName(file.toPath());
 			// pregame 쪽 데이터
 			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
@@ -287,9 +297,9 @@ class LangManager {
 		try {
 			for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
 				if("trs".equals(folder)) {
-					FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + folder + "/" + type + "/" + language + "/" + entry.getKey() + "." + fileExtension), entry.getValue().toString(), AppConfig.CHARSET);
+					Files.writeString(appWorkConfig.getBaseDirectoryToPath().resolve(folder + "/" + type + "/" + language + "/" + entry.getKey() + "." + fileExtension), entry.getValue(), AppConfig.CHARSET);
 				}else {
-					FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/" + folder + "/" + type + "/" + entry.getKey() + "." + fileExtension), entry.getValue().toString(), AppConfig.CHARSET);
+					Files.writeString(appWorkConfig.getBaseDirectoryToPath().resolve(folder + "/" + type + "/" + entry.getKey() + "." + fileExtension), entry.getValue(), AppConfig.CHARSET);
 				}
 			}
 		} catch (Exception e) {
@@ -355,7 +365,7 @@ class LangManager {
 		try {
 
 			for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
-				FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/temp14/" + entry.getKey() + ".pot"), entry.getValue().toString(), AppConfig.CHARSET);
+				Files.writeString(appWorkConfig.getBaseDirectoryToPath().resolve("temp14/" + entry.getKey() + ".pot"), entry.getValue(), AppConfig.CHARSET);
 			}
 
 		} catch (Exception e) {
@@ -365,16 +375,36 @@ class LangManager {
 
 	void makeCSVs() {
 
-		Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po2"}, false);
-		ArrayList<PO> sourceList = Utils.getMergedPO(fileList);
-		ToCSVConfig csvConfig = new ToCSVConfig().setWriteSource(false);
+		// EsoExtractData.exe depot/eso.mnf export -a 000 -s 1472 -e 1472
 
-		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/kr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig, sourceList);
-		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/kr_beta_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setBeta(true), sourceList);
-		Utils.makeCSVwithLog(new File(appWorkConfig.getBaseDirectory() + "/tr_" + appWorkConfig.getTodayWithYear() + ".po2.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
+		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po2");
+		var fileList = new ArrayList<File>();
+		listFiles.forEach(e->fileList.add(e.toFile()));
+		// en.lang 0번에 추가
+		fileList.add(0, appWorkConfig.getBaseDirectoryToPath().resolve("en.lang.csv").toFile());
+
+		// 합쳐서 csv 로 한번에 생성
+		var sourceList = Utils.getMergedPO(fileList);
+		var csvConfig = new ToCSVConfig().setWriteSource(false);
+
+		Utils.makeCSVwithLog(appWorkConfig.getBaseDirectoryToPath().resolve("kr.csv"), csvConfig, sourceList);
+		Utils.makeCSVwithLog(appWorkConfig.getBaseDirectoryToPath().resolve("kr_beta.csv"), csvConfig.setBeta(true), sourceList);
+		Utils.makeCSVwithLog(appWorkConfig.getBaseDirectoryToPath().resolve("tr.csv"), csvConfig.setWriteFileName(true).setBeta(false), sourceList);
 
 	}
 
+	void makeLang() {
+
+		// EsoExtractData.exe -l en_0124.lang -p
+		try {
+			Utils.processRun(appWorkConfig.getBaseDirectoryToPath(), appWorkConfig.getBaseDirectoryToPath()+"/EsoExtractData.exe -p -x kr.csv -o kr.lang");
+			Utils.processRun(appWorkConfig.getBaseDirectoryToPath(), appWorkConfig.getBaseDirectoryToPath()+"/EsoExtractData.exe -p -x kr_beta.csv -o kr_beta.lang");
+			Utils.processRun(appWorkConfig.getBaseDirectoryToPath(), appWorkConfig.getBaseDirectoryToPath()+"/EsoExtractData.exe -p -x tr.csv -o tr.lang");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	void makeLangToJSON() {
 
@@ -390,7 +420,7 @@ class LangManager {
 		jFileChooser.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File f) {
-				return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
+				return Utils.getExtension(f.toPath()).equals("csv") | f.isDirectory();
 			}
 
 			@Override
@@ -419,7 +449,7 @@ class LangManager {
 		System.out.println(x);
 
 		try {
-			FileUtils.writeStringToFile(new File(appWorkConfig.getBaseDirectory() + "/json.json"), x, AppConfig.CHARSET);
+			Files.writeString(appWorkConfig.getBaseDirectoryToPath().resolve("json.json"), x, AppConfig.CHARSET);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -437,50 +467,6 @@ class LangManager {
 
 	}
 
-    void makeLang() {
-
-		// EsoExtractData.exe depot/eso.mnf export -a 0
-		// EsoExtractData.exe -l en_0124.lang -p
-
-		LinkedList<File> fileLinkedList = new LinkedList<>();
-
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
-		jFileChooser.setFileFilter(new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
-			}
-
-			@Override
-			public String getDescription() {
-				return "*.csv";
-			}
-		});
-
-		while (jFileChooser.showOpenDialog(null) != JFileChooser.CANCEL_OPTION) {
-			fileLinkedList.add(jFileChooser.getSelectedFile());
-			if (fileLinkedList.size() == 2) break;
-		}
-		if (fileLinkedList.size() != 2) return;
-
-		var list = Utils.getMergedPO(fileLinkedList);
-		var config = new ToCSVConfig().setWriteSource(false);
-
-		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr.csv"), config, list);
-		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/kr_beta.csv"), config.setBeta(true), list);
-		Utils.makeCSVwithLog(new File(appWorkConfig.getPODirectory() + "/tr.csv"), config.setWriteFileName(true).setBeta(false), list);
-
-		try {
-			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/kr.csv -o kr.lang");
-			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/kr_beta.csv -o kr_beta.lang");
-			Utils.processRun(appWorkConfig.getBaseDirectory(), "/EsoExtractData.exe -p -x "+appWorkConfig.getPODirectory().getAbsolutePath()+"/tr.csv -o tr.lang");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-    }
 
 	void translateGoogle() {
 		this.PC.setAppWorkConfig(this.appWorkConfig);

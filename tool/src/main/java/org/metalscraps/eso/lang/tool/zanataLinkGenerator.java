@@ -1,6 +1,5 @@
 package org.metalscraps.eso.lang.tool;
 
-import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
@@ -11,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Scanner;
@@ -89,7 +90,7 @@ public class zanataLinkGenerator {
 
     public static void main(String[] args){
         zanataLinkGenerator zlg = new zanataLinkGenerator();
-        zlg.getPO(FileUtils.getFile("./zanataFile"));
+        zlg.getPO(Paths.get("./zanataFile").toFile());
         /*
         File workDir = new File(".");
         workDir.mkdirs();
@@ -100,7 +101,7 @@ public class zanataLinkGenerator {
         for(String filename : zlg.fileMap.keySet()) {
             StringBuilder sb = zlg.fileMap.get(filename);
             try {
-                FileUtils.writeStringToFile(FileUtils.getFile(filename+".txt"), sb.toString(), AppConfig.CHARSET);
+                Files.writeString(Paths.get(filename+".txt"), sb.toString(), AppConfig.CHARSET);
             } catch (IOException e) {
                 e.printStackTrace();
             }
