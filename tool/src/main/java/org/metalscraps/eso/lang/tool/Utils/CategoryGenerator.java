@@ -3,20 +3,19 @@ package org.metalscraps.eso.lang.tool.Utils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.config.FileNames;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +70,7 @@ public class CategoryGenerator {
         String localIndex = "";
 
         try {
-            fileString =  FileUtils.readFileToString(file, AppConfig.CHARSET);
+            fileString = Files.readString(file.toPath(), AppConfig.CHARSET);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -108,11 +107,11 @@ public class CategoryGenerator {
 
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setMultiSelectionEnabled(false);
-        jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+        jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
         jFileChooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return FilenameUtils.getExtension(f.getName()).equals("csv") | f.isDirectory();
+                return Utils.getExtension(f.toPath()).equals("csv") | f.isDirectory();
             }
 
             @Override
