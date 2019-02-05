@@ -2,9 +2,6 @@ package org.metalscraps.eso.lang.lib.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.metalscraps.eso.lang.lib.bean.ID;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
@@ -14,15 +11,23 @@ import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import javax.swing.filechooser.FileSystemView;
+import java.awt.datatransfer.StringSelection;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -31,7 +36,7 @@ import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-@SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
@@ -61,6 +66,14 @@ public class Utils {
         if(serverVer == null) serverVer = new String[] {"0.0.0"};
         versionMap.put(projectName, String.join(".", serverVer));
         return versionMap.get(projectName);
+    }
+
+    public static Path getESOLangDir() {
+        return FileSystemView.getFileSystemView().getDefaultDirectory().toPath().resolve("Elder Scrolls Online/live/AddOns/gamedata/lang");
+    }
+
+    public static Path getESODir() {
+        return FileSystemView.getFileSystemView().getDefaultDirectory().toPath().resolve("Elder Scrolls Online/");
     }
 
     public static JsonNode getBodyFromHTTPsRequest(HttpRequest request){
@@ -105,10 +118,10 @@ public class Utils {
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
 
         final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
-        final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("/PO_" + appWorkConfig.getToday());
+        final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("PO_" + appWorkConfig.getToday());
         appWorkConfig.setPODirectoryToPath(PODirectory);
 
-        File fPO = null;
+        Path pPO = null;
         try {
 
             ArrayList<String > fileNames = getFileNames(projectName);
@@ -121,11 +134,16 @@ public class Utils {
                 LocalTime ltStart = LocalTime.now();
                 String fileURL = url+fileName;
                 fileURL = fileURL.replace(" ", "%20");
-                logger.trace("download zanata file  ["+fileName+"] to local ["+PODirectory+"/"+fileName+".po] ");
 
-                fPO = new File(PODirectory.toFile().getAbsolutePath() + "/" + fileName + ".po");
-                if (!fPO.exists() || fPO.length() <= 0) FileUtils.writeStringToFile(fPO, IOUtils.toString(new URL(fileURL), AppConfig.CHARSET), AppConfig.CHARSET);
-                fPO = null;
+                pPO = PODirectory.resolve(fileName+".po");
+
+                logger.trace("download zanata file  ["+fileName+"] to local ["+pPO+"] ");
+                if (!Files.exists(pPO)) {
+                    var server = Channels.newChannel(new URL(fileURL).openStream());
+                    var out = FileChannel.open(pPO, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                    out.transferFrom(server, 0, Long.MAX_VALUE);
+                }
+                pPO = null;
 
                 LocalTime ltEnd = LocalTime.now();
                 logger.trace(" " + ltStart.until(ltEnd, ChronoUnit.SECONDS) + "초");
@@ -134,26 +152,13 @@ public class Utils {
         } catch (IOException e) {
             if(e.getMessage().contains("Premature EOF")) {
                 logger.warn("EOF 재시도");
-                if(fPO.exists()) fPO.delete();
+                if(Files.exists(pPO)) try { Files.delete(pPO); } catch (IOException e1) { e1.printStackTrace(); }
                 try { Thread.sleep(1800000); } catch (InterruptedException e1) {  e1.printStackTrace(); }
                 Utils.downloadPO(appWorkConfig, projectName);
             }
             else e.printStackTrace();
         } catch (Exception e) { logger.error(e.getMessage()); e.printStackTrace(); }
 
-    }
-
-    @Deprecated
-    public static long CRC32(File f) {
-        Checksum crc = new CRC32();
-        if(!f.exists() || f.length() <= 0) return -1;
-
-        try(BufferedInputStream in = new BufferedInputStream(new FileInputStream(f))) {
-            byte[] buffer = new byte[32768];
-            int length;
-            while ((length = in.read(buffer)) >= 0) crc.update(buffer, 0, length);
-        } catch (IOException e) { e.printStackTrace(); }
-        return crc.getValue();
     }
 
     public static long CRC32(Path p) {
@@ -169,25 +174,12 @@ public class Utils {
         return crc.getValue();
     }
 
-
-    @Deprecated
-    public static void processRun(File baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory, command, ProcessBuilder.Redirect.INHERIT); }
-    public static void processRun(Path baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory.toFile(), command, ProcessBuilder.Redirect.INHERIT); }
-
-    @Deprecated
-    public static void processRun(File baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder()
-                .directory(baseDirectory)
-                .command((command).split("\\s+"))
-                .redirectError(redirect)
-                .redirectOutput(redirect);
-        pb.start().waitFor();
-    }
+    public static void processRun(Path baseDirectory, String command) throws IOException, InterruptedException { processRun(baseDirectory, command, ProcessBuilder.Redirect.INHERIT); }
 
     public static void processRun(Path baseDirectory, String command, ProcessBuilder.Redirect redirect) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder()
                 .directory(baseDirectory.toFile())
-                .command((command).split("\\s+"))
+                .command(command.split("\\s+"))
                 .redirectError(redirect)
                 .redirectOutput(redirect);
         pb.start().waitFor();
@@ -200,20 +192,7 @@ public class Utils {
             sb.append(p.toCSV(toCSVConfig));
         }
         try {
-            FileUtils.writeStringToFile(path.toFile(), sb.toString(), AppConfig.CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    public static void makeCSV(File file, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
-        StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
-        for (PO p : poList) {
-            sb.append(p.toCSV(toCSVConfig));
-        }
-        try {
-            FileUtils.writeStringToFile(file, sb.toString(), AppConfig.CHARSET);
+            Files.writeString(path, sb.toString(), AppConfig.CHARSET);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -226,7 +205,7 @@ public class Utils {
         try {
             for (Path file : fileList) {
                 Path po2 = Paths.get(file.toString()+"2");
-                if(!Files.exists(po2) || Files.size(po2) <= 0) FileUtils.write(po2.toFile(), Utils.KOToCN(FileUtils.readFileToString(file.toFile(), AppConfig.CHARSET)), AppConfig.CHARSET);
+                if(!Files.exists(po2)) Files.writeString(po2, Utils.KOToCN( Files.readString(file, AppConfig.CHARSET)));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -265,7 +244,7 @@ public class Utils {
     public static HashMap<String, PO> sourceToMap(SourceToMapConfig config) {
 
         HashMap<String, PO> poMap = new HashMap<>();
-        String fileName = FilenameUtils.getBaseName(config.getFile().getName());
+        String fileName = getName(config.getPath());
         String source = parseSourceToMap(config);
 
         Matcher m = config.getPattern().matcher(source);
@@ -283,7 +262,7 @@ public class Utils {
 
     public static ArrayList<PO> sourceToArray(SourceToMapConfig config){
         ArrayList<PO> poArray = new ArrayList<>();
-        String fileName = FilenameUtils.getBaseName(config.getFile().getName());
+        String fileName = getName(config.getPath());
         String source = parseSourceToMap(config);
         Matcher m = config.getPattern().matcher(source);
         boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
@@ -301,7 +280,7 @@ public class Utils {
 
         String source = null;
         try {
-            source = FileUtils.readFileToString(config.getFile(), AppConfig.CHARSET);
+            source = Files.readString(config.getPath(), AppConfig.CHARSET);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -423,13 +402,14 @@ public class Utils {
         throw new Exception("프로젝트 못찾음 /" + id.toString());
     }
 
-    public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
+
+    public static Map<String, PO> getMergedPOtoMap(Collection<File> fileList) {
         var map = new HashMap<String, PO>();
         var config = new SourceToMapConfig();
 
         for (var file : fileList) {
-            String fileName = FilenameUtils.getBaseName(file.getName());
-            String ext = FilenameUtils.getExtension(file.getName());
+            String fileName = getName(file.toPath());
+            String ext = getExtension(file.toPath());
             config.setFile(file);
 
             if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
@@ -465,16 +445,13 @@ public class Utils {
         map.remove("41714900-0-363");
         map.remove("41714900-0-364");
 
-        var sourceList = new ArrayList<>(map.values());
-        sourceList.sort(PO.comparator);
-        return sourceList;
+        return map;
     }
 
-    @Deprecated
-    public static void makeCSVwithLog(File file, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
-        LocalTime timeTaken = LocalTime.now();
-        Utils.makeCSV(file, csvConfig, sourceList);
-        logger.info(file.getName() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+    public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
+        var sourceList = new ArrayList<>(getMergedPOtoMap(fileList).values());
+        sourceList.sort(PO.comparator);
+        return sourceList;
     }
 
     public static void makeCSVwithLog(Path path, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
@@ -502,7 +479,7 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new ArrayList<>();
     }
 
 }

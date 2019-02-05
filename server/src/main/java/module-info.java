@@ -1,6 +1,5 @@
 module org.metalscraps.eso.lang.server {
     requires org.metalscraps.eso.lang.library;
-    requires org.apache.commons.io;
     requires com.fasterxml.jackson.core;
     requires java.desktop;
     requires slf4j.api;

@@ -22,7 +22,7 @@ public class CompressServerMain {
     private void deleteTemp() {
 
         try {
-            Files.walk(Paths.get("."))
+            Files.walk(appWorkConfig.getBaseDirectoryToPath())
                     .filter(x -> Files.isRegularFile(x)
                         && (
                             x.toString().endsWith(".csv")
@@ -48,8 +48,8 @@ public class CompressServerMain {
         String mainServerCredential = mainServerAccount+"@"+mainServer;
 
         appWorkConfig.setBaseDirectoryToPath(Paths.get(properties.getProperty("WORK_DIR")));
-        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("/PO_"+appWorkConfig.getToday()));
-        var lang = appWorkConfig.getBaseDirectoryToPath().resolve("/lang_"+appWorkConfig.getTodayWithYear()+".7z");
+        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("PO_"+appWorkConfig.getToday()));
+        var lang = appWorkConfig.getBaseDirectoryToPath().resolve("lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
         try {
             logger.info("CSV 다운로드");
@@ -63,9 +63,9 @@ public class CompressServerMain {
             logger.info("SFX 업로드");
             Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"gsutil cp "+lang+".exe gs://dcinside-esok-cdn/");
             logger.info("버전 문서 생성");
-            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"echo "+new Date().getTime()+"/"+appWorkConfig.getTodayWithYear()+"/"+Utils.CRC32(Paths.get(lang+".exe")), ProcessBuilder.Redirect.to(new File("./ver.html")));
+            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"echo "+new Date().getTime()+"/"+appWorkConfig.getTodayWithYear()+"/"+Utils.CRC32(Paths.get(lang+".exe")), ProcessBuilder.Redirect.to(appWorkConfig.getBaseDirectoryToPath().resolve("ver.html").toFile()));
             logger.info("버전 문서 업로드");
-            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"scp ./ver.html "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_VERSION_DOCUMENT_PATH"));
+            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"scp "+appWorkConfig.getBaseDirectoryToPath().resolve("ver.html")+" "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_VERSION_DOCUMENT_PATH"));
             logger.info("잔여 파일 삭제");
             deleteTemp();
             System.exit(0);

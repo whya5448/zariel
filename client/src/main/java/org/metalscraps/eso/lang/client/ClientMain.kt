@@ -13,7 +13,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.function.BiPredicate
-import javax.swing.filechooser.FileSystemView
 
 class ClientMain private constructor() {
     private val appPath = Paths.get(System.getenv("localappdata") + "/" + "dc_eso_client")
@@ -37,7 +36,7 @@ class ClientMain private constructor() {
         Utils.storeConfig(configPath, properties)
         logger.info("업데이트 성공")
 
-        val esoDir = Paths.get(FileSystemView.getFileSystemView().defaultDirectory.path + "/Elder Scrolls Online/live/AddOns/gamedata/lang")
+        val esoDir = Utils.getESOLangDir()
         try {
             if (Files.notExists(esoDir)) Files.createDirectories(esoDir)
             Files.find(appPath, 1, BiPredicate { _, attr -> attr.isRegularFile }).forEach { x ->

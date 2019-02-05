@@ -7,13 +7,13 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.model.Operation;
-import org.apache.commons.io.FileUtils;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,10 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Predicate;
 
 class ServerMain {
@@ -37,7 +34,7 @@ class ServerMain {
 
         logger.info(appWorkConfig.getDateTime().format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss"))+" / 작업 시작");
         appWorkConfig.setBaseDirectoryToPath(Paths.get(properties.getProperty("WORK_DIR")));
-        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("/PO_"+appWorkConfig.getToday()));
+        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("PO_"+appWorkConfig.getToday()));
 
         // 이전 데이터 삭제
         logger.info("이전 데이터 삭제");
@@ -60,11 +57,13 @@ class ServerMain {
 
     private void deletePO() {
 
-        Predicate<Path> p = x -> x.toString().startsWith("./PO_") && !x.toString().startsWith("./PO_"+appWorkConfig.getToday());
+        var workDir = appWorkConfig.getBaseDirectoryToPath()+"/PO_";
+
+        Predicate<Path> p = x -> x.toString().startsWith(workDir) && !x.toString().startsWith(workDir+appWorkConfig.getToday());
         try {
             // 디렉토리 사용중 오류, 파일 먼저 지우고 디렉토리 지우기
-            Files.walk(Paths.get(".")).filter(p.and(Files::isRegularFile)).forEach(path -> { try { Files.delete(path); } catch (IOException e) { e.printStackTrace(); } });
-            Files.walk(Paths.get(".")).filter(p.and(Files::isDirectory)).forEach(path -> { try { Files.delete(path); } catch (IOException e) { e.printStackTrace(); } });
+            Files.walk(appWorkConfig.getBaseDirectoryToPath()).filter(p.and(Files::isRegularFile)).forEach(path -> { try { Files.delete(path); } catch (IOException e) { e.printStackTrace(); } });
+            Files.walk(appWorkConfig.getBaseDirectoryToPath()).filter(p.and(Files::isDirectory)).forEach(path -> { try { Files.delete(path); } catch (IOException e) { e.printStackTrace(); } });
         } catch (IOException e) {
             logger.error(e.getMessage()+" 이전 파일 삭제 실패");
             e.printStackTrace();
@@ -74,20 +73,16 @@ class ServerMain {
 
     private void makeCSV() {
 
-        var lang = appWorkConfig.getPODirectoryToPath().resolve("lang_"+appWorkConfig.getTodayWithYear()+".7z");
 
-        var listFiles = FileUtils.listFiles(appWorkConfig.getPODirectoryToPath().toFile(), new String[]{"po2"}, false);
+        var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po2");
+        var fileList = new ArrayList<File>();
+        listFiles.forEach(e->fileList.add(e.toFile()));
+        var list = Utils.getMergedPO(fileList);
+        var config = new ToCSVConfig().setWriteSource(false);
 
-        try {
-            if(!Files.exists(lang) && Files.size(lang) <= 0) {
-                var list = Utils.getMergedPO(listFiles);
-                var config = new ToCSVConfig().setWriteSource(false);
-
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr.csv"), config, list);
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr_beta.csv"), config.setBeta(true), list);
-                Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("tr.csv"), config.setWriteFileName(true).setBeta(false), list);
-            }
-        } catch (Exception e) { e.printStackTrace(); }
+        Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr.csv"), config, list);
+        Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("kr_beta.csv"), config.setBeta(true), list);
+        Utils.makeCSVwithLog(appWorkConfig.getPODirectoryToPath().resolve("tr.csv"), config.setWriteFileName(true).setBeta(false), list);
     }
 
     private Operation startCompressServer() {
