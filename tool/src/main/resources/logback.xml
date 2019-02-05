@@ -18,11 +18,11 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                LOG: %msg%n
+                [%-5p] [%F]%M\(%L\) : %m%n
             </pattern>
         </encoder>
     </appender>
-    <root level="TRACE">
+    <root level="INFO">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

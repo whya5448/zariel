@@ -74,8 +74,7 @@ public class PO implements Comparable<PO> {
 		return this;
 	}
 
-	@Override
-	public String toString() { return toCSV(new ToCSVConfig()); }
+	public String toStringDefault() { return toCSV(new ToCSVConfig()); }
 
 	public String toCSV(ToCSVConfig toCSVConfig) {
 		String translatedMsg = "";

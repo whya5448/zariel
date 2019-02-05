@@ -76,7 +76,7 @@ class LangManager {
 
 		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
 		for (File file : fileLinkedList) {
-			System.out.println(file);
+			logger.info(file.toString());
 			map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
 		}
 
@@ -146,7 +146,7 @@ class LangManager {
 			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
 			targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
-			System.out.println("zanata po parsed ["+file+"] ");
+			logger.info("zanata po parsed ["+file+"] ");
 		}
 
 		merge.MergeCSV(categorizedCSV, targetCSV, false);
@@ -159,7 +159,7 @@ class LangManager {
 			makePotFile(poList, true, oneCSV.getZanataFileName(), oneCSV.getType(), "trs", "ko", "po");
 		}
 
-		System.out.println("Select Csv file for generate ja-JP locale");
+		logger.info("Select Csv file for generate ja-JP locale");
 		targetCSV = originCG.GetSelectedCSVMap();
 		merge.MergeCSV(categorizedCSV, targetCSV, true);
 		for(CategoryCSV oneCSV : categorizedCSV){
@@ -438,7 +438,7 @@ class LangManager {
 
 		SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
 		for (File file : fileLinkedList) {
-			System.out.println(file);
+			logger.info(file.toString());
 			map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
 		}
 
@@ -446,7 +446,7 @@ class LangManager {
 		for (PO p : map.values()) jsonObject.put(p.getId(), p.getFileName() + "_" + Utils.CNtoKO((p.getTarget())));
 		String x = jsonObject.toString();
 
-		System.out.println(x);
+		logger.info(x);
 
 		try {
 			Files.writeString(appWorkConfig.getBaseDirectoryToPath().resolve("json.json"), x, AppConfig.CHARSET);
@@ -459,9 +459,9 @@ class LangManager {
 
 	void makeNewLang(){
 		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
-		System.out.println("select eso client csv file");
+		logger.info("select eso client csv file");
 		HashMap<String, PO> originCSVMap = CG.GetSelectedCSVMap();
-		System.out.println("select csv file to merge");
+		logger.info("select csv file to merge");
 		HashMap<String, PO> zanataCSVMap = CG.GetSelectedCSVMap();
 
 

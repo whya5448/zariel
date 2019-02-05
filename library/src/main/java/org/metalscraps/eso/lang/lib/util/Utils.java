@@ -457,7 +457,7 @@ public class Utils {
     public static void makeCSVwithLog(Path path, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
         LocalTime timeTaken = LocalTime.now();
         Utils.makeCSV(path, csvConfig, sourceList);
-        logger.info(path.getFileName().toString() + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
+        logger.info(path.getFileName() + " " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
     public static String getName(Path path) {

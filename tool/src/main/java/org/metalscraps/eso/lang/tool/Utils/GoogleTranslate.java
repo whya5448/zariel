@@ -69,7 +69,7 @@ public class GoogleTranslate implements Runnable {
             /*
             Translation translation =
                     translate.translate(
-                            sb.toString(),
+                            sb.toStringDefault(),
                             TranslateOption.sourceLanguage("en"),
                             TranslateOption.targetLanguage("ko"));
             sb = new StringBuilder(StringEscapeUtils.unescapeXml(translation.getTranslatedText()));

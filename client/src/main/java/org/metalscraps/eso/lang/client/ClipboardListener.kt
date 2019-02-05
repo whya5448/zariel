@@ -26,7 +26,7 @@ internal class ClipboardListener(properties: Properties) : FlavorListener {
     private fun removeDuplicateItem(list: ArrayList<ID>) {
         for (id in ArrayList(list)) {
             val dup = ArrayList<ID>()
-            // 내용, toString 결과는 같지만 다른 객체.
+            // 내용, toStringDefault 결과는 같지만 다른 객체.
             for (id2 in list) if (id.toString() == id2.toString() && id !== id2) dup.add(id2)
             for (x in dup) list.remove(x)
         }

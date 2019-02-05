@@ -49,7 +49,7 @@ public class CSVmergeTest {
     public void mergeCSV() {
         /*
         CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
-        originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+        originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toStringDefault()+"\\IndexMatch.txt");
         originCG.GenCategory();
         HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
         */

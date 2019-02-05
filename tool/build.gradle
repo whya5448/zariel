@@ -6,11 +6,9 @@ plugins {
 
 dependencies {
     compile project(':library')
-    implementation "commons-io:commons-io:${commonsio}"
-    implementation 'org.apache.commons:commons-lang3:3.7'
-    implementation 'org.apache.commons:commons-text:1.2'
     implementation 'com.google.cloud:google-cloud-translate:1.14.0'
     implementation 'org.jsoup:jsoup:1.11.2'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 def sImageName = 'dc-eso-tool'
@@ -20,9 +18,9 @@ mainClassName = "${sModuleName}/${sMainClass}"
 jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
 
 run {
-    args = ["-opt=help"]
+    args = ["-opt=5"]
     // 폴더 설정 참조
-    // args = ["-opt=12412", "-base=12", "-po=C:\\Users\\Whya5\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0116"]
+    // args = ["-opt=1", "-base=12", "-po=C:\\Users\\Whya5\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0116"]
 }
 
 jlink {
@@ -71,5 +69,8 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+repositories {
+    mavenCentral()
 }
 
