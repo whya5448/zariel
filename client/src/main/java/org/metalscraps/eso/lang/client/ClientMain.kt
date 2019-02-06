@@ -2,6 +2,7 @@ package org.metalscraps.eso.lang.client
 
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
+import java.awt.Desktop
 import java.awt.Toolkit
 import java.io.IOException
 import java.net.URI
@@ -221,9 +222,9 @@ class ClientMain private constructor() {
     }
 
     companion object {
-        private val cdn = "https://storage.googleapis.com/dcinside-esok-cdn/"
-        private val isWhya = System.getenv().getOrDefault("debug", "") == "whya5448"
+        private const val cdn = "https://storage.googleapis.com/dcinside-esok-cdn/"
         private val logger = LoggerFactory.getLogger(ClientMain::class.java)
+        private val isWhya = System.getenv().getOrDefault("debug", "") == "whya5448"
 
         @Throws(InterruptedException::class)
         @JvmStatic
@@ -233,6 +234,8 @@ class ClientMain private constructor() {
             main.getDataVersion()
             if (main.needUpdate) if (main.update()) main.updateLocalConfig() else logger.error("업데이트 실패")
             else logger.info("최신 버전임")
+
+            Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
             // 클립보드 리스너 등록
             main.registClipboardListener()
 

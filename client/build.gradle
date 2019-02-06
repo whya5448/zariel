@@ -32,8 +32,6 @@ jlink {
         requires 'java.sql'
         requires 'java.xml'
         requires 'java.desktop'
-        requires 'java.net.http'
-        requires 'java.security.jgss'
         requires 'jdk.unsupported'
         uses 'java.nio.file.spi.FileSystemProvider'
         provides 'com.fasterxml.jackson.core.JsonFactory' with 'com.fasterxml.jackson.core.JsonFactory'
