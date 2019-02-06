@@ -15,4 +15,5 @@ public class AppConfig {
 	public static final Pattern CSVPattern = Pattern.compile("\"()(([\\d]+?)-([\\d]+?)-([\\d]+?))\",\"([\\s\\S]*?)\",\"([\\s\\S]*?)\"\n", Pattern.MULTILINE);
 	public static final Pattern CategoryConfig = Pattern.compile ("FileName:(.*)((\\r\\n)|(\\n))isDuplicate:(.*)((\\r\\n)|(\\n))type:(.*)((\\r\\n)|(\\n))indexLinkCount:(.*)((\\r\\n)|(\\n))index:(.*)((\\r\\n)|(\\n))", Pattern.MULTILINE );
 	public static final String ZANATA_DOMAIN = "http://www.dostream.com/zanata/";
+	public static final Pattern PATTERN_DESTINATION = Pattern.compile("(\\[)(\\d+)(] = \\{\")(.+?)(\"},)");
 }

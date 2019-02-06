@@ -2,6 +2,8 @@ package org.metalscraps.eso.lang.lib.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.metalscraps.eso.lang.lib.bean.ID;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
@@ -245,12 +247,18 @@ public class Utils {
 
     public static HashMap<String, PO> sourceToMap(SourceToMapConfig config) {
 
+        if(config.getPattern() == null) {
+            var ext = getExtension(config.getPath());
+            if(ext.equals("po") || ext.equals("po2")) config.setPattern(AppConfig.POPattern);
+            else if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
+        }
+
         HashMap<String, PO> poMap = new HashMap<>();
         String fileName = getName(config.getPath());
         String source = parseSourceToMap(config);
 
         Matcher m = config.getPattern().matcher(source);
-        boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
+        boolean isPOPattern = (config.getPattern() == AppConfig.POPattern);
         while (m.find()) {
             PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
             //po.setFileName(FileNames.fromString(fileName));
@@ -260,22 +268,6 @@ public class Utils {
         }
 
         return poMap;
-    }
-
-    public static ArrayList<PO> sourceToArray(SourceToMapConfig config){
-        ArrayList<PO> poArray = new ArrayList<>();
-        String fileName = getName(config.getPath());
-        String source = parseSourceToMap(config);
-        Matcher m = config.getPattern().matcher(source);
-        boolean isPOPattern = config.getPattern() == (AppConfig.POPattern);
-        while (m.find()) {
-            PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
-            //po.setFileName(FileNames.fromString(fileName));
-            po.setStringFileName(fileName);
-            if(isPOPattern && m.group(1) != null && m.group(1).equals("#, fuzzy")) po.setFuzzy(true);
-            poArray.add(po);
-        }
-        return poArray;
     }
 
     private static String parseSourceToMap(SourceToMapConfig config) {

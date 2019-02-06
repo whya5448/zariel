@@ -3,6 +3,7 @@ package org.metalscraps.eso.lang.lib.config;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.metalscraps.eso.lang.lib.bean.PO;
+import org.metalscraps.eso.lang.lib.util.Utils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ public class SourceToMapConfig {
 
 	public SourceToMapConfig setFile(File file) {
 		this.path = file.toPath();
+		autoPattern();
 		return this;
 	}
 
@@ -34,6 +36,7 @@ public class SourceToMapConfig {
 
 	public SourceToMapConfig setPath(Path path) {
 		this.path = path;
+		autoPattern();
 		return this;
 	}
 
@@ -47,4 +50,12 @@ public class SourceToMapConfig {
 	private String prefix, suffix;
 	private Pattern pattern = null;
 	private PO.POWrapType poWrapType = PO.POWrapType.WRAP_ALL;
+
+	private void autoPattern() {
+		if(pattern == null) {
+			var ext = Utils.getExtension(path);
+			if(ext.equals("po") || ext.equals("po2")) pattern = AppConfig.POPattern;
+			else if(ext.equals("csv")) pattern = AppConfig.CSVPattern;
+		}
+	}
 }

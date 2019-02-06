@@ -54,8 +54,10 @@ public class CompressServerMain {
         try {
             logger.info("CSV 다운로드");
             Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"scp "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_PO_PATH")+appWorkConfig.getToday()+"/*.csv .");
+            logger.info("LUA 다운로드");
+            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"scp "+mainServerCredential+":"+properties.getProperty("MAIN_SERVER_PO_PATH")+appWorkConfig.getToday()+"/*.lua .");
             logger.info("CSV 압축");
-            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"7za a -mx=7 " + lang + " " + appWorkConfig.getBaseDirectoryToPath() + "/*.csv");
+            Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"7za a -mx=7 " + lang + " " + appWorkConfig.getBaseDirectoryToPath() + "/*.csv" + " " + appWorkConfig.getBaseDirectoryToPath() + "/*.lua");
             logger.info("SFX 생성");
             Utils.processRun(appWorkConfig.getBaseDirectoryToPath(),"cat 7zCon.sfx "+lang, ProcessBuilder.Redirect.to(new File(lang+".exe")));
             logger.info("기존 업로드된 SFX 삭제");

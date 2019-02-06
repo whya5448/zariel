@@ -1,6 +1,7 @@
 package org.metalscraps.eso.lang.tool;
 
 import org.jsoup.helper.StringUtil;
+import org.metalscraps.eso.lang.lib.AddonManager;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
@@ -97,10 +98,12 @@ class ToolMain {
 				Utils.convertKO_PO_to_CN(appWorkConfig);
 				lm.makeCSVs();
 				lm.makeLang();
+				new AddonManager(appWorkConfig).destination();
 				break;
+			case "6": new AddonManager(appWorkConfig).destination(); break;
+			case "66": lm.lineCompare(); break;
 			case "9": System.exit(0);
 			case "11": new TamrielTradeCentre(appWorkConfig).start(); break;
-			case "12": new Destinations(appWorkConfig).start(); break;
 			case "100": lm.translateGoogle(); break;
 			case "200": CG.GenCategory(); break;
 			case "300": lm.GenZanataUploadSet(); break;

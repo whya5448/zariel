@@ -7,6 +7,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.model.Operation;
+import org.metalscraps.eso.lang.lib.AddonManager;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
@@ -45,6 +46,9 @@ class ServerMain {
         Utils.convertKO_PO_to_CN(appWorkConfig);
         logger.info("CSV 생성");
         makeCSV();
+
+        // 데스티네이션
+        new AddonManager(appWorkConfig).destination();
 
         logger.info("인스턴스 시작");
         var res = startCompressServer();

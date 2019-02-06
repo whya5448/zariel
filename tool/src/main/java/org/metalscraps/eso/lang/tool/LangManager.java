@@ -381,7 +381,7 @@ class LangManager {
 		var fileList = new ArrayList<File>();
 		listFiles.forEach(e->fileList.add(e.toFile()));
 		// en.lang 0번에 추가
-		fileList.add(0, appWorkConfig.getBaseDirectoryToPath().resolve("en.lang.csv").toFile());
+		// fileList.add(0, appWorkConfig.getBaseDirectoryToPath().resolve("en.lang.csv").toFile());
 
 		// 합쳐서 csv 로 한번에 생성
 		var sourceList = Utils.getMergedPO(fileList);
@@ -473,6 +473,20 @@ class LangManager {
 		//this.PC.translateGoogle();
 		//this.PC.filterNewPO();
 		this.PC.setFuzzyNbyG();
+	}
+
+	void lineCompare() {
+		var sConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+		var en = Utils.sourceToMap(sConfig.setPath(appWorkConfig.getBaseDirectoryToPath().resolve("en.lang.csv")));
+		var ko = Utils.sourceToMap(sConfig.setPath(appWorkConfig.getBaseDirectoryToPath().resolve("kr.csv")));
+		var sEn = en.size();
+		var sKo = ko.size();
+		logger.info(sEn+"");
+		logger.info(sKo+"");
+		logger.info(sEn - sKo+"");
+		ko.forEach((x, y)->en.remove(x));
+		System.out.println(en.size());
+		en.forEach((x,y)-> System.out.println(y));
 	}
 
 }
