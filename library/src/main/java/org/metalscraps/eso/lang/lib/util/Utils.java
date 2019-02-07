@@ -339,16 +339,20 @@ public class Utils {
 
         Properties properties = new Properties();
         try {
-
             if (Files.exists(configPath) && Files.size(configPath) > 0) try(var fis = Files.newInputStream(configPath)) { properties.load(fis); } catch (Exception e) { e.printStackTrace(); }
-            else try(var fos = Files.newOutputStream(configPath)) {
-                logger.info("설정 데이터 없음. 초기화");
-                for(var entry : config.entrySet()) properties.setProperty(entry.getKey(), entry.getValue());
-                properties.store(fos, "init");
-            } catch (Exception e) { e.printStackTrace(); }
+            else logger.info("설정 데이터 없음. 초기화");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        config.forEach(properties::putIfAbsent);
+        try(var fos = Files.newOutputStream(configPath)) {
+            properties.store(fos, "");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            e.printStackTrace();
+        }
+
         return properties;
     }
 
