@@ -1,9 +1,9 @@
 package org.metalscraps.eso.lang.client
 
+import org.metalscraps.eso.lang.client.gui.OptionPanel
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
-import java.awt.Desktop
-import java.awt.Toolkit
+import java.awt.*
 import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
@@ -15,16 +15,28 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.function.BiPredicate
 
+
 class ClientMain private constructor() {
     private val appPath = Paths.get(System.getenv("localappdata") + "/" + "dc_eso_client")
     private val configPath = appPath.resolve(".config")
-    private val properties = Utils.setConfig(appPath, configPath,  mapOf<String, String>("ver" to "0", "x" to "0", "y" to "0", "width" to "100", "height" to "48", "opacity" to ".5f"))
+    private val properties = Utils.setConfig(appPath, configPath,  mapOf<String, String>(
+            "ver" to "0",
+            "x" to "0",
+            "y" to "0",
+            "width" to "100",
+            "height" to "48",
+            "opacity" to ".5f",
+            "launchESOafterUpdate" to "0",
+            "doLangUpdate" to "0",
+            "doDestnationsUpdate" to "0"
+    ))
 
     private var serverFileName: String? = null
     private var serverVer: Long = 0
     private val localVer: Long
     private var crc32: String? = null
     private var needUpdate = false
+    private val optionPanel = OptionPanel(properties)
 
 
     init {
@@ -182,6 +194,26 @@ class ClientMain private constructor() {
 
     }
 
+    private fun registerTrayIcon() {
+        val image: Image = Toolkit.getDefaultToolkit().getImage("src/main/resources/eso.ico")
+        val trayIcon = TrayIcon(image)
+        trayIcon.isImageAutoSize = true
+        trayIcon.toolTip = "엘온갤 업데이터"
+        val pop = PopupMenu()
+        val settings = MenuItem("설정")
+        settings.addActionListener { optionPanel.isVisible = true }
+        val exit = MenuItem("종료")
+        exit.addActionListener { System.exit(0) }
+        pop.add(settings)
+        pop.addSeparator()
+        pop.add(exit)
+        trayIcon.popupMenu = pop
+        try {
+            for (registeredTrayIcon in SystemTray.getSystemTray().trayIcons) SystemTray.getSystemTray().remove(registeredTrayIcon)
+            SystemTray.getSystemTray().add(trayIcon)
+        } catch (e: AWTException) {}
+    }
+
     private fun downloadTool(): Boolean {
         logger.info("다운로드 시도")
         val request = HttpRequest.newBuilder().uri(URI.create(cdn + "EsoExtractData%20v0.32.exe")).build()
@@ -235,7 +267,11 @@ class ClientMain private constructor() {
             if (main.needUpdate) if (main.update()) main.updateLocalConfig() else logger.error("업데이트 실패")
             else logger.info("최신 버전임")
 
-            Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
+            if(!isWhya) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
+
+            //트레이 아이콘 등록
+            main.registerTrayIcon()
+
             // 클립보드 리스너 등록
             main.registClipboardListener()
 

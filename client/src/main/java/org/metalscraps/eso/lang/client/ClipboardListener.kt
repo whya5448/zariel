@@ -45,7 +45,7 @@ internal class ClipboardListener(properties: Properties) : FlavorListener {
         frame.isResizable = false
         frame.layout = BorderLayout()
         frame.opacity = java.lang.Float.parseFloat(properties.getProperty("opacity"))
-        frame.setBounds(
+        frame.bounds = Rectangle(
                 Integer.parseInt(properties.getProperty("x")), Integer.parseInt(properties.getProperty("y")),
                 Integer.parseInt(properties.getProperty("width")), Integer.parseInt(properties.getProperty("height"))
         )
