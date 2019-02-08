@@ -5,6 +5,7 @@ module org.metalscraps.eso.lang.library {
     requires com.fasterxml.jackson.databind;
     requires org.apache.commons.io;
     requires java.desktop;
+    requires kotlin.stdlib;
     exports org.metalscraps.eso.lang.lib;
     exports org.metalscraps.eso.lang.lib.util;
     exports org.metalscraps.eso.lang.lib.bean;

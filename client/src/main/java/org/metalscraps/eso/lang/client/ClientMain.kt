@@ -1,6 +1,10 @@
 package org.metalscraps.eso.lang.client
 
+import org.metalscraps.eso.lang.client.config.Options.*
+import org.metalscraps.eso.lang.client.gui.ClipboardListener
 import org.metalscraps.eso.lang.client.gui.OptionPanel
+import org.metalscraps.eso.lang.lib.config.ESOConfig
+import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
 import java.awt.*
@@ -16,37 +20,39 @@ import java.nio.file.StandardCopyOption
 import java.util.function.BiPredicate
 
 
-class ClientMain private constructor() {
+private class ClientMain private constructor() {
     private val appPath = Paths.get(System.getenv("localappdata") + "/" + "dc_eso_client")
     private val configPath = appPath.resolve(".config")
-    private val properties = Utils.setConfig(appPath, configPath,  mapOf<String, String>(
-            "ver" to "0",
-            "x" to "0",
-            "y" to "0",
-            "width" to "100",
-            "height" to "48",
-            "opacity" to ".5f",
-            "launchESOafterUpdate" to "0",
-            "doLangUpdate" to "0",
-            "doDestnationsUpdate" to "0"
-    ))
-
+    private val cConf = ESOConfig(appPath, configPath)
     private var serverFileName: String? = null
     private var serverVer: Long = 0
     private val localVer: Long
     private var crc32: String? = null
     private var needUpdate = false
-    private val optionPanel = OptionPanel(properties)
-
+    private val optionPanel: OptionPanel
 
     init {
+
         logger.info("설정 불러오기")
-        localVer = java.lang.Long.parseLong(properties["ver"].toString())
+        cConf.load(mapOf(
+                LANG_VERSION to 0,
+                ZANATA_MANAGER_X to 0,
+                ZANATA_MANAGER_Y to 0,
+                ZANATA_MANAGER_WIDTH to 100,
+                ZANATA_MANAGER_HEIGHT to 48,
+                ZANATA_MANAGER_OPACITY to .5f,
+                LAUNCH_ESO_AFTER_UPDATE to true,
+                UPDATE_LANG to true,
+                UPDATE_DESTINATIONS to true,
+                ENABLE_ZANATA_LISTENER to true
+        ).toMap(HashMap<ESOConfigOptions, Any>()))
+        optionPanel = OptionPanel(cConf)
+        localVer = cConf.getConf(LANG_VERSION).toLong()
     }
 
     private fun updateLocalConfig() {
-        if (!isWhya) properties.setProperty("ver", serverVer.toString())
-        Utils.storeConfig(configPath, properties)
+        if (!isWhya) cConf.setProperty("ver", serverVer.toString())
+        Utils.storeConfig(configPath, cConf)
         logger.info("업데이트 성공")
 
         val esoDir = Utils.getESOLangDir()
@@ -77,21 +83,21 @@ class ClientMain private constructor() {
             logger.error("서버 버전 확인 실패")
             for (x in e.stackTrace) logger.error(x.toString())
             e.printStackTrace()
-            System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
+            cConf.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
         } catch (e: InterruptedException) {
             logger.error("서버 버전 확인 실패")
             for (x in e.stackTrace) logger.error(x.toString())
             e.printStackTrace()
-            System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
+            cConf.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
         } catch (e: Exception) {
             logger.debug(e.message)
             e.printStackTrace()
-            System.exit(-1)
+            cConf.exit(-1)
         }
 
         if (response!!.statusCode() != 200) {
             logger.error("서버 버전 확인 실패 / STATUS : " + response.statusCode())
-            System.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
+            cConf.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
         }
         val resData = response.body().trim { it <= ' ' }.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         serverVer = java.lang.Long.parseLong(resData[0])
@@ -107,7 +113,7 @@ class ClientMain private constructor() {
     }
 
     private fun registClipboardListener() {
-        Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener(ClipboardListener(properties))
+        Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener(ClipboardListener(cConf))
     }
 
     private fun update(): Boolean {
@@ -117,23 +123,24 @@ class ClientMain private constructor() {
             if (downloadTool()) logger.info("툴 전송 성공")
             else {
                 logger.info("툴 전송 실패")
-                System.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
+                cConf.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
             }
         }
 
-        val langPath = appPath.resolve("csv.exe")
-        downloadCSVs(langPath)
-        decompressCSVs(langPath)
-        try {
-            Utils.processRun(appPath, "$tool -p -x kr.csv -o kr.lang")
-            Utils.processRun(appPath, "$tool -p -x kr_beta.csv -o kr_beta.lang")
-            Utils.processRun(appPath, "$tool -p -x tr.csv -o tr.lang")
-        } catch (e: Exception) {
-            logger.error("LANG 생성 실패")
-            e.printStackTrace()
-            System.exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.errCode)
+        if(cConf.getConf(UPDATE_LANG).toBoolean()) {
+            val langPath = appPath.resolve("csv.exe")
+            downloadCSVs(langPath)
+            decompressCSVs(langPath)
+            try {
+                Utils.processRun(appPath, "$tool -p -x kr.csv -o kr.lang")
+                Utils.processRun(appPath, "$tool -p -x kr_beta.csv -o kr_beta.lang")
+                Utils.processRun(appPath, "$tool -p -x tr.csv -o tr.lang")
+            } catch (e: Exception) {
+                logger.error("LANG 생성 실패")
+                e.printStackTrace()
+                cConf.exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.errCode)
+            }
         }
-
         return true
     }
 
@@ -143,11 +150,11 @@ class ClientMain private constructor() {
         } catch (e: InterruptedException) {
             e.printStackTrace()
             logger.error("언어파일 압축해제 실패")
-            System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         } catch (e: IOException) {
             e.printStackTrace()
             logger.error("언어파일 압축해제 실패")
-            System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         }
 
         if (!isWhya) try {
@@ -172,11 +179,11 @@ class ClientMain private constructor() {
         } catch (e: IOException) {
             logger.error("언어 다운로드 실패")
             e.printStackTrace()
-            System.exit(AppErrorCode.CANNOT_DOWNLOAD_LANG.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DOWNLOAD_LANG.errCode)
         } catch (e: InterruptedException) {
             logger.error("언어 다운로드 실패")
             e.printStackTrace()
-            System.exit(AppErrorCode.CANNOT_DOWNLOAD_LANG.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DOWNLOAD_LANG.errCode)
         } catch (e: Exception) {
             logger.error(e.message)
             e.printStackTrace()
@@ -195,7 +202,7 @@ class ClientMain private constructor() {
     }
 
     private fun registerTrayIcon() {
-        val image: Image = Toolkit.getDefaultToolkit().getImage("src/main/resources/eso.ico")
+        val image: Image = Toolkit.getDefaultToolkit().getImage("eso.ico")
         val trayIcon = TrayIcon(image)
         trayIcon.isImageAutoSize = true
         trayIcon.toolTip = "엘온갤 업데이터"
@@ -203,13 +210,13 @@ class ClientMain private constructor() {
         val settings = MenuItem("설정")
         settings.addActionListener { optionPanel.isVisible = true }
         val exit = MenuItem("종료")
-        exit.addActionListener { System.exit(0) }
+        exit.addActionListener { cConf.exit(0) }
         pop.add(settings)
         pop.addSeparator()
         pop.add(exit)
         trayIcon.popupMenu = pop
         try {
-            for (registeredTrayIcon in SystemTray.getSystemTray().trayIcons) SystemTray.getSystemTray().remove(registeredTrayIcon)
+            for (icon in SystemTray.getSystemTray().trayIcons) SystemTray.getSystemTray().remove(icon)
             SystemTray.getSystemTray().add(trayIcon)
         } catch (e: AWTException) {}
     }
@@ -224,11 +231,11 @@ class ClientMain private constructor() {
         } catch (e: IOException) {
             e.printStackTrace()
             logger.error("툴 다운로드 실패")
-            System.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
         } catch (e: InterruptedException) {
             e.printStackTrace()
             logger.error("툴 다운로드 실패")
-            System.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
         }
 
         try {
@@ -236,11 +243,11 @@ class ClientMain private constructor() {
         } catch (e: InterruptedException) {
             e.printStackTrace()
             logger.error("툴 압축해제 실패")
-            System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         } catch (e: IOException) {
             e.printStackTrace()
             logger.error("툴 압축해제 실패")
-            System.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            cConf.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         }
 
         try {
@@ -262,18 +269,18 @@ class ClientMain private constructor() {
         @JvmStatic
         fun main(@Suppress("UnusedMainParameter") args: Array<String>) {
             // 업데이트
+
             val main = ClientMain()
             main.getDataVersion()
             if (main.needUpdate) if (main.update()) main.updateLocalConfig() else logger.error("업데이트 실패")
             else logger.info("최신 버전임")
 
-            if(!isWhya) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
-
+            if(!isWhya) if(main.cConf.getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
             //트레이 아이콘 등록
             main.registerTrayIcon()
 
             // 클립보드 리스너 등록
-            main.registClipboardListener()
+            if(main.cConf.getConf(ENABLE_ZANATA_LISTENER).toBoolean()) main.registClipboardListener()
 
             // 종료 전까지 대기
             Thread.sleep(java.lang.Long.MAX_VALUE)

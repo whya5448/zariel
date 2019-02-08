@@ -1,9 +1,11 @@
-package org.metalscraps.eso.lang.client
+package org.metalscraps.eso.lang.client.gui
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.metalscraps.eso.lang.client.config.Options
 import org.metalscraps.eso.lang.lib.bean.ID
 import org.metalscraps.eso.lang.lib.config.AppConfig
+import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
 import java.awt.*
@@ -15,7 +17,7 @@ import java.net.URI
 import java.util.*
 import java.util.regex.Pattern
 
-internal class ClipboardListener(properties: Properties) : FlavorListener {
+internal class ClipboardListener(cConf: ESOConfig) : FlavorListener {
 
     private val frame: Frame
     private val panel: Panel
@@ -44,14 +46,12 @@ internal class ClipboardListener(properties: Properties) : FlavorListener {
         frame.isUndecorated = true
         frame.isResizable = false
         frame.layout = BorderLayout()
-        frame.opacity = java.lang.Float.parseFloat(properties.getProperty("opacity"))
+        frame.opacity = cConf.getConf(Options.ZANATA_MANAGER_OPACITY).toFloat()
         frame.bounds = Rectangle(
-                Integer.parseInt(properties.getProperty("x")), Integer.parseInt(properties.getProperty("y")),
-                Integer.parseInt(properties.getProperty("width")), Integer.parseInt(properties.getProperty("height"))
+                cConf.getConf(Options.ZANATA_MANAGER_X).toInt(), cConf.getConf(Options.ZANATA_MANAGER_Y).toInt(),
+                cConf.getConf(Options.ZANATA_MANAGER_WIDTH).toInt(), cConf.getConf(Options.ZANATA_MANAGER_HEIGHT).toInt()
         )
-        frame.addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent?) { System.exit(0) }
-        })
+        frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { cConf.exit(0) } })
 
         panel = Panel()
         panel.layout = GridLayout()
@@ -78,19 +78,8 @@ internal class ClipboardListener(properties: Properties) : FlavorListener {
         for (i in list.indices) {
             val button = Button()
             button.label = i.toString()
-            try {
-                button.actionCommand = objectMapper.writeValueAsString(list[i])
-            } catch (e: JsonProcessingException) {
-                e.printStackTrace()
-            }
-
-            button.addActionListener { e ->
-                try {
-                    openZanata(objectMapper.readValue<ID>(e.actionCommand, ID::class.java))
-                } catch (e1: IOException) {
-                    e1.printStackTrace()
-                }
-            }
+            try { button.actionCommand = objectMapper.writeValueAsString(list[i]) } catch (e: JsonProcessingException) { e.printStackTrace() }
+            button.addActionListener { e -> try { openZanata(objectMapper.readValue<ID>(e.actionCommand, ID::class.java)) } catch (e1: IOException) { e1.printStackTrace() } }
             panel.add(button)
         }
         frame.add(panel, BorderLayout.NORTH)
