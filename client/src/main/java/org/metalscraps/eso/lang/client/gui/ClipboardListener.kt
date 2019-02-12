@@ -2,10 +2,9 @@ package org.metalscraps.eso.lang.client.gui
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.metalscraps.eso.lang.client.config.Options
+import org.metalscraps.eso.lang.client.config.ClientConfig
 import org.metalscraps.eso.lang.lib.bean.ID
 import org.metalscraps.eso.lang.lib.config.AppConfig
-import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
 import java.awt.*
@@ -17,7 +16,7 @@ import java.net.URI
 import java.util.*
 import java.util.regex.Pattern
 
-internal class ClipboardListener(cConf: ESOConfig) : FlavorListener {
+internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
 
     private val frame: Frame
     private val panel: Panel
@@ -46,10 +45,10 @@ internal class ClipboardListener(cConf: ESOConfig) : FlavorListener {
         frame.isUndecorated = true
         frame.isResizable = false
         frame.layout = BorderLayout()
-        frame.opacity = cConf.getConf(Options.ZANATA_MANAGER_OPACITY).toFloat()
+        frame.opacity = cConf.zanataManagerO
         frame.bounds = Rectangle(
-                cConf.getConf(Options.ZANATA_MANAGER_X).toInt(), cConf.getConf(Options.ZANATA_MANAGER_Y).toInt(),
-                cConf.getConf(Options.ZANATA_MANAGER_WIDTH).toInt(), cConf.getConf(Options.ZANATA_MANAGER_HEIGHT).toInt()
+                cConf.zanataManagerX, cConf.zanataManagerY,
+                cConf.zanataManagerW, cConf.zanataManagerH
         )
         frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { cConf.exit(0) } })
 
