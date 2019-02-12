@@ -356,12 +356,6 @@ public class Utils {
         return properties;
     }
 
-    public static void storeConfig(Path configPath, Properties properties) {
-        try(var fos = new FileOutputStream(configPath.toFile())) {
-            properties.store(fos, String.valueOf(new Date().getTime()));
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
     private static HttpRequest getDefaultRestClient(String domain) {
         return HttpRequest.newBuilder().uri(URI.create(domain)).header("Accept","application/json").build();
     }

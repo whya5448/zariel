@@ -1,9 +1,9 @@
 package org.metalscraps.eso.lang.client
 
+import org.metalscraps.eso.lang.client.config.ClientConfig
 import org.metalscraps.eso.lang.client.config.Options.*
 import org.metalscraps.eso.lang.client.gui.ClipboardListener
 import org.metalscraps.eso.lang.client.gui.OptionPanel
-import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
@@ -23,7 +23,7 @@ import java.util.function.BiPredicate
 private class ClientMain private constructor() {
     private val appPath = Paths.get(System.getenv("localappdata") + "/" + "dc_eso_client")
     private val configPath = appPath.resolve(".config")
-    private val cConf = ESOConfig(appPath, configPath)
+    private val cConf = ClientConfig(appPath, configPath)
     private var serverFileName: String? = null
     private var serverVer: Long = 0
     private val localVer: Long
@@ -35,7 +35,7 @@ private class ClientMain private constructor() {
 
         logger.info("설정 불러오기")
         cConf.load(mapOf(
-                LANG_VERSION to 0,
+                LOCAL_LANG_VERSION to 0,
                 ZANATA_MANAGER_X to 0,
                 ZANATA_MANAGER_Y to 0,
                 ZANATA_MANAGER_WIDTH to 100,
@@ -47,13 +47,15 @@ private class ClientMain private constructor() {
                 ENABLE_ZANATA_LISTENER to true
         ).toMap(HashMap<ESOConfigOptions, Any>()))
         optionPanel = OptionPanel(cConf)
-        localVer = cConf.getConf(LANG_VERSION).toLong()
+        localVer = cConf.localLangVersion
     }
 
     private fun updateLocalConfig() {
-        if (!isWhya) cConf.setProperty("ver", serverVer.toString())
-        Utils.storeConfig(configPath, cConf)
-        logger.info("업데이트 성공")
+        if (!isWhya && cConf.isUpdateLang) {
+            cConf.put(LOCAL_LANG_VERSION, serverVer)
+            cConf.store()
+            logger.info("업데이트 성공")
+        }
 
         val esoDir = Utils.getESOLangDir()
         try {
@@ -100,11 +102,11 @@ private class ClientMain private constructor() {
             cConf.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
         }
         val resData = response.body().trim { it <= ' ' }.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        serverVer = java.lang.Long.parseLong(resData[0])
+        serverVer = resData[0].toLong()
         serverFileName = resData[1]
         crc32 = resData[2]
 
-        logger.info("서버 파일명 : " + serverFileName!!)
+        logger.info("서버 파일명 : $serverFileName")
         logger.info("서버 버전 : $serverVer")
         logger.info("로컬 버전 : $localVer")
 
@@ -127,7 +129,7 @@ private class ClientMain private constructor() {
             }
         }
 
-        if(cConf.getConf(UPDATE_LANG).toBoolean()) {
+        if(cConf.isUpdateLang) {
             val langPath = appPath.resolve("csv.exe")
             downloadCSVs(langPath)
             decompressCSVs(langPath)
@@ -157,23 +159,20 @@ private class ClientMain private constructor() {
             cConf.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         }
 
-        if (!isWhya) try {
-            Files.deleteIfExists(langPath)
-        } catch (ignored: IOException) {
-        }
+        if (!isWhya) try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
 
     }
 
     private fun downloadCSVs(csvPath: Path) {
 
-        val request = HttpRequest.newBuilder().uri(URI.create(cdn + "lang_$serverFileName.7z.exe")).build()
+        val request = HttpRequest.newBuilder().uri(URI.create("${CDN}lang_$serverFileName.7z.exe")).build()
 
         if (Files.exists(csvPath) && Utils.CRC32(csvPath).toString() == crc32) {
             logger.info("언어 파일 존재함. 다운로드 스킵")
             return
         }
 
-        logger.info("다운로드 시도")
+        logger.info("CSV 다운로드 시도")
         try {
             HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofFile(csvPath))
         } catch (e: IOException) {
@@ -188,6 +187,7 @@ private class ClientMain private constructor() {
             logger.error(e.message)
             e.printStackTrace()
         }
+        logger.info("CSV 다운로드 성공")
 
         if (crc32 != Utils.CRC32(csvPath).toString()) {
             logger.warn("LANG 파일 CRC 불일치")
@@ -202,10 +202,6 @@ private class ClientMain private constructor() {
     }
 
     private fun registerTrayIcon() {
-        val image: Image = Toolkit.getDefaultToolkit().getImage("eso.ico")
-        val trayIcon = TrayIcon(image)
-        trayIcon.isImageAutoSize = true
-        trayIcon.toolTip = "엘온갤 업데이터"
         val pop = PopupMenu()
         val settings = MenuItem("설정")
         settings.addActionListener { optionPanel.isVisible = true }
@@ -214,16 +210,22 @@ private class ClientMain private constructor() {
         pop.add(settings)
         pop.addSeparator()
         pop.add(exit)
+
+        val image = Toolkit.getDefaultToolkit().getImage("eso_256x256.png")
+        val trayIcon = TrayIcon(image)
+        trayIcon.isImageAutoSize = true
+        trayIcon.toolTip = "엘온갤 업데이터"
         trayIcon.popupMenu = pop
         try {
-            for (icon in SystemTray.getSystemTray().trayIcons) SystemTray.getSystemTray().remove(icon)
-            SystemTray.getSystemTray().add(trayIcon)
+            val sysTray = SystemTray.getSystemTray()
+            sysTray.trayIcons.iterator().forEach(sysTray::remove)
+            sysTray.add(trayIcon)
         } catch (e: AWTException) {}
     }
 
     private fun downloadTool(): Boolean {
         logger.info("다운로드 시도")
-        val request = HttpRequest.newBuilder().uri(URI.create(cdn + "EsoExtractData%20v0.32.exe")).build()
+        val request = HttpRequest.newBuilder().uri(URI.create("${CDN}EsoExtractData%20v0.32.exe")).build()
         val toolPath = appPath.resolve("tool.exe")
 
         try {
@@ -259,31 +261,35 @@ private class ClientMain private constructor() {
 
         return Files.exists(appPath.resolve("EsoExtractData v0.32/EsoExtractData.exe"))
     }
+    
+    fun start() {
+        // 설정 상태
+        logger.info(cConf.toString())
+
+        getDataVersion()
+        if (needUpdate) if (update()) updateLocalConfig() else logger.error("업데이트 실패")
+        else logger.info("최신 버전임")
+
+        // 스팀 실행
+        if(!isWhya) if(cConf.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
+
+        //트레이 아이콘 등록
+        registerTrayIcon()
+
+        // 클립보드 리스너 등록
+        if(cConf.isEnableZanataListener) registClipboardListener()
+    }
 
     companion object {
-        private const val cdn = "https://storage.googleapis.com/dcinside-esok-cdn/"
+        private const val CDN = "http://eso-cdn.metalscraps.org/"
         private val logger = LoggerFactory.getLogger(ClientMain::class.java)
         private val isWhya = System.getenv().getOrDefault("debug", "") == "whya5448"
 
         @Throws(InterruptedException::class)
         @JvmStatic
         fun main(@Suppress("UnusedMainParameter") args: Array<String>) {
-            // 업데이트
-
             val main = ClientMain()
-            main.getDataVersion()
-            if (main.needUpdate) if (main.update()) main.updateLocalConfig() else logger.error("업데이트 실패")
-            else logger.info("최신 버전임")
-
-            if(!isWhya) if(main.cConf.getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
-            //트레이 아이콘 등록
-            main.registerTrayIcon()
-
-            // 클립보드 리스너 등록
-            if(main.cConf.getConf(ENABLE_ZANATA_LISTENER).toBoolean()) main.registClipboardListener()
-
-            // 종료 전까지 대기
-            Thread.sleep(java.lang.Long.MAX_VALUE)
+            main.start()
         }
     }
 

@@ -43,14 +43,14 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
             }
         }
 
-        if (Files.exists(configPath) && Files.size(configPath) > 0) Files.newInputStream(configPath).use { fis -> load(fis) }
+        if (Files.exists(configPath) && Files.size(configPath) > 0) load(Files.newInputStream(configPath))
         else logger.info("설정 데이터 없음. 초기화")
 
         map.forEach { t, u -> putIfAbsent(t.toString(), u.toString()) }
         store()
     }
 
-    fun store() {
+    open fun store() {
         try {
             if(!Files.exists(configDirPath)) Files.createDirectories(configDirPath)
             Files.newOutputStream(configPath).use { fos -> super.store(fos, "") }
@@ -61,7 +61,6 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
     }
 
     fun exit(errCode:Number) {
-        store()
         System.exit(errCode.toInt())
     }
 
@@ -71,7 +70,7 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {
         var v = value
-        if(value is Boolean || value is Long || value is Double) v = value.toString()
+        if(value is Boolean || value is Number) v = value.toString()
         return super.put(key.toString(), v)
     }
 }
