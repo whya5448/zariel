@@ -2,6 +2,7 @@ plugins {
     id 'org.beryx.jlink' version '2.4.4'
     id "org.javamodularity.moduleplugin" version "1.4.0"
     id 'org.jetbrains.kotlin.jvm' version "1.3.21"
+    id 'org.hidetake.ssh' version '2.9.0'
 }
 
 dependencies {
@@ -13,6 +14,8 @@ dependencies {
 def sImageName = 'dc-eso-server'
 def sModuleName = 'org.metalscraps.eso.lang.server'
 def sMainClass = 'org.metalscraps.eso.lang.server.ServerMain'
+def launcherName = 'launch'
+def platformName = 'linux-x64'
 mainClassName = "${sModuleName}/${sMainClass}"
 jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
 
@@ -20,10 +23,10 @@ jlink {
     mergedModuleName = "${sModuleName}.merged"
     imageName = sImageName
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    //imageZip = file("$buildDir/${sImageName}-${version}.zip")
-    targetPlatform('linux-x64', 'C:/Program Files/Zulu/zulu11.29.3-ca-jdk11.0.2-linux_x64')
+    //imageZip = file("$buildDir/${sImageName}-${version}.zip") // 작동이 되다 말다 함. targetPlatform 관련한 문제가 있는듯.
+    targetPlatform(platformName, 'C:/Program Files/Zulu/zulu11.29.3-ca-jdk11.0.2-linux_x64')
     launcher {
-        name = 'launch'
+        name = launcherName
         jvmArgs = ['-Xmx2G', '-Dlogback.configurationFile=./logback.xml']
     }
     mergedModule {
@@ -40,11 +43,10 @@ jlink {
         provides 'com.fasterxml.jackson.core.ObjectCodec' with 'com.fasterxml.jackson.databind.ObjectMapper'
     }
 }
-
 tasks.jlink.doLast {
     copy {
         from('src/main/resources')
-        into("$buildDir/${sImageName}/launch-linux-x64/bin")
+        into("$buildDir/${sImageName}/${launcherName}-${platformName}/bin")
     }
 }
 compileKotlin {
@@ -58,3 +60,32 @@ compileTestKotlin {
     }
 }
 
+remotes {
+    server {
+        host = sHost
+        user = sUser
+        port = sPort as int
+        identity = file('id_rsa')
+        passphrase = sPassphrase
+    }
+}
+
+
+task zip(type: Zip, dependsOn : 'jlink') {
+    archiveFileName = "${launcherName}-${platformName}.zip"
+    destinationDirectory = file("$buildDir")
+    from "$buildDir/${sImageName}/${launcherName}-${platformName}"
+}
+
+
+task deploy(dependsOn : 'zip') {
+    doLast {
+        ssh.run {
+            settings { knownHosts = file('known_hosts') }
+            session(remotes.server) {
+                put from: "$buildDir/${launcherName}-${platformName}.zip", into: sPath
+                executeSudo sExecute
+            }
+        }
+    }
+}
