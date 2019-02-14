@@ -2,8 +2,6 @@ package org.metalscraps.eso.lang.lib.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.metalscraps.eso.lang.lib.bean.ID;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.bean.ToCSVConfig;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import javax.swing.filechooser.FileSystemView;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -184,7 +181,7 @@ public class Utils {
         ProcessBuilder pb = new ProcessBuilder()
                 .directory(baseDirectory.toFile())
                 .command(command.split("\\s+"))
-                .redirectError(redirect)
+                .redirectError(ProcessBuilder.Redirect.INHERIT)
                 .redirectOutput(redirect);
         pb.start().waitFor();
     }
@@ -395,14 +392,27 @@ public class Utils {
     }
 
 
-    public static Map<String, PO> getMergedPOtoMap(Collection<File> fileList) {
+    public static Map<String, PO> getMergedPOtoMap(Collection fileList) {
         var map = new HashMap<String, PO>();
         var config = new SourceToMapConfig();
 
-        for (var file : fileList) {
-            String fileName = getName(file.toPath());
-            String ext = getExtension(file.toPath());
-            config.setFile(file);
+        for (var x : fileList) {
+            String fileName = "";
+            String ext = "";
+            if(x instanceof File) {
+                var file = (File) x;
+                fileName = getName(file.toPath());
+                ext = getExtension(file.toPath());
+                config.setFile(file);
+            } else if(x instanceof Path) {
+                var path = (Path) x;
+                fileName = getName(path);
+                ext = getExtension(path);
+                config.setPath(path);
+            } else {
+                logger.error("알 수 없는 컬렉션");
+                logger.error(x.getClass().toString());
+            }
 
             if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
             else if(ext.startsWith("po")) config.setPattern(AppConfig.POPattern);
@@ -411,7 +421,7 @@ public class Utils {
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
             map.putAll(Utils.sourceToMap(config));
-            logger.trace(file.toString());
+            logger.trace(x.toString());
         }
 
         map.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
@@ -440,7 +450,7 @@ public class Utils {
         return map;
     }
 
-    public static ArrayList<PO> getMergedPO(Collection<File> fileList) {
+    public static ArrayList<PO> getMergedPO(Collection fileList) {
         var sourceList = new ArrayList<>(getMergedPOtoMap(fileList).values());
         sourceList.sort(PO.comparator);
         return sourceList;
