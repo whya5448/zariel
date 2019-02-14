@@ -9,6 +9,7 @@ import org.metalscraps.eso.lang.lib.util.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class PoConverter {
@@ -23,12 +24,10 @@ public class PoConverter {
         //File file = new File("C:\\Users\\user\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0203/achievement.po");
 
         var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
-        var fileList = new ArrayList<File>();
-        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
-        for (File file : fileList) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-            System.out.println("target : " + file);
+        for (var path : listFiles) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + path);
 
             int requestCount = 0;
 
@@ -82,13 +81,11 @@ public class PoConverter {
     public void filterNewPO() {
 
         var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
-        var fileList = new ArrayList<File>();
-        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
 
-        for (File file : fileList) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-            System.out.println("target : " + file);
+        for (Path path : listFiles) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + path);
             for (PO oneItem : fileItems) {
                 if (oneItem.getSource().equals(oneItem.getTarget())) {
                     oneItem.setTarget("");
@@ -97,7 +94,7 @@ public class PoConverter {
             }
             System.out.println("target size: " + LtransList.size());
 
-            String outputName = file.getName() + "_conv.po";
+            String outputName = path.getFileName() + "_conv.po";
             this.makePOFile(outputName, LtransList);
             LtransList.clear();
         }
@@ -106,13 +103,11 @@ public class PoConverter {
     public void setFuzzyNbyG() {
 
         var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
-        var fileList = new ArrayList<File>();
-        listFiles.forEach(e->fileList.add(e.toFile()));
         ArrayList<PO> LtransList = new ArrayList<>();
 
-        for (File file : fileList) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)).values());
-            System.out.println("target : " + file);
+        for (var path : listFiles) {
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            System.out.println("target : " + path);
             for (PO oneItem : fileItems) {
                 oneItem.setFuzzy(true);
                 oneItem.setTarget(GoogleTranslate.ReplaceSpecialChar(oneItem.getTarget())+"-G-");
@@ -121,7 +116,7 @@ public class PoConverter {
             }
             System.out.println("target size: " + LtransList.size());
 
-            String outputName = file.getName() + "_trans.po";
+            String outputName = path.getFileName() + "_trans.po";
             this.makePOFile(outputName, LtransList);
             LtransList.clear();
         }

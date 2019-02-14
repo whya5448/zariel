@@ -82,11 +82,9 @@ class LangManager {
 
 
 		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po2");
-		var fileList = new ArrayList<File>();
-		listFiles.forEach(e->fileList.add(e.toFile()));
 
-		for (File file : fileList) {
-			String fileName = Utils.getName(file.toPath());
+		for (var path : listFiles) {
+			String fileName = Utils.getName(path);
 
 			// pregame 쪽 데이터
 			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
@@ -96,7 +94,7 @@ class LangManager {
 			//265851556-0-4666 journey.po ""Halion of Chrrol."" ~~
 			// 41714900-0-345|249936564-0-5081|265851556-0-4666
 
-			map2.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
+			map2.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)));
 		}
 
 		for (PO p : map2.values()) {
@@ -137,16 +135,14 @@ class LangManager {
 
 
 		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
-		var fileList = new ArrayList<File>();
-		listFiles.forEach(e->fileList.add(e.toFile()));
-		for (File file : fileList) {
+		for (var path : listFiles) {
 
-			String fileName = Utils.getName(file.toPath());
+			String fileName = Utils.getName(path);
 			// pregame 쪽 데이터
 			if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
-			targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
-			logger.info("zanata po parsed ["+file+"] ");
+			targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)));
+			logger.info("zanata po parsed ["+path+"] ");
 		}
 
 		merge.MergeCSV(categorizedCSV, targetCSV, false);
@@ -378,13 +374,11 @@ class LangManager {
 		// EsoExtractData.exe depot/eso.mnf export -a 000 -s 1472 -e 1472
 
 		var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po2");
-		var fileList = new ArrayList<File>();
-		listFiles.forEach(e->fileList.add(e.toFile()));
 		// en.lang 0번에 추가
 		// fileList.add(0, appWorkConfig.getBaseDirectoryToPath().resolve("en.lang.csv").toFile());
 
 		// 합쳐서 csv 로 한번에 생성
-		var sourceList = Utils.getMergedPO(fileList);
+		var sourceList = Utils.getMergedPO(listFiles);
 		var csvConfig = new ToCSVConfig().setWriteSource(false);
 
 		Utils.makeCSVwithLog(appWorkConfig.getBaseDirectoryToPath().resolve("kr.csv"), csvConfig, sourceList);
