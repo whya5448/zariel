@@ -8,7 +8,6 @@ plugins {
 dependencies {
     compile project(':library')
     implementation 'com.google.apis:google-api-services-compute:v1-rev199-1.25.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 def sImageName = 'dc-eso-server'
