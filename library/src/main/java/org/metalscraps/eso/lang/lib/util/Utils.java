@@ -426,26 +426,11 @@ public class Utils {
 
         map.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
-        map.remove("41714900-0-307");
-        map.remove("41714900-0-337");
-        map.remove("41714900-0-339");
-        map.remove("41714900-0-340");
-        map.remove("41714900-0-342");
-        map.remove("41714900-0-343");
-        map.remove("41714900-0-345");
-        map.remove("41714900-0-346");
-        map.remove("41714900-0-348");
-        map.remove("41714900-0-349");
-        map.remove("41714900-0-351");
-        map.remove("41714900-0-352");
-        map.remove("41714900-0-354");
-        map.remove("41714900-0-355");
-        map.remove("41714900-0-357");
-        map.remove("41714900-0-358");
-        map.remove("41714900-0-360");
-        map.remove("41714900-0-361");
-        map.remove("41714900-0-363");
-        map.remove("41714900-0-364");
+        var xErrors = Arrays.asList(
+                "307","337","339","340","342","343","345","346","348","349",
+                "351","352","354","355","357","358","360","361","363","364"
+        );
+        xErrors.forEach(o->map.get("41714900-0+"+o).setTarget(""));
 
         return map;
     }
