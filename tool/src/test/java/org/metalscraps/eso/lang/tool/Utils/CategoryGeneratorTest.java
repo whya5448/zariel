@@ -8,7 +8,6 @@ import org.metalscraps.eso.lang.lib.util.Utils;
 import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 
 import javax.swing.*;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,10 +57,10 @@ public class CategoryGeneratorTest {
     public void getSelectedCSVMap() {
         AppWorkConfig appWorkConfig = new AppWorkConfig();
         JFileChooser jFileChooser = new JFileChooser();
-        File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
-        jFileChooser.setCurrentDirectory(workDir);
-        appWorkConfig.setBaseDirectory(workDir);
-        appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
+        var workDir = Utils.getESODir().resolve("EsoKR");
+        jFileChooser.setCurrentDirectory(workDir.toFile());
+        appWorkConfig.setBaseDirectoryToPath(workDir);
+        appWorkConfig.setZanataCategoryConfigDirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("ZanataCategory"));
 
         CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
         HashMap<String, PO> CSVMap = CG.GetSelectedCSVMap();
@@ -85,10 +84,10 @@ public class CategoryGeneratorTest {
     public void genSubCategory() {
         AppWorkConfig appWorkConfig = new AppWorkConfig();
         JFileChooser jFileChooser = new JFileChooser();
-        File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
-        jFileChooser.setCurrentDirectory(workDir);
-        appWorkConfig.setBaseDirectory(workDir);
-        appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
+        var workDir = Utils.getESODir().resolve("EsoKR");
+        jFileChooser.setCurrentDirectory(workDir.toFile());
+        appWorkConfig.setBaseDirectoryToPath(workDir);
+        appWorkConfig.setZanataCategoryConfigDirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("ZanataCategory"));
 
         CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
         ArrayList<CategoryCSV> CategorizedSkillCsvList = new ArrayList<>();

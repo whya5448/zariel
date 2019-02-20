@@ -54,7 +54,7 @@ class LangManager {
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
 		jFileChooser.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File f) {
@@ -126,7 +126,7 @@ class LangManager {
 
 	void GenZanataUploadSet(){
 		CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
-		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+		originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectoryToPath().resolve("IndexMatch.txt").toString());
 		originCG.GenCategory();
 		HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
 
@@ -410,7 +410,7 @@ class LangManager {
 
 		JFileChooser jFileChooser = new JFileChooser();
 		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectory());
+		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
 		jFileChooser.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File f) {

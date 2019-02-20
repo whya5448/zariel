@@ -6,7 +6,6 @@ import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -127,8 +126,8 @@ public class PoConverter {
     private void makePOFile(String filename ,ArrayList<PO> poList) {
 
         StringBuilder sb = new StringBuilder();
-        System.out.println("po file making... file : "+appWorkConfig.getPODirectory()+"\\"+filename);
-        File file = new File( appWorkConfig.getPODirectory()+"\\"+filename);
+        System.out.println("po file making... file : "+appWorkConfig.getPODirectoryToPath()+"\\"+filename);
+        var file = appWorkConfig.getPODirectoryToPath().resolve(filename);
         for(PO p : poList) {
             if(p.isFuzzy()){
                 sb.append("#, fuzzy\n");
@@ -137,7 +136,7 @@ public class PoConverter {
         }
 
         try {
-            Files.writeString(file.toPath(), sb.toString(), AppConfig.CHARSET);
+            Files.writeString(file, sb.toString(), AppConfig.CHARSET);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,20 +1,20 @@
 package org.metalscraps.eso.lang.tool.config;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
-import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 import org.metalscraps.eso.lang.lib.bean.PO;
 import org.metalscraps.eso.lang.lib.config.AppConfig;
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig;
 import org.metalscraps.eso.lang.lib.config.SourceToMapConfig;
 import org.metalscraps.eso.lang.lib.util.Utils;
+import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
+import org.metalscraps.eso.lang.tool.bean.CategoryCSV;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class CSVmergeTest {
     public static void setLang(){
         appWorkConfig = new AppWorkConfig();
         JFileChooser jFileChooser = new JFileChooser();
-        File workDir = new File(jFileChooser.getCurrentDirectory().getAbsolutePath()+"/Elder Scrolls Online/EsoKR");
+        var workDir = Utils.getESODir().resolve("EsoKR");
 
         jFileChooser.setFileFilter(new FileFilter() {
             @Override
@@ -37,10 +37,10 @@ public class CSVmergeTest {
         });
         jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         jFileChooser.setMultiSelectionEnabled(false);
-        jFileChooser.setCurrentDirectory(workDir);
-        appWorkConfig.setBaseDirectory(workDir);
-        appWorkConfig.setZanataCategoryConfigDirectory(new File(appWorkConfig.getBaseDirectory()+"/ZanataCategory"));
-        appWorkConfig.setPODirectory(new File(appWorkConfig.getBaseDirectory()+"/PO_"+appWorkConfig.getToday()));
+        jFileChooser.setCurrentDirectory(workDir.toFile());
+        appWorkConfig.setBaseDirectoryToPath(workDir);
+        appWorkConfig.setZanataCategoryConfigDirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("ZanataCategory"));
+        appWorkConfig.setPODirectoryToPath(appWorkConfig.getBaseDirectoryToPath().resolve("PO_"+appWorkConfig.getToday()));
         CG = new CategoryGenerator(appWorkConfig);
 
     }
@@ -67,19 +67,18 @@ public class CSVmergeTest {
 
         CSVmerge merge = new CSVmerge();
         HashMap<String, PO> targetCSV = new HashMap<>();
-        Collection<File> fileList = FileUtils.listFiles(appWorkConfig.getPODirectory(), new String[]{"po"}, false);
-        for (File file : fileList) {
+        Collection<Path> fileList = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
+        for (var file : fileList) {
 
-            String fileName = FilenameUtils.getBaseName(file.getName());
+            String fileName = FilenameUtils.getBaseName(file.getFileName().toString());
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
-            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setFile(file).setPattern(AppConfig.POPattern)));
+            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(file).setPattern(AppConfig.POPattern)));
             System.out.println("zanata po parsed ["+file+"] ");
         }
 
-        HashSet<CategoryCSV> categorizedCSV = new HashSet<>();
-        categorizedCSV.addAll(CategorizedSkillCsvList);
+        HashSet<CategoryCSV> categorizedCSV = new HashSet<>(CategorizedSkillCsvList);
         merge.MergeCSV(categorizedCSV, targetCSV, false);
 
 

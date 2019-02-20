@@ -7,7 +7,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
-open class ESOConfig(private val configDirPath: Path, private val configPath: Path) : Properties()  {
+open class ESOConfig(private val configDirPath: Path, private val configPath: Path)  {
+
+    private val property = Properties()
     val logger: Logger = LoggerFactory.getLogger(ESOConfig::class.java)
 
     fun load(map: Map<ESOConfigOptions, Any>) {
@@ -43,17 +45,17 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
             }
         }
 
-        if (Files.exists(configPath) && Files.size(configPath) > 0) load(Files.newInputStream(configPath))
+        if (Files.exists(configPath) && Files.size(configPath) > 0) property.load(Files.newInputStream(configPath))
         else logger.info("설정 데이터 없음. 초기화")
 
-        map.forEach { t, u -> putIfAbsent(t.toString(), u.toString()) }
-        store()
+        map.forEach { t, u -> property.putIfAbsent(t.toString(), u.toString()) }
+        this.store()
     }
 
     open fun store() {
         try {
             if(!Files.exists(configDirPath)) Files.createDirectories(configDirPath)
-            Files.newOutputStream(configPath).use { fos -> super.store(fos, "") }
+            Files.newOutputStream(configPath).use { fos -> property.store(fos, "") }
         } catch (e: Exception) {
             logger.error(e.message)
             e.printStackTrace()
@@ -65,12 +67,12 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
     }
 
     fun getConf(key: ESOConfigOptions): String {
-        return super.getProperty(key.toString())
+        return property.getProperty(key.toString())
     }
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {
         var v = value
         if(value is Boolean || value is Number) v = value.toString()
-        return super.put(key.toString(), v)
+        return property.put(key.toString(), v)
     }
 }

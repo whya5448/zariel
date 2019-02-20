@@ -40,7 +40,7 @@ public class CategoryGenerator {
 
     public void GenCategory(){
         if(CategoryMap .size() ==0){
-            GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toString()+"\\IndexMatch.txt");
+            GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectoryToPath().resolve("IndexMatch.txt").toString());
         }
 
         System.out.println("Select Csv file for generate category.");

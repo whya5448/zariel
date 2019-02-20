@@ -4,7 +4,6 @@ import org.metalscraps.eso.lang.client.config.ClientConfig
 import org.metalscraps.eso.lang.client.config.ClientConfig.ClientConfigOptions.*
 import org.metalscraps.eso.lang.client.gui.ClipboardListener
 import org.metalscraps.eso.lang.client.gui.OptionPanel
-import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
 import java.awt.*
@@ -44,7 +43,7 @@ private class ClientMain private constructor() {
                 UPDATE_LANG to true,
                 UPDATE_DESTINATIONS to true,
                 ENABLE_ZANATA_LISTENER to true
-        ).toMap(HashMap<ESOConfigOptions, Any>()))
+        ))
         optionPanel = OptionPanel(cConf)
         localVer = cConf.localLangVersion
     }
