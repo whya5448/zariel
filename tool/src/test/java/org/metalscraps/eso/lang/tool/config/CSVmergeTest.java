@@ -49,7 +49,7 @@ public class CSVmergeTest {
     public void mergeCSV() {
         /*
         CategoryGenerator originCG = new CategoryGenerator(appWorkConfig);
-        originCG.GenCategoryConfigMap(appWorkConfig.getZanataCategoryConfigDirectory().toStringDefault()+"\\IndexMatch.txt");
+        originCG.GenCategoryConfigMap(appWorkConfig.getZanataCatDir().toStringDefault()+"\\IndexMatch.txt");
         originCG.GenCategory();
         HashSet<CategoryCSV> categorizedCSV = originCG.getCategorizedCSV();
         */
@@ -74,7 +74,7 @@ public class CSVmergeTest {
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
-            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(file).setPattern(AppConfig.POPattern)));
+            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(file).setPattern(AppConfig.INSTANCE.getPOPattern())));
             System.out.println("zanata po parsed ["+file+"] ");
         }
 

@@ -83,7 +83,7 @@ public class LangManagerTest {
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
 
-            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(file).setPattern(AppConfig.POPattern)));
+            targetCSV.putAll(Utils.sourceToMap(new SourceToMapConfig().setPath(file).setPattern(AppConfig.INSTANCE.getPOPattern())));
             //System.out.println("zanata po parsed ["+file+"] ");
         }
 

@@ -6,7 +6,6 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.compute.Compute
 import com.google.api.services.compute.model.Operation
 import org.metalscraps.eso.lang.lib.AddonManager
-import org.metalscraps.eso.lang.lib.bean.ToCSVConfig
 import org.metalscraps.eso.lang.lib.config.AppWorkConfig
 import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import org.metalscraps.eso.lang.lib.util.Utils
@@ -58,7 +57,7 @@ internal class ServerMain {
 
         logger.info("인스턴스 시작")
         val res = startCompressServer()
-        logger.info(Objects.requireNonNull<Operation>(res).status)
+        logger.info(res?.status)
     }
 
     private fun deletePO() {

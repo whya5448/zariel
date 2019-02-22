@@ -25,7 +25,7 @@ public class PoConverter {
         var listFiles = Utils.listFiles(appWorkConfig.getPODirectoryToPath(), "po");
         ArrayList<PO> LtransList = new ArrayList<>();
         for (var path : listFiles) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.INSTANCE.getPOPattern())).values());
             System.out.println("target : " + path);
 
             int requestCount = 0;
@@ -83,7 +83,7 @@ public class PoConverter {
         ArrayList<PO> LtransList = new ArrayList<>();
 
         for (Path path : listFiles) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.INSTANCE.getPOPattern())).values());
             System.out.println("target : " + path);
             for (PO oneItem : fileItems) {
                 if (oneItem.getSource().equals(oneItem.getTarget())) {
@@ -105,7 +105,7 @@ public class PoConverter {
         ArrayList<PO> LtransList = new ArrayList<>();
 
         for (var path : listFiles) {
-            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.POPattern)).values());
+            ArrayList<PO> fileItems = new ArrayList<>(Utils.sourceToMap(new SourceToMapConfig().setPath(path).setPattern(AppConfig.INSTANCE.getPOPattern())).values());
             System.out.println("target : " + path);
             for (PO oneItem : fileItems) {
                 oneItem.setFuzzy(true);
@@ -136,7 +136,7 @@ public class PoConverter {
         }
 
         try {
-            Files.writeString(file, sb.toString(), AppConfig.CHARSET);
+            Files.writeString(file, sb.toString(), AppConfig.INSTANCE.getCHARSET());
         } catch (IOException e) {
             e.printStackTrace();
         }

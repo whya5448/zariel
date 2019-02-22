@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class zanataLinkGenerator {
     private static AppWorkConfig appWorkConfig = new AppWorkConfig();
-    SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.POPattern);
+    SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.INSTANCE.getPOPattern());
     HashMap<String, String> urlMap = new HashMap<>();
     HashMap<String, StringBuilder> fileMap = new HashMap<>();
     private final Scanner sc;
@@ -31,7 +31,7 @@ public class zanataLinkGenerator {
     public void getPO(File file ){
         if(file.isDirectory()){
             File[] arrFS = file.listFiles();
-            for (File arrF : Objects.requireNonNull(arrFS)) getPO(arrF);
+            for (File arrF : arrFS) getPO(arrF);
         }
         else {
             if(file.getPath().contains("ja-JP"));
@@ -94,14 +94,14 @@ public class zanataLinkGenerator {
         /*
         File workDir = new File(".");
         workDir.mkdirs();
-        appWorkConfig.setBaseDirectory(workDir);
+        appWorkConfig.setBaseDir(workDir);
         Utils.downloadPOs(appWorkConfig);
         */
 
         for(String filename : zlg.fileMap.keySet()) {
             StringBuilder sb = zlg.fileMap.get(filename);
             try {
-                Files.writeString(Paths.get(filename+".txt"), sb.toString(), AppConfig.CHARSET);
+                Files.writeString(Paths.get(filename+".txt"), sb.toString(), AppConfig.INSTANCE.getCHARSET());
             } catch (IOException e) {
                 e.printStackTrace();
             }

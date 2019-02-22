@@ -8,10 +8,7 @@ import org.metalscraps.eso.lang.tool.Utils.CategoryGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -69,16 +66,6 @@ class ToolMain {
 
 	private void start(String command) {
 
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.setFileFilter(new FileFilter() {
-			@Override
-			public boolean accept(File f) { return f.isDirectory(); }
-			@Override
-			public String getDescription() { return "작업 폴더 설정"; }
-		});
-		jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		jFileChooser.setMultiSelectionEnabled(false);
-		jFileChooser.setCurrentDirectory(appWorkConfig.getBaseDirectoryToPath().toFile());
 		CategoryGenerator CG = new CategoryGenerator(appWorkConfig);
 		LangManager lm = new LangManager(appWorkConfig);
 		if(!Files.exists(appWorkConfig.getPODirectoryToPath()))
@@ -101,7 +88,6 @@ class ToolMain {
 				new AddonManager(appWorkConfig).destination();
 				break;
 			case "6": new AddonManager(appWorkConfig).destination(); break;
-			case "66": lm.lineCompare(); break;
 			case "9": System.exit(0);
 			case "11": new TamrielTradeCentre(appWorkConfig).start(); break;
 			case "100": lm.translateGoogle(); break;

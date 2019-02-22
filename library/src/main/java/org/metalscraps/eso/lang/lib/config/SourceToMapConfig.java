@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 @Data
 @Accessors(chain = true)
+@Deprecated
 public class SourceToMapConfig {
 
 	private Path path = null;
@@ -54,8 +55,8 @@ public class SourceToMapConfig {
 	private void autoPattern() {
 		if(pattern == null) {
 			var ext = Utils.getExtension(path);
-			if(ext.equals("po") || ext.equals("po2")) pattern = AppConfig.POPattern;
-			else if(ext.equals("csv")) pattern = AppConfig.CSVPattern;
+			if(ext.equals("po") || ext.equals("po2")) pattern = AppConfig.INSTANCE.getPOPattern();
+			else if(ext.equals("csv")) pattern = AppConfig.INSTANCE.getCSVPattern();
 		}
 	}
 }

@@ -42,7 +42,7 @@ public class Utils {
     private static HashMap<String, ArrayList<String>> projectMap = new HashMap<>();
     public static String getLatestVersion(String projectName) {
         if(versionMap.containsKey(projectName)) return versionMap.get(projectName);
-        HttpRequest request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+projectName);
+        HttpRequest request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN +"rest/projects/p/"+projectName);
 
         JsonNode jsonNode = getBodyFromHTTPsRequest(request);
         String[] serverVer = null;
@@ -66,14 +66,17 @@ public class Utils {
         return versionMap.get(projectName);
     }
 
+    @Deprecated
     public static Path getESOLangDir() {
         return FileSystemView.getFileSystemView().getDefaultDirectory().toPath().resolve("Elder Scrolls Online/live/AddOns/gamedata/lang");
     }
 
+    @Deprecated
     public static Path getESODir() {
         return FileSystemView.getFileSystemView().getDefaultDirectory().toPath().resolve("Elder Scrolls Online/");
     }
 
+    @Deprecated
     public static JsonNode getBodyFromHTTPsRequest(HttpRequest request){
 
         HttpClient client = HttpClient.newHttpClient();
@@ -84,7 +87,7 @@ public class Utils {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = null;
 
-        var body = Objects.requireNonNull(response).body();
+        var body = response.body();
         logger.trace(body);
 
         try { jsonNode = objectMapper.readTree(body); }
@@ -94,7 +97,7 @@ public class Utils {
 
     public static ArrayList<String> getFileNames(String projectName){
         ArrayList<String> fileNames = new ArrayList<>();
-        var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r");
+        var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN +"rest/projects/p/"+ projectName +"/iterations/i/" +Utils.getLatestVersion(projectName)+"/r");
         JsonNode jsonNode = getBodyFromHTTPsRequest(request);
 
         for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
@@ -106,6 +109,7 @@ public class Utils {
         return fileNames;
     }
 
+    @Deprecated
     public static void downloadPOs(AppWorkConfig appWorkConfig){
         LocalTime timeTaken = LocalTime.now();
         downloadPO(appWorkConfig, "ESO-item");
@@ -116,12 +120,13 @@ public class Utils {
         logger.info("총 " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
+    @Deprecated
     public static void downloadPO(AppWorkConfig appWorkConfig, String projectName) {
         Path pPO = null;
 
         try {
 
-            final String url = AppConfig.ZANATA_DOMAIN+"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
+            final String url = AppConfig.ZANATA_DOMAIN +"rest/file/translation/"+projectName+"/"+Utils.getLatestVersion(projectName)+"/ko/po?docId=";
             final Path PODirectory = appWorkConfig.getBaseDirectoryToPath().resolve("PO_" + appWorkConfig.getToday());
             final ArrayList<String> fileNames = getFileNames(projectName);
             appWorkConfig.setPODirectoryToPath(PODirectory);
@@ -186,14 +191,14 @@ public class Utils {
         pb.start().waitFor();
     }
 
-
+    @Deprecated
     public static void makeCSV(Path path, ToCSVConfig toCSVConfig, ArrayList<PO> poList) {
         StringBuilder sb = new StringBuilder("\"Location\",\"Source\",\"Target\"\n");
         for (PO p : poList) {
             sb.append(p.toCSV(toCSVConfig));
         }
         try {
-            Files.writeString(path, sb.toString(), AppConfig.CHARSET);
+            Files.writeString(path, sb.toString(), AppConfig.INSTANCE.getCHARSET());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -206,7 +211,7 @@ public class Utils {
         try {
             for (Path file : fileList) {
                 Path po2 = Paths.get(file.toString()+"2");
-                if(!Files.exists(po2)) Files.writeString(po2, Utils.KOToCN( Files.readString(file, AppConfig.CHARSET)));
+                if(!Files.exists(po2)) Files.writeString(po2, Utils.KOToCN( Files.readString(file, AppConfig.INSTANCE.getCHARSET())));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -242,12 +247,13 @@ public class Utils {
         }
     }
 
+    @Deprecated
     public static HashMap<String, PO> sourceToMap(SourceToMapConfig config) {
 
         if(config.getPattern() == null) {
             var ext = getExtension(config.getPath());
-            if(ext.equals("po") || ext.equals("po2")) config.setPattern(AppConfig.POPattern);
-            else if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
+            if(ext.equals("po") || ext.equals("po2")) config.setPattern(AppConfig.INSTANCE.getPOPattern());
+            else if(ext.equals("csv")) config.setPattern(AppConfig.INSTANCE.getCSVPattern());
         }
 
         HashMap<String, PO> poMap = new HashMap<>();
@@ -255,7 +261,7 @@ public class Utils {
         String source = parseSourceToMap(config);
 
         Matcher m = config.getPattern().matcher(source);
-        boolean isPOPattern = (config.getPattern() == AppConfig.POPattern);
+        boolean isPOPattern = (config.getPattern() == AppConfig.INSTANCE.getPOPattern());
         while (m.find()) {
             PO po = new PO(m.group(2), m.group(6), m.group(7)).wrap(config.getPrefix(), config.getSuffix(), config.getPoWrapType());
             //po.setFileName(FileNames.fromString(fileName));
@@ -267,27 +273,27 @@ public class Utils {
         return poMap;
     }
 
+    @Deprecated
     private static String parseSourceToMap(SourceToMapConfig config) {
 
         String source = null;
         try {
-            source = Files.readString(config.getPath(), AppConfig.CHARSET);
+            source = Files.readString(config.getPath(), AppConfig.INSTANCE.getCHARSET());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        if (config.isToLowerCase()) source = Objects.requireNonNull(source).toLowerCase();
+        if (config.isToLowerCase()) source = source.toLowerCase();
 
         if (config.isProcessText()) {
-            if (config.isProcessItemName()) source = Objects.requireNonNull(source).replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
-            source = Objects.requireNonNull(source).replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
-                    .replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
+            //if (config.isProcessItemName()) source = source.replaceAll("\\^[\\w]+", ""); // 아이템 명 뒤의 기호 수정
+            source = source
+                    //.replaceAll("msgid \"\\\\+\"\n", "msgid \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
+                    //.replaceAll("msgstr \"\\\\+\"\n", "msgstr \"\"\n") // "//" 이런식으로 되어있는 문장 수정. Extractor 에서 에러남.
                     .replaceAll("\\\\\"", "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
                     .replaceAll("\\\\\\\\", "\\\\"); // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
-
         }
         return source;
-
     }
 
     private void processRun(String command, File directory) throws IOException, InterruptedException { processRun(command, ProcessBuilder.Redirect.INHERIT, directory); }
@@ -366,7 +372,7 @@ public class Utils {
     public static HashMap<String, ArrayList<String>> getProjectMap() {
         if(projectMap.size() == 0) {
             logger.info("rest/projects");
-            var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN+"rest/projects");
+            var request = getDefaultRestClient(AppConfig.ZANATA_DOMAIN +"rest/projects");
 
             JsonNode jsonNode = getBodyFromHTTPsRequest(request);
 
@@ -392,7 +398,7 @@ public class Utils {
     }
 
 
-    public static Map<String, PO> getMergedPOtoMap(Collection fileList) {
+    public static Map<String, PO> getMergedPOtoMap(Collection<?> fileList) {
         var map = new HashMap<String, PO>();
         var config = new SourceToMapConfig();
 
@@ -414,8 +420,8 @@ public class Utils {
                 logger.error(x.getClass().toString());
             }
 
-            if(ext.equals("csv")) config.setPattern(AppConfig.CSVPattern);
-            else if(ext.startsWith("po")) config.setPattern(AppConfig.POPattern);
+            if(ext.equals("csv")) config.setPattern(AppConfig.INSTANCE.getCSVPattern());
+            else if(ext.startsWith("po")) config.setPattern(AppConfig.INSTANCE.getPOPattern());
 
             // pregame 쪽 데이터
             if (fileName.equals("00_EsoUI_Client") || fileName.equals("00_EsoUI_Pregame")) continue;
@@ -426,39 +432,46 @@ public class Utils {
 
         map.get("242841733-0-54340").setTarget(Utils.KOToCN("매지카 물약"));
 
-        var xErrors = Arrays.asList(
-                "307","337","339","340","342","343","345","346","348","349",
-                "351","352","354","355","357","358","360","361","363","364"
-        );
-        xErrors.forEach(o->map.get("41714900-0+"+o).setTarget(""));
+        Arrays.asList(
+            "307","337","339","340","342","343","345","346","348","349",
+            "351","352","354","355","357","358","360","361","363","364"
+        ).forEach(key->map.computeIfPresent("41714900-0-"+key,(k,v)->{
+            v.setSource("\\\\");
+            v.setTarget("\\\\");
+            return v;
+        }));
 
         return map;
     }
 
-    public static ArrayList<PO> getMergedPO(Collection fileList) {
+    public static ArrayList<PO> getMergedPO(Collection<?> fileList) {
         var sourceList = new ArrayList<>(getMergedPOtoMap(fileList).values());
         sourceList.sort(PO.comparator);
         return sourceList;
     }
 
+    @Deprecated
     public static void makeCSVwithLog(Path path, ToCSVConfig csvConfig, ArrayList<PO> sourceList) {
         LocalTime timeTaken = LocalTime.now();
         Utils.makeCSV(path, csvConfig, sourceList);
         logger.info(path.getFileName() + " " + timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS) + "초");
     }
 
+    @Deprecated
     public static String getName(Path path) {
         if(Files.isDirectory(path)) logger.error("파일 아님 " + path.toAbsolutePath());
         var x = path.getFileName().toString();
         return x.substring(0, x.lastIndexOf('.'));
     }
 
+    @Deprecated
     public static String getExtension(Path path) {
         if(Files.isDirectory(path)) logger.error("파일 아님 " + path.toAbsolutePath());
         var x = path.getFileName().toString();
         return x.substring(x.lastIndexOf('.')+1);
     }
 
+    @Deprecated
     public static Collection<Path> listFiles(Path path, String ext) {
 
         try {

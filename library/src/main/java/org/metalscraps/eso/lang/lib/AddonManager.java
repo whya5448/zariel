@@ -58,7 +58,7 @@ public class AddonManager {
 
 					// 영문 소스 객체-맵화
 					var enQuests = new ArrayList<Quests>();
-					var questsMatcher = AppConfig.PATTERN_DESTINATION.matcher(enText);
+					var questsMatcher = AppConfig.INSTANCE.getPATTERN_DESTINATION().matcher(enText);
 					while (questsMatcher.find()) enQuests.add(new Quests(questsMatcher.group(2), questsMatcher.group(4)));
 
 					// 최종본 생성용 빌더
@@ -80,7 +80,7 @@ public class AddonManager {
 
 					// 한글 결과물 있을 시 삭제 후 재작성
 					Files.deleteIfExists(ko);
-					Files.writeString(ko, enText, AppConfig.CHARSET);
+					Files.writeString(ko, enText, AppConfig.INSTANCE.getCHARSET());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

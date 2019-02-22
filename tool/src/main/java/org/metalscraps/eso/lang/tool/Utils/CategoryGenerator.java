@@ -67,15 +67,16 @@ public class CategoryGenerator {
     public void GenCategoryConfigMap(String indexFileName){
         File file = new File(indexFileName);
         String fileString = "";
-        String localIndex = "";
+        String localIndex;
 
         try {
-            fileString = Files.readString(file.toPath(), AppConfig.CHARSET);
+            fileString = Files.readString(file.toPath(), AppConfig.INSTANCE.getCHARSET());
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(0);
         }
 
-        Matcher matcher = AppConfig.CategoryConfig.matcher(fileString);
+        Matcher matcher = AppConfig.INSTANCE.getCategoryConfig().matcher(fileString);
         while(matcher.find()){
             localIndex = matcher.group(17);
             String[] localIndexList  = localIndex.split(",");
@@ -130,7 +131,7 @@ public class CategoryGenerator {
             return map;
         }
 
-        SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.CSVPattern);
+        SourceToMapConfig sourceToMapConfig = new SourceToMapConfig().setPattern(AppConfig.INSTANCE.getCSVPattern());
         for (File file : fileLinkedList) {
             System.out.println(file);
             map.putAll(Utils.sourceToMap(sourceToMapConfig.setFile(file)));
