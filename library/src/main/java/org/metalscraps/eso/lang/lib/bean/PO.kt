@@ -7,7 +7,7 @@ import java.util.*
  * Whya5448@gmail.com
  */
 
-open class XPO(private val id: String, var source: String, var target: String, var fileName:String = "Undefined") : Comparable<XPO> {
+open class PO(private val id: String, var source: String, var target: String, var fileName:String = "Undefined") : Comparable<PO> {
 
     private val q = '"'
     val id1: Int
@@ -42,7 +42,7 @@ open class XPO(private val id: String, var source: String, var target: String, v
     }
 
 
-    override fun compareTo(other: XPO): Int {
+    override fun compareTo(other: PO): Int {
         val src = Integer.toString(other.id2) + other.id3
         val trg = Integer.toString(this.id2) + this.id3
         return if (src == trg) this.id1.compareTo(other.id1)
@@ -52,7 +52,7 @@ open class XPO(private val id: String, var source: String, var target: String, v
     override fun toString(): String { return "$fileName-$id-$isFuzzy','$source','$target'" }
 
     companion object {
-        var comparator = Comparator<XPO> { o1, o2 ->
+        var comparator = Comparator<PO> { o1, o2 ->
             o1.run {
                 when {
                     id1 != o2.id1 -> id1.compareTo(o2.id1)

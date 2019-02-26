@@ -1,6 +1,6 @@
 package org.metalscraps.eso.lang.lib.config
 
-import org.metalscraps.eso.lang.lib.util.KUtils
+import org.metalscraps.eso.lang.lib.util.Utils
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -13,11 +13,11 @@ import java.time.format.DateTimeFormatter
 
 object AppVariables {
 
-    private val dateTime: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    val dateTime: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
     val today: String = dateTime.format(DateTimeFormatter.ofPattern("MMdd"))
     val todayWithYear: String = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
 
-    var baseDir:Path = KUtils.getESODir().resolve("EsoKR")
+    var baseDir:Path = Utils.getESODir().resolve("EsoKR")
     var poDir:Path = baseDir.resolve("PO_$today")
     var zanataCatDir:Path = baseDir.resolve("ZanataCategory")
 
