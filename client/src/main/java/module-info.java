@@ -6,4 +6,9 @@ module org.metalscraps.eso.lang.client {
     requires java.desktop;
     requires java.net.http;
     requires kotlin.stdlib;
+    requires spring.boot;
+    requires spring.beans;
+    requires spring.context;
+    requires spring.boot.autoconfigure;
+    requires com.fasterxml.jackson.module.kotlin;
 }
