@@ -13,7 +13,7 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 internal class ToolApplication : CommandLineRunner {
 
-    @Autowired lateinit var toolBody:ToolBody
+    @Autowired lateinit var toolBody:ToolMain
 
     override fun run(args:Array<String>) {
         toolBody.start(args)
