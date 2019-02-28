@@ -37,8 +37,8 @@
         launcher {
             name = 'launch'
             jvmArgs = ['-Dlogback.configurationFile=./logback.xml',
-                       "--add-opens java.base/java.lang=${sModuleName}.merged.module",
-                       "--add-opens java.base/java.io=${sModuleName}.merged.module",
+                         "--add-reads ${sModuleName}.merged.module=${sModuleName}",
+                         "-cp", "config/"
             ]
         }
 
@@ -76,7 +76,12 @@
     tasks.jlink.doLast {
         copy {
             from('src/main/resources')
-            into("$buildDir/${sImageName}/bin")
+            into("$buildDir/${sImageName}/bin/config")
+        }
+
+        copy {
+            from "$buildDir/classes/kotlin/main/org/metalscraps/eso/lang/client"
+            into "$buildDir/${sImageName}/bin/config/org/metalscraps/eso/lang/client/"
         }
     }
     compileKotlin {

@@ -5,6 +5,7 @@ open module org.metalscraps.eso.lang.client {
     requires slf4j.api;
     requires java.desktop;
     requires java.net.http;
+    requires java.sql;
     requires kotlin.stdlib;
     requires spring.boot;
     requires spring.beans;
