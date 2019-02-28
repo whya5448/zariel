@@ -1,4 +1,4 @@
-module org.metalscraps.eso.lang.library {
+open module org.metalscraps.eso.lang.library {
     requires static lombok;
     requires java.net.http;
     requires slf4j.api;

@@ -1,4 +1,4 @@
-module org.metalscraps.eso.lang.client {
+open module org.metalscraps.eso.lang.client {
     requires org.metalscraps.eso.lang.library;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
@@ -11,4 +11,7 @@ module org.metalscraps.eso.lang.client {
     requires spring.context;
     requires spring.boot.autoconfigure;
     requires com.fasterxml.jackson.module.kotlin;
+
+    exports org.metalscraps.eso.lang.client.config;
+    exports org.metalscraps.eso.lang.client.gui;
 }

@@ -11,7 +11,7 @@ open class ESOConfig(private val configPath: Path)  {
 
     private val logger: Logger = LoggerFactory.getLogger(ESOConfig::class.java)
     private val property = Properties()
-    private val configDirPath = configPath.parent
+    private val configDirPath = configPath.toAbsolutePath().parent
 
     fun load(map: Map<ESOConfigOptions, Any>) {
 
