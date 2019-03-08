@@ -32,6 +32,7 @@ import javax.swing.filechooser.FileSystemView
 class Utils {
 
     companion object {
+
         private var vars: AppVariables = AppVariables
         private val versionMap = mutableMapOf<String, String>()
         private val projectMap = mutableMapOf<String, MutableList<String>>()
@@ -40,18 +41,6 @@ class Utils {
         /* ////////////////////////////////////////////////////
         // 데이터 핸들링
         */ ////////////////////////////////////////////////////
-
-        fun KOToCN(string: String): String {
-            val c = string.toCharArray()
-            for (i in c.indices) if (c[i].toInt() in 0xAC00..0xEA00) c[i] = c[i] - 0x3E00
-            return String(c)
-        } // KOToCN
-
-        fun CNtoKO(string: String): String {
-            val c = string.toCharArray()
-            for (i in c.indices) if (c[i].toInt() in 0x6E00..0xAC00) c[i] = c[i] + 0x3E00
-            return String(c)
-        } // CNtoKO
 
         private fun parseSourceToMap(path:Path): String {
             var source = ""
@@ -100,7 +89,7 @@ class Utils {
                 logger.trace(x.toString())
             }
 
-            map.computeIfPresent("242841733-0-54340") { _, v -> v.target = KOToCN("매지카 물약"); v; }
+            map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChinese(); v; }
             return map
         } // getMergedPOtoMap
 
@@ -115,7 +104,7 @@ class Utils {
             try {
                 for (file in listFiles(vars.poDir, "po")) {
                     val po2 = Paths.get(file.toString() + "2")
-                    if (!Files.exists(po2)) Files.writeString(po2, KOToCN(Files.readString(file, AppConfig.CHARSET)))
+                    if (!Files.exists(po2)) Files.writeString(po2, Files.readString(file, AppConfig.CHARSET).toChinese())
                 }
             } catch (e: Exception) { e.printStackTrace() }
 
@@ -128,11 +117,6 @@ class Utils {
         }
 
         fun makeCSV(path: Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
-            val config = mapOf(
-                    "writeSource" to false,
-                    "writeFileName" to false,
-                    "beta" to false
-            )
             val sb = StringBuilder("\"Location\",\"Source\",\"Target\"\n")
             for (p in poList) sb.append(p.toCSVFormat(writeSource, writeFileName, beta))
 
@@ -200,7 +184,7 @@ class Utils {
         // 통신 부분
         */ ////////////////////////////////////////////////////
 
-        private fun getDefaultRestClient(domain: String): HttpRequest {
+        fun getDefaultRestClient(domain: String): HttpRequest {
             return HttpRequest.newBuilder().uri(URI.create(domain)).header("Accept", "application/json").build()
         } // getDefaultRestClient
 
@@ -373,4 +357,16 @@ class Utils {
         */ ////////////////////////////////////////////////////
 
     } // companion object
+}
+
+private fun String.toChinese(): String {
+    val c = this.toCharArray()
+    for (i in c.indices) if (c[i].toInt() in 0xAC00..0xEA00) c[i] = c[i] - 0x3E00
+    return String(c)
+}
+
+private fun String.toKorean(): String {
+    val c = this.toCharArray()
+    for (i in c.indices) if (c[i].toInt() in 0x6E00..0xAC00) c[i] = c[i] + 0x3E00
+    return String(c)
 }

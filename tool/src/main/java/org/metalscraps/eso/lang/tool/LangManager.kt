@@ -11,6 +11,7 @@ import org.metalscraps.eso.lang.lib.util.Utils.Companion.listFiles
 import org.metalscraps.eso.lang.lib.util.Utils.Companion.makeCSV
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,7 +20,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Component
-class LangManager {
+class LangManager(private val objectMapper: ObjectMapper) {
 
     companion object { val logger: Logger = LoggerFactory.getLogger(LangManager::class.java) }
     private var vars:AppVariables = AppVariables
@@ -74,7 +75,7 @@ class LangManager {
     } // lineCompare
 
     fun enCSVtoPOT() {
-        val mapper = ObjectMapper()
+        val mapper = objectMapper
         val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("IndexMatch_modified.json"), AppConfig.CHARSET))
         val list = Utils.textParse(vars.baseDir.resolve("en.lang.csv")).values.toMutableList()
         Collections.sort(list, PO.comparator)
@@ -93,14 +94,14 @@ class LangManager {
     }
 
     private fun getStringBuilderForPOT(): StringBuilder {
-        return StringBuilder(
-                "#, fuzzy\n" +
-                        "msgid \"\"\n" +
-                        "msgstr \"\"\n" +
-                        "\"MIME-Version: 1.0\"\n" +
-                        "\"Content-Transfer-Encoding: 8bit\"\n" +
-                        "\"Content-Type: text/plain; charset=UTF-8\"\n\n"
-        )
+        return StringBuilder("""
+            #, fuzzy
+            msgid ""
+            msgstr ""
+            "MIME-Version: 1.0\n"
+            "Content-Transfer-Encoding: 8bit\n"
+            "Content-Type: text/plain; charset=UTF-8\n"
+        """.trimIndent())
     }
 
     private fun escapeStringForPOT(sb: StringBuilder): StringBuilder {
@@ -112,5 +113,12 @@ class LangManager {
         // "Lorem Ipsum is\nsimply" => "Lorem Ipsum is" + \n + "\\\\\nsimply" -> \n 자나타에서 \n 파싱 안됨
         vSB = StringBuilder(vSB.replace("\\\\n".toRegex(), "\"\n\"\\\\n"))
         return vSB
+    }
+
+    fun updateCategory() {
+        //val mapper = objectMapper
+        //val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("categories.json"), AppConfig.CHARSET))
+        Utils.getDefaultRestClient("https://esoitem.uesp.net/viewMinedItems.php")
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

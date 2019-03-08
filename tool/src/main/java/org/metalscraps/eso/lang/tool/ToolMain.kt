@@ -63,6 +63,7 @@ class ToolMain(val mgr: LangManager) {
             "66" -> mgr.lineCompare()
             "7" -> mgr.something()
             "8" -> mgr.enCSVtoPOT()
+            "9" -> mgr.updateCategory()
             else -> logger.error("command not found. $command")
         }
 
