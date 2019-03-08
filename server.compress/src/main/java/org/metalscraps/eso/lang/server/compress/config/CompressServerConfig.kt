@@ -7,7 +7,7 @@ import org.metalscraps.eso.lang.server.compress.config.CompressServerConfig.Comp
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class CompressServerConfig(configDirPath: Path, configPath: Path) : ESOConfig(configDirPath, configPath) {
+class CompressServerConfig(configPath: Path) : ESOConfig(configPath) {
 
     internal val mainServerUserID: String
         get() = getConf(MAIN_SERVER_USER_ID)

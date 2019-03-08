@@ -1,41 +1,72 @@
 plugins {
-    id 'org.beryx.jlink' version '2.4.4'
-    id "org.javamodularity.moduleplugin" version "1.4.0"
+    id 'org.beryx.jlink' version '2.6.5'
+    id "org.javamodularity.moduleplugin" version "1.4.1"
     id 'org.jetbrains.kotlin.jvm' version "1.3.21"
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.3.21'
     id 'org.hidetake.ssh' version '2.9.0'
+    id 'org.springframework.boot' version '2.1.3.RELEASE'
 }
+apply plugin: 'io.spring.dependency-management'
+dependencies {
+    configurations.all {
+        exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "com.google.code.findbugs", module: "jsr305"
+    }
 
-dependencies { compile project(':library') }
+    compile project(':library')
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.springframework.boot:spring-boot-starter:2.1.3.RELEASE'
+}
 
 def sImageName = 'dc-eso-server-compress'
 def sModuleName = 'org.metalscraps.eso.lang.server.compress'
-def sMainClass = 'org.metalscraps.eso.lang.server.compress.CompressServerMain'
+def sMergedModuleName = "${sModuleName}.merged.module"
+def sMainClass = 'org.metalscraps.eso.lang.server.compress.CompressServerApplication'
 def launcherName = 'launch'
 def platformName = 'linux-x64'
 mainClassName = "${sModuleName}/${sMainClass}"
-jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
-
+springBoot { mainClassName = sMainClass }
+jar {
+    manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
+    enabled = true
+}
 jlink {
-    mergedModuleName = "${sModuleName}.merged"
+    mergedModuleName = "${sMergedModuleName}"
     imageName = sImageName
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    //options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    options = []
     //imageZip = file("$buildDir/${sImageName}-${version}.zip")
     targetPlatform(platformName, 'C:/Program Files/Zulu/zulu11.29.3-ca-jdk11.0.2-linux_x64')
     launcher {
         name = launcherName
-        jvmArgs = ['-Xmx2G', '-Dlogback.configurationFile=./logback.xml']
+        jvmArgs = ['-Xmx2G', '-Dlogback.configurationFile=./logback.xml',
+                   "--add-reads ${sModuleName}.merged=${sModuleName}",
+                   "--add-reads ${sModuleName}.merged.module=${sModuleName}",
+                   "-cp", "config/"]
     }
     mergedModule {
         requires 'java.management'
         requires 'java.naming'
         requires 'java.logging'
+        requires 'jdk.httpserver'
+        requires 'java.scripting'
         requires 'java.sql'
+        requires 'java.prefs'
+        requires 'java.rmi'
         requires 'java.xml'
         requires 'java.desktop'
-        requires 'java.security.jgss'
+        requires 'java.instrument'
         requires 'jdk.unsupported'
+        uses 'kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper'
+        uses 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader'
+        uses 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition'
         uses 'java.nio.file.spi.FileSystemProvider'
         provides 'com.fasterxml.jackson.core.JsonFactory' with 'com.fasterxml.jackson.core.JsonFactory'
+        provides 'org.apache.commons.logging.LogFactory' with 'org.apache.commons.logging.LogFactoryService'
+        provides 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition' with 'kotlin.reflect.jvm.internal.impl.load.java.ErasedOverridabilityCondition',
+                'kotlin.reflect.jvm.internal.impl.load.java.FieldOverridabilityCondition',
+                'kotlin.reflect.jvm.internal.impl.load.java.JavaIncompatibilityRulesOverridabilityCondition'
+        provides 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader' with 'kotlin.reflect.jvm.internal.impl.serialization.deserialization.builtins.BuiltInsLoaderImpl'
         provides 'com.fasterxml.jackson.core.ObjectCodec' with 'com.fasterxml.jackson.databind.ObjectMapper'
     }
 }
@@ -43,8 +74,14 @@ jlink {
 tasks.jlink.doLast {
     copy {
         from('src/main/resources')
-        into("$buildDir/${sImageName}/${launcherName}-${platformName}/bin")
+        into("$buildDir/${sImageName}/${launcherName}-${platformName}/bin/config")
     }
+
+    copy {
+        from "$buildDir/classes/kotlin/main/org/metalscraps/eso/lang/server/compress"
+        into "$buildDir/${sImageName}/${launcherName}-${platformName}/bin/config/org/metalscraps/eso/lang/server/compress/"
+    }
+
 }
 compileKotlin {
     kotlinOptions {

@@ -1,6 +1,8 @@
+group = "EsoKO"
+
 allprojects {
     apply plugin: 'java'
-    group 'org.metalscraps.eso.lang'
+    group group
     version '1.0'
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -9,15 +11,19 @@ allprojects {
 
     repositories {
         jcenter()
-        mavenCentral()
     }
 
 }
 
 subprojects {
+    group 'EsoKO'
+
     ext {
+        badass = '2.6.5'
+        javaModule = '1.4.1'
         jackson = "2.9.8"
         commonsio = "2.6"
+        group = "EsoKO"
     }
 
     dependencies {
@@ -28,4 +34,13 @@ subprojects {
         compileOnly 'org.slf4j:slf4j-api:1.7.25'
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     }
+}
+
+task serverDeploy() {
+    dependsOn(":library:clean")
+    dependsOn(":server:clean")
+    dependsOn(":server.compress:clean")
+    dependsOn(":server:deploy")
+    dependsOn(":server.compress:deploy")
+
 }

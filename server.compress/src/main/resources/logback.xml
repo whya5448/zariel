@@ -1,7 +1,7 @@
 <configuration>
 
-    <property name="LOG_DIR" value="./" />
-    <property name="LOG_PATH_NAME" value="${LOG_DIR}/log.log" />
+    <property name="LOG_DIR" value="./log/" />
+    <property name="LOG_PATH_NAME" value="${LOG_DIR}/log" />
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH_NAME}</file>
@@ -18,11 +18,12 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                LOG: %msg%n
+                %msg%n
             </pattern>
         </encoder>
     </appender>
-    <root level="TRACE">
+    <logger level="debug" name="org.metalscraps.eso.lang.lib.util" />
+    <root level="info">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

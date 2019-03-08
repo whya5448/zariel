@@ -6,7 +6,7 @@ import org.metalscraps.eso.lang.server.config.ServerConfig.ServerConfigOptions.*
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class ServerConfig(configDirPath: Path, configPath: Path) : ESOConfig(configDirPath, configPath) {
+class ServerConfig(configPath: Path) : ESOConfig(configPath) {
 
     internal val gcpProjectName: String
         get() = getConf(GCP_PROJECT_NAME)

@@ -25,18 +25,29 @@ function WritCreater.langParser(str)
 	end
 
 	while searchResult1 do
+
 		params[i] = string.sub(str, 1, searchResult1-1)
 		str = string.sub(str, searchResult2+1)
-		searchResult1, searchResult2  = string.find(str,seperater)
-		i=i+1
-	end
+	    searchResult1, searchResult2  = string.find(str,seperater)
+	    i=i+1
+	end 
 	params[i] = str
 	return params
+
 end
 
 WritCreater = WritCreater or {}
 
-function WritCreater.langWritNames() --Exacts!!!  I know for german alchemy writ is Alchemistenschrieb - so ["G"] = schrieb, and ["A"]=Alchemisten
+local function proper(str)
+	if type(str)== "string" then
+		return zo_strformat("<<C:1>>",str)
+	else
+		return str
+	end
+end
+
+function WritCreater.langWritNames() -- Vital
+	-- Exact!!!  I know for german alchemy writ is Alchemistenschrieb - so ["G"] = schrieb, and ["A"]=Alchemisten
 	local names = {
 	["G"] = "襘窰茜筼 顕襸靜瓤.", --의뢰서를 확인한다.
 	[CRAFTING_TYPE_ENCHANTING] = "篈纕羀蟬渀", --마법부여가
@@ -50,40 +61,42 @@ function WritCreater.langWritNames() --Exacts!!!  I know for german alchemy writ
 	return names
 end
 
+function WritCreater.langMasterWritNames() -- Vital
+	local names = {
+	["M"] 							= "masterful",
+	["M1"]							= "master",
+	[CRAFTING_TYPE_ALCHEMY]			= "concoction",
+	[CRAFTING_TYPE_ENCHANTING]		= "glyph",
+	[CRAFTING_TYPE_PROVISIONING]	= "feast",
+	["plate"]						= "plate",
+	["tailoring"]					= "tailoring",
+	["leatherwear"]					= "leatherwear",
+	["weapon"]						= "weapon",
+	["shield"]						= "shield",
+	}
+return names
+
+end
+
 function WritCreater.writCompleteStrings() -- Vital for translation
 	local strings = {
-	["place"] = "<紼湴襄 苁覐蟐 猣璔瓤.>", --<물건을 상자에 넣는다.>, greeting14_0_47291
+    ["place"] = "<紼湴襄 苁覐蟐 猣璔瓤.>", --<물건을 상자에 넣는다.>, greeting14_0_47291
 	["sign"] = "Sign the Manifest",
 	["masterPlace"] = "I've finished the ",
 	["masterSign"] = "<Finish the job.>",
 	["masterStart"] = "<Accept the contract.>",
 	["Rolis Hlaalu"] = "Rolis Hlaalu", -- This is the same in most languages but ofc chinese and japanese
-	["Deliver"] = "縰瓬靘瀰", --배달하기_interact_action3_0_47260
+    ["Deliver"] = "縰瓬靘瀰", --배달하기_interact_action3_0_47260
 	}
 	return strings
 end
 
-function WritCreater.langMasterWritNames() -- Vital
-	local names = {
-		["M"] 							= "masterful",
-		["M1"]							= "master",
-		[CRAFTING_TYPE_ALCHEMY]			= "concoction",
-		[CRAFTING_TYPE_ENCHANTING]		= "glyph",
-		[CRAFTING_TYPE_PROVISIONING]	= "feast",
-		["plate"]						= "plate",
-		["tailoring"]					= "tailoring",
-		["leatherwear"]					= "leatherwear",
-		["weapon"]						= "weapon",
-		["shield"]						= "shield",
-	}
-	return names
-end
 
-function WritCreater.languageInfo() --exacts!!!
+function WritCreater.languageInfo() -- Vital
 
 local craftInfo = 
 	{
-		[CRAFTING_TYPE_CLOTHIER] =
+		[ CRAFTING_TYPE_CLOTHIER] = 
 		{
 			["pieces"] = --exact!!
 			{
@@ -126,6 +139,7 @@ local craftInfo =
 				[19]= "濸箼覐渀諽", --그림자가죽
 				[20]= "竨纠痄", --루베도
 			},
+	
 		},
 		[CRAFTING_TYPE_BLACKSMITHING] = 
 		{
@@ -159,6 +173,7 @@ local craftInfo =
 				[9] = "滵韈渕", --공허강
 				[10]= "竨聄瓤襴钸", --루비다이트_INTERACT-ACT3_0_47263
 			},
+
 		},
 		[CRAFTING_TYPE_WOODWORKING] = 
 		{
@@ -184,26 +199,27 @@ local craftInfo =
 				[9] = "犘襴钸袰盜", --나이트우드
 				[10] = "竨聄", --루비
 			},
+
 		},
 		[CRAFTING_TYPE_JEWELRYCRAFTING] = 
 		{
 			["pieces"] = --Exact!!!
 			{
 				[1] = "ring",
-				[2] = "kette",
+				[2] = "necklace",
 
 			},
 			["match"] = --exact!!! This is not the material, but rather the prefix the material gives to equipment. e.g. Maple Bow. Oak Bow.
 			{
-				[1] = "Zinn", -- 1
-				[2] = "Kupfer", -- 26
-				[3] = "Silber", -- CP10
-				[4] = "Elektrum", --CP80
-				[5] = "Platin", -- CP150
+				[1] = "Pewter", -- 1
+				[2] = "Copper", -- 26
+				[3] = "Silver", -- CP10
+				[4] = "Electrum", --CP80
+				[5] = "Platinum", -- CP150
 			},
 
 		},
-		[CRAFTING_TYPE_ENCHANTING] =
+		[CRAFTING_TYPE_ENCHANTING] = 
 		{
 			["pieces"] = --exact!!
 			{ --{String Identifier, ItemId, positive or negative}
@@ -265,7 +281,7 @@ local craftInfo =
 				[16]= {"superb",{64509,64508,},}, --최상급? 우월한?
 
 			},
-			["quality"] =
+			["quality"] = 
 			{
 				{"normal",45850},
 				{"誋襀",45851}, --좋은
@@ -275,17 +291,20 @@ local craftInfo =
 				{"", 45850} -- default, if nothing is mentioned. Default should be Ta.
 			}
 		},
-	}
+	} 
 
 	return craftInfo
 
 end
 
-function WritCreater.masterWritQuality()
-	return {{"episch",4},{"legendär",5}}
+function WritCreater.masterWritQuality() -- Vital . This is probably not necessary, but it stays for now because it works
+	return {{"Epic",4},{"Legendary",5}}
 end
 
-function WritCreater.langEssenceNames() --exact!
+
+
+
+function WritCreater.langEssenceNames() -- Vital
 
 local essenceNames =  
 	{
@@ -296,7 +315,8 @@ local essenceNames =
 	return essenceNames
 end
 
-function WritCreater.langPotencyNames() --exact!! Also, these are all the positive runestones - no negatives needed.
+function WritCreater.langPotencyNames() -- Vital
+	--exact!! Also, these are all the positive runestones - no negatives needed.
 	local potencyNames = 
 	{
 		[1] = "詰祼", --Lowest potency stone lvl 조라?
@@ -359,31 +379,31 @@ function WritCreater.enchantExceptions(condition)
 end
 
 
-function WritCreater.langTutorial(i) --sentimental
+function WritCreater.langTutorial(i) 
 	local t = {
-		[5]="Hier noch ein paar Dinge die du wissen solltest.\nDer Chat-Befehl \'/dailyreset\' zeigt dir die Wartezeit an,\nbis du die nächsten Handwerksdailies machen kannst.",
-		[4]="Als letzte Information: Im Standard ist das AddOn für alle Berufe aktiviert.\nDu kannst aber in den AddOn Einstellungen die gewünschten Berufe ein-/ausschalten.",
-		[3]="Als Nächstes kannst du dich entscheiden, ob dieses Fenster angezeigt werden soll, solange du dich an einer Handwerksstation befindest.\nDieses Fenster zeigt dir wieviele Materialien für das Herstellen benötigt werden und wieviele du aktuell besitzt.",
-		[2]="Wenn aktiv werden deine Sachen automatisch beim Betreten einer Handwerksstation hergestellt.",
-		[1]="Willkommen zu Dolgubon's Lazy Writ Crafter!\nEs gibt ein paar Einstellungen die du zunächst festlegen\n solltest. Du kannst die Einstellungen jederzeit bei\nAddOn in Einstellungen >> Erweiterungen Menü ändern.",
+		[5]="There's also a few things you should know.\nFirst, /dailyreset is a slash command that will tell you\nhow long until the next daily server reset.",
+		[4]="Finally, you can also choose to deactivate or\nactivate this addon for each profession.\nBy default, all applicable crafts are on.\nIf you wish to turn some off, please check the settings.",
+		[3]="Next, you need to choose if you wish to see this\nwindow when using a crafting station.\nThe window will tell you how many mats the writ will require, as well as how many you currently have.",
+		[2]="The first setting to choose is if you\nwant to useAutoCraft.\nIf on, when you enter a crafting station, the addon will start crafting.",
+		[1]="Welcome to Dolgubon's Lazy Writ Crafter!\nThere are a few settings you should choose first.\n You can change the settings at any\n time in the settings menu.",
 	}
 	return t[i]
 end
 
-function WritCreater.langTutorialButton(i,onOrOff) --sentimental and short pls
+function WritCreater.langTutorialButton(i,onOrOff) -- sentimental and short please. These must fit on a small button
 	local tOn = 
 	{
-		[1]="Standardoptionen",
-		[2]="An",
-		[3]="Zeigen",
-		[4]="Weiter",
-		[5]="Fertig",
+		[1]="Use Defaults",
+		[2]="On",
+		[3]="Show",
+		[4]="Continue",
+		[5]="Finish",
 	}
 	local tOff=
 	{
-		[1]="Weiter",
-		[2]="Aus",
-		[3]="Verbergen",
+		[1]="Continue",
+		[2]="Off",
+		[3]="Do not show",
 	}
 	if onOrOff then
 		return tOn[i]
@@ -392,177 +412,197 @@ function WritCreater.langTutorialButton(i,onOrOff) --sentimental and short pls
 	end
 end
 
-local function proper(str)
-	if type(str)== "string" then
-		return zo_strformat("<<C:1>>",str)
-	else
-		return str
-	end
+function WritCreater.langStationNames()
+	return
+	{["甀覥瀰萠 訜覑甀"] = 1, ["覬缉 訜覑甀"] = 2, -- 87370069-0-1009, 10327
+		["篈纕羀蟬 訜覑甀"] = 3,["蟰瀈萠 訜覑甀"] = 4, ["袔箬袩 顔穜"] = 5, ["粩滵 訜覑甀"] = 6, ["Jewelry Crafting Station"] = 7, } -- 10538, 891, 16387, 15982, (23935, 24043)
+	-- 대장기술 제작대, 재봉 제작대
+	-- 마법부여 제작대, 연금술 제작대, 요리용 화로, 목공 제작대, 어딨는지 모름
 end
 
-local function runeMissingFunction (ta,essence,potency)
-	local missing = {}
-	if not ta["bag"] then
-		missing[#missing + 1] = "|rTa|cf60000"
-	end
-	if not essence["bag"] then
-		missing[#missing + 1] =  "|cffcc66"..essence["slot"].."|cf60000"
-	end
-	if not potency["bag"] then
-		missing[#missing + 1] = "|c0066ff"..potency["slot"].."|r"
-	end
-	local text = ""
-	for i = 1, #missing do
-		if i ==1 then
-			text = "|cf60000Glyph could not be crafted. You do not have any "..proper(missing[i])
-		else
-			text = text.." or "..proper(missing[i])
-		end
-	end
-	return text
-end
-
-WritCreater.strings = {
-	["runeReq"] 					= function (essence, potency) return zo_strformat("|c2dff00Crafting will require 1 |rTa|c2dff00, 1 |cffcc66<<1>>|c2dff00 and 1 |c0066ff<<2>>|r", essence, potency) end,
-	["runeMissing"] 				= runeMissingFunction ,
-	["notEnoughSkill"]				= "You do not have a high enough crafting skill to make the required equipment",
-	["smithingMissing"] 			= "\n|cf60000You do not have enough mats|r",
-	["craftAnyway"] 				= "Craft anyway",
-	["smithingEnough"] 				= "\n|c2dff00You have enough mats|r",
-	["craft"] 						= "|c00ff00Craft|r",
-	["crafting"] 					= "|c00ff00Crafting...|r",
-	["craftIncomplete"] 			= "|cf60000Crafting could not be completed.\nYou need more mats.|r",
-	["moreStyle"] 					= "|cf60000You do not have any usable style stones.\nCheck your inventory, achievements, and settings|r",
-	["moreStyleSettings"]			= "|cf60000You do not have any usable style stones.\nYou likely need to allow more in the Settings Menu|r",
-	["moreStyleKnowledge"]			= "|cf60000You do not have any usable style stones.\nYou might need to learn to craft more styles|r",
-	["dailyreset"] 					= dailyResetFunction,
-	["complete"] 					= "|c00FF00Writ complete.|r",
-	["craftingstopped"]				= "Crafting stopped. Please check to make sure the addon is crafting the correct item.",
-	["smithingReqM"] 				= function (amount, type, more) return zo_strformat( "Crafting will use <<1>> <<2>> (|cf60000You need <<3>>|r)" ,amount, type, more) end,
-	["smithingReqM2"] 				= function (amount,type,more)     return zo_strformat( "\nAs well as <<1>> <<2>> (|cf60000You need <<3>>|r)"          ,amount, type, more) end,
-	["smithingReq"] 				= function (amount,type, current) return zo_strformat( "Crafting will use <<1>> <<2>> (|c2dff00<<3>> available|r)"  ,amount, type, current) end,
-	["smithingReq2"] 				= function (amount,type, current) return zo_strformat( "\nAs well as <<1>> <<2>> (|c2dff00<<3>> available|r)"         ,amount, type, current) end,
-	["lootReceived"]				= "<<1>> was received (You have <<2>>)",
-	["lootReceivedM"]				= "<<1>> was received ",
-	["countSurveys"]				= "You have <<1>> surveys",
-	["countVouchers"]				= "You have <<1>> unearned Writ Vouchers",
-	["includesStorage"]				= function(type) local a= {"Surveys", "Master Writs"} a = a[type] return zo_strformat("Count includes <<1>> in house storage", a) end,
-	["surveys"]						= "Crafting Surveys",
-	["sealedWrits"]					= "Sealed Writs",
-	["masterWritEnchantToCraft"]	= function(lvl, type, quality, writCraft, writName, generalName) 
-											return zo_strformat("<<t:4>> <<t:5>> <<t:6>>: Crafting a <<t:1>> Glyph of <<t:2>> at <<t:3>> quality",lvl, type, quality,
-												writCraft,writName, generalName) end,
-	["masterWritSmithToCraft"]		= masterWritEnchantToCraft,
-	["withdrawItem"]				= function(amount, link) return "Dolgubon's Lazy Writ Crafter retrieved "..amount.." "..link end,
-	['fullBag']						= "You have no open bag spaces. Please empty your bag.",
-	['masterWritSave']				= "Dolgubon's Lazy Writ Crafter has saved you from accidentally accepting a master writ! Go to the settings menu to disable this option.",
-}
-
+-- What is this??! This is just a fun 'easter egg' that is never activated on easter.
+-- Replaces mat names with a random DivineMats on Halloween, New Year's, and April Fools day. You don't need this many! :D
+-- Translate it or don't, completely up to you. But if you don't translate it, replace the body of 
+-- shouldDivinityprotocolbeactivatednowornotitshouldbeallthetimebutwhateveritlljustbeforabit()
+-- with just a return false. (This will prevent it from ever activating. Also, if you're a user and don't like this,
+-- you're boring, and also that's how you can disable it. )
 local DivineMats =
 {
-	{"Geisteraugen", "Vampirherzen", "Werwolfklauen", "'Spezielle' Süßigkeiten", "Abgetrennte Hände", "Zombieeingeweide", "Fledermauslebern", "Echsenhirne", "Hexenhüte", "Destillierte Buhs", "Singende Kröten"},
-	{"Sockenpuppen", "Narrenhüte", "Lachanfälle", "Rote Heringe", "Faile Eier", "Gekrönte Hochstapler", "Schlammpasteten", "Otternasen"},
-	{"Feuerwerk", "Geschenke", "Ewige Lichter", "Fichtennadeln", "Wichtelhüte", "Rentierklöten"},
-
+	{"Ghost Eyes", "Vampire Hearts", "Werewolf Claws", "'Special' Candy", "Chopped Hands", "Zombie Guts", "Bat Livers", "Lizard Brains", "Witches Hats", "Distilled Boos", "Singing Toads"},
+	{"Sock Puppets", "Jester Hats","Otter Noses",  "|cFFC300Tempering Alloys|r", "Red Herrings", "Rotten Tomatoes","Fake Oil of Life", "Crowned Imposters", "Mudpies"},
+	{"Fireworks", "Presents", "Crackers", "Reindeer Bells", "Elven Hats", "Pine Needles", "Essences of Time", "Ephemeral Lights"},
 }
 
+-- confetti?
+-- random sounds?
+-- 
+
 local function shouldDivinityprotocolbeactivatednowornotitshouldbeallthetimebutwhateveritlljustbeforabit()
-	
 	if GetDate()%10000 == 1031 then return 1 end
 	if GetDate()%10000 == 401 then return 2 end
 	if GetDate()%10000 == 1231 then return 3 end
 	return false
 end
+
+
+local function hasMadnessEngulfedNirn()
+	local t = GetTimeString() local c = string.sub(t, 1,string.find(t, ":") - 1)
+	return tonumber(c) > 11
+end
+
+
 local function wellWeShouldUseADivineMatButWeHaveNoClueWhichOneItIsSoWeNeedToAskTheGodsWhichDivineMatShouldBeUsed() local a= math.random(1, #DivineMats ) return DivineMats[a] end
 local l = shouldDivinityprotocolbeactivatednowornotitshouldbeallthetimebutwhateveritlljustbeforabit()
 
 if l then
 	DivineMats = DivineMats[l]
 	local DivineMat = wellWeShouldUseADivineMatButWeHaveNoClueWhichOneItIsSoWeNeedToAskTheGodsWhichDivineMatShouldBeUsed()
+
 	WritCreater.strings.smithingReqM = function (amount, _,more) return zo_strformat( "Crafting will use <<1>> <<4>> (|cf60000You need <<3>>|r)" ,amount, type, more, DivineMat) end
 	WritCreater.strings.smithingReqM2 = function (amount, _,more) return zo_strformat( "As well as <<1>> <<4>> (|cf60000You need <<3>>|r)" ,amount, type, more, DivineMat) end
 	WritCreater.strings.smithingReq = function (amount, _,more) return zo_strformat( "Crafting will use <<1>> <<4>> (|c2dff00<<3>> available|r)" ,amount, type, more, DivineMat) end
 	WritCreater.strings.smithingReq2 = function (amount, _,more) return zo_strformat( "As well as <<1>> <<4>> (|c2dff00<<3>> available|r)" ,amount, type, more, DivineMat) end
 end
 
-
-WritCreater.optionStrings = WritCreater.optionStrings or {}
-
-WritCreater.optionStrings.nowEditing                   = "You are changing %s settings"
-WritCreater.optionStrings.accountWide                  = "Account Wide"
-WritCreater.optionStrings.characterSpecific            = "Character Specific"
-WritCreater.optionStrings.useCharacterSettings         = "Use character settings" -- de
-WritCreater.optionStrings.useCharacterSettingsTooltip  = "Use character specific settings on this character only" --de
-WritCreater.optionStrings["style tooltip"]								= function (styleName, styleStone) return zo_strformat("Allow the <<1>> style, which uses the <<2>> style stone, to be used for crafting",styleName, styleStone) end 
-WritCreater.optionStrings["show craft window"]							= "Show Craft Window"
-WritCreater.optionStrings["show craft window tooltip"]					= "Shows the crafting window when a crafting station is open"
-WritCreater.optionStrings["autocraft"]									= "AutoCraft"
-WritCreater.optionStrings["autocraft tooltip"]							= "Selecting this will cause the addon to begin crafting immediately upon entering a crafting station. If the window is not shown, this will be on."
-WritCreater.optionStrings["blackmithing"]								= "Blacksmithing"
-WritCreater.optionStrings["blacksmithing tooltip"]						= "Turn the addon on for Blacksmithing"
-WritCreater.optionStrings["clothing"]									= "Clothing"
-WritCreater.optionStrings["clothing tooltip"]							= "Turn the addon on for Clothing"
-WritCreater.optionStrings["enchanting"]									= "Enchanting"
-WritCreater.optionStrings["enchanting tooltip"]							= "Turn the addon on for Enchanting"
-WritCreater.optionStrings["alchemy"]									= "Alchemy"
-WritCreater.optionStrings["alchemy tooltip"]							= "Turn the addon on for Alchemy (Bank Withdrawal only)"
-WritCreater.optionStrings["provisioning"]								= "Provisioning"
-WritCreater.optionStrings["provisioning tooltip"]						= "Turn the addon on for Provisioning (Bank Withdrawal only)"
-WritCreater.optionStrings["woodworking"]								= "Woodworking"
-WritCreater.optionStrings["woodworking tooltip"]						= "Turn the addon on for Woodworking"
-WritCreater.optionStrings["jewelry crafting"]							= "Jewelry Crafting"
-WritCreater.optionStrings["jewelry crafting tooltip"]					= "Turn the addon on for Jewelry Crafting"
-WritCreater.optionStrings["writ grabbing"]								= "Grab writ items"
-WritCreater.optionStrings["writ grabbing tooltip"]						= "Grab items required for writs (e.g. nirnroot, Ta, etc.) from the bank"
-WritCreater.optionStrings["delay"]										= "Item Grab Delay"
-WritCreater.optionStrings["delay tooltip"]								= "How long to wait before grabbing items from the bank (milliseconds)"
-WritCreater.optionStrings["style stone menu"]							= "Style Stones Used"
-WritCreater.optionStrings["style stone menu tooltip"]					= "Choose which style stones the addon will use"
-WritCreater.optionStrings["send data"]									= "Send Writ Data"
-WritCreater.optionStrings["send data tooltip"]							= "Send information on the rewards received from your writ boxes. No other information is sent."
-WritCreater.optionStrings["exit when done"]								= "Exit crafting window"
-WritCreater.optionStrings["exit when done tooltip"]						= "Exit crafting window when all crafting is completed"
-WritCreater.optionStrings["automatic complete"]							= "Automatic quest dialog"
-WritCreater.optionStrings["automatic complete tooltip"]					= "Automatically accepts and completes quests when at the required place"
-WritCreater.optionStrings["new container"]								= "Keep new status"
-WritCreater.optionStrings["new container tooltip"]						= "Keep the new status for writ reward containers"
-WritCreater.optionStrings["master"]										= "Master Writs"
-WritCreater.optionStrings["master tooltip"]								= "If this is ON the addon will craft Master Writs you have active"
-WritCreater.optionStrings["right click to craft"]						= "Right Click to Craft"
-WritCreater.optionStrings["right click to craft tooltip"]				= "If this is ON the addon will craft Master Writs you tell it to craft after right clicking a sealed writ"
-WritCreater.optionStrings["crafting submenu"]							= "Trades to Craft"
-WritCreater.optionStrings["crafting submenu tooltip"]					= "Turn the addon off for specific crafts"
-WritCreater.optionStrings["timesavers submenu"]							= "Timesavers"
-WritCreater.optionStrings["timesavers submenu tooltip"]					= "Various small timesavers"
-WritCreater.optionStrings["loot container"]								= "Loot container when received"
-WritCreater.optionStrings["loot container tooltip"]						= "Loot writ reward containers when you receive them"
-WritCreater.optionStrings["master writ saver"]							= "Save Master Writs"
-WritCreater.optionStrings["master writ saver tooltip"]					= "Prevents Master Writs from being accepted"
-WritCreater.optionStrings["loot output"]								= "Valuable Reward Alert"
-WritCreater.optionStrings["loot output tooltip"]						= "Output a message when valuable items are received from a writ"
-WritCreater.optionStrings["autoloot behaviour"]							= "Autoloot Behaviour" -- Note that the following three come early in the settings menu, but becuse they were changed
-WritCreater.optionStrings["autoloot behaviour tooltip"]					= "Choose when the addon will autoloot writ reward containers" -- they are now down below (with untranslated stuff)
-WritCreater.optionStrings["autoloot behaviour choices"]					= {"Copy the setting under the Gameplay settings", "Autoloot", "Never Autoloot"}
-WritCreater.optionStrings["container delay"]							= "Delay Container Looting"
-WritCreater.optionStrings["container delay tooltip"]					= "Delay the autolooting of writ reward containers when you receive them"
-WritCreater.optionStrings["hide when done"]								= "Hide when done"
-WritCreater.optionStrings["hide when done tooltip"]						= "Hide the addon window when all items have been crafted"
-WritCreater.optionStrings['reticleColour']								= "Change Reticle Colour"
-WritCreater.optionStrings['reticleColourTooltip']						= "Changes the Reticle colour if you have an uncompleted or completed writ at the station"
-WritCreater.optionStrings['humorlessHuskProtection']					= "Toggle house hauntings"
-WritCreater.optionStrings['humorlessHuskProtectionTooltip']				= "Toggle the special Halloween house haunting on or off"
-WritCreater.optionStrings['spookyScarySkeletonWarning']					= "You feel a cold chill run down your back, as if something is following you..."
-WritCreater.optionStrings['humorlessHuskProtectionRitual']				= "Click here to banish the ghost"
-
-function WritCreater.langStationNames()
-	return
-	{["甀覥瀰萠 訜覑甀"] = 1, ["覬缉 訜覑甀"] = 2, -- 87370069-0-1009, 10327
-	 ["篈纕羀蟬 訜覑甀"] = 3,["蟰瀈萠 訜覑甀"] = 4, ["袔箬袩 顔穜"] = 5, ["粩滵 訜覑甀"] = 6, ["Jewelry Crafting Station"] = 7, } -- 10538, 891, 16387, 15982, (23935, 24043)
-	 -- 대장기술 제작대, 재봉 제작대
-	 -- 마법부여 제작대, 연금술 제작대, 요리용 화로, 목공 제작대, 어딨는지 모름
+local function hasMadnessEngulfedNirn()
+	local t = GetTimeString() local c = string.sub(t, 1,string.find(t, ":") - 1)
+	return tonumber(c) > 11
 end
 
---"<<1>> erhalten"
+
+-- [[ /script local writcreater = {} local c = {a = 1} local g = {__index = c} setmetatable(writ, g) d(a.a) local e = {__index = {Z = 2}} setmetatable(c, e) d(a.Z)
+local h = {__index = {}}
+local t = {}
+local g = {["__index"] = t}
+setmetatable(t, h)
+setmetatable(WritCreater, g) --]]
+
+local function enableAlternateUniverse(override)
+
+	if shouldDivinityprotocolbeactivatednowornotitshouldbeallthetimebutwhateveritlljustbeforabit() == 1 or override then
+	--if true then
+		local stations = 
+			{"Blacksmithing Station", "Clothing Station", "Enchanting Table",
+			"Alchemy Station",  "Cooking Fire", "Woodworking Station","Jewelry Crafting Station",  "Outfit Station", "Transmute Station", "Wayshrine"}
+			local stationNames =  -- in the comments are other names that were also considered, though not all were considered seriously
+			{"Wightsmithing Station", -- Popcorn Machine , Skyforge, Heavy Metal Station, Metal Clockwork Solid, Wightsmithing Station., Coyote Stopper
+			 "Sock Puppet Theatre", -- Sock Distribution Center, Soul-Shriven Sock Station, Grandma's Sock Knitting Station, Knits and Pieces, Sock Knitting Station
+			"Top Hats Inc.", -- Mahjong Station, Magic Store, Card Finder, Five Aces, Top Hat Store
+			"Seedy Skooma Bar", -- Chemical Laboratory , Drugstore, White's Garage, Cocktail Bar, Med-Tek Pharmaceutical Company, Med-Tek Laboratories, Skooma Central, Skooma Backdoor Dealers, Sheogorath's Pharmacy
+			 "Khajit Fried Chicken", -- Khajit Fried Chicken, soup Kitchen, Some kind of bar, misspelling?, Roast Bosmer
+			 "IKEA Assembly Station", -- Chainsaw Massace, Saw Station, Shield Corp, IKEA Assembly Station, Wood Splinter Removal Station
+			 "April Fool's Gold",--"Diamond Scam Store", -- Lucy in the Sky, Wedding Planning Hub, Shiny Maker, Oooh Shiny, Shiny Bling Maker, Cubit Zirconia, Rhinestone Palace
+			 -- April Fool's Gold
+			 "Khajit Fur Trade Outpost", -- Jester Dressing Room Loincloth Shop, Khajit Walk, Khajit Fashion Show, Mummy Maker, Thalmor Spy Agency, Tamriel Catwalk, 
+			 --	Tamriel Khajitwalk, second hand warehouse,. Dye for Me, Catfur Jackets, Outfit station "Khajiit Furriers", Khajit Fur Trading Outpost
+			 "Sacrificial Goat Altar",-- Heisenberg's Station Correction Facility, Time Machine, Probability Redistributor, Slot Machine Rigger, RNG Countermeasure, Lootcifer Shrine, Whack-a-mole
+			 -- Anti Salt Machine, Department of Corrections, Quantum State Rigger , Unnerf Station
+			 "TARDIS" } -- Transporter, Molecular Discombobulator, Beamer, Warp Tunnel, Portal, Stargate, Cannon!, Warp Gate
+			
+			local crafts = {"Blacksmithing", "Clothing", "Enchanting","Alchemy","Provisioning","Woodworking","Jewelry Crafting" }
+			local craftNames = {
+				"Wightsmithing",
+				"Sock Knitting",
+				"Top Hat Tricks",
+				"Skooma Brewing",
+				"Chicken Frying",
+				"IKEA Assembly",
+				"Fool's Gold Creation",
+			}
+			local quest = {"Blacksmith", "Clothier", "Enchanter" ,"Alchemist", "Provisioner", "Woodworker", "Jewelry Crafting"}
+			local questNames = 	
+			{
+				"Wightsmith",
+				"Sock Knitter",
+				"Top Hat Trickster",
+				"Skooma Brewer",
+				"Chicken Fryer",
+				"IKEA Assembly",
+				"Fool's Gold",
+			}
+			local items = {"Blacksmith", "Clothier", "Enchanter", "alchemical", "food and drink",  "Woodworker", "Jewelry"}
+			local itemNames = {
+				"Wight",
+				"Sock Puppet",
+				"Top Hat",
+				"Skooma",
+				"Fried Chicken",
+				"IKEA",
+				"Fool's Gold",
+			}
+			local coffers = {"Blacksmith", "Clothier", "Enchanter" ,"Alchemist", "Provisioner", "Woodworker", "Jewelry Crafter's",}
+			local cofferNames = {
+				"Wightsmith",
+				"Sock Knitter",
+				"Top Hat Trickster",
+				"Skooma Brewer",
+				"Chicken Fryer",
+				"IKEA Assembly",
+				"Fool's Gold",
+			}
+		
+
+		local t = {["__index"] = {}}
+		function h.__index.alternateUniverse()
+			return stations, stationNames
+		end
+		function h.__index.alternateUniverseCrafts()
+			return crafts, craftNames
+		end
+		function h.__index.alternateUniverseQuests()
+			return quest, questNames
+		end
+		function h.__index.alternateUniverseItems()
+			return items, itemNames
+		end
+		function h.__index.alternateUniverseCoffers()
+			return coffers, cofferNames
+		end
+
+		h.__metatable = "No looky!"
+		local a = WritCreater.langStationNames()
+		a[1] = 1
+		for i = 1, 7 do
+			a[stationNames[i]] = i
+		end
+		WritCreater.langStationNames = function() 
+			return a
+		end
+		local b =WritCreater.langWritNames()
+		for i = 1, 7 do
+			b[i] = questNames[i]
+		end
+		-- WritCreater.langWritNames = function() return b end
+
+	end
+end
+
+-- For Transmutation: "Well Fitted Forever"
+-- So far, I like blacksmithing, clothing, woodworking, and wayshrine, enchanting
+-- that leaves , alchemy, cooking, jewelry, outfits, and transmutation
+
+local lastYearStations = 
+{"Blacksmithing Station", "Clothing Station", "Woodworking Station", "Cooking Fire", 
+"Enchanting Table", "Alchemy Station", "Outfit Station", "Transmute Station", "Wayshrine"}
+local stationNames =  -- in the comments are other names that were also considered, though not all were considered seriously
+{"Heavy Metal 112.3 FM", -- Popcorn Machine , Skyforge, Heavy Metal Station
+ "Sock Knitting Station", -- Sock Distribution Center, Soul-Shriven Sock Station, Grandma's Sock Knitting Station, Knits and Pieces
+ "Splinter Removal Station", -- Chainsaw Massace, Saw Station, Shield Corp, IKEA Assembly Station, Wood Splinter Removal Station
+ "McSheo's Food Co.", 
+ "Tetris Station", -- Mahjong Station
+ "Poison Control Centre", -- Chemical Laboratory , Drugstore, White's Garage, Cocktail Bar, Med-Tek Pharmaceutical Company, Med-Tek Laboratories
+ "Thalmor Spy Agency", -- Jester Dressing Room Loincloth Shop, Khajit Walk, Khajit Fashion Show, Mummy Maker, Thalmor Spy Agency, Morag Tong Information Hub, Tamriel Spy HQ, 
+ "Department of Corrections",-- Heisenberg's Station Correction Facility, Time Machine, Probability Redistributor, Slot Machine Rigger, RNG Countermeasure, Lootcifer Shrine, Whack-a-mole
+ -- Anti Salt Machine, Department of Corrections
+ "Warp Gate" } -- Transporter, Molecular Discombobulator, Beamer, Warp Tunnel, Portal, Stargate, Cannon!, Warp Gate
+
+enableAlternateUniverse(GetDisplayName()=="@Dolgubon")
+
+
+--Hide craft window when done
+--"Verstecke Fenster anschließend",
+-- [tooltip ] = "Verstecke das Writ Crafter Fenster an der Handwerksstation automatisch, nachdem die Gegenstände hergestellt wurden"
+
 function WritCreater.langWritRewardBoxes () return {
 	[CRAFTING_TYPE_ALCHEMY] = "蟰瀈萠芬襘 袩瀰", --연금술사의 용기
 	[CRAFTING_TYPE_ENCHANTING] = "篈纕羀蟬渀襘 澤话", --마법부여가의 궤짝
@@ -580,6 +620,14 @@ function WritCreater.getTaString()
 	return "鋀" --타
 end
 
-WritCreater.lang = "kr"
 
+
+WritCreater.lang = "kr"
 WritCreater.langIsMasterWritSupported = false
+
+--[[
+SLASH_COMMANDS['/opencontainers'] = function()local a=WritCreater.langWritRewardBoxes() for i=1,200 do for j=1,6 do if a[j]==GetItemName(1,i) then if IsProtectedFunction("endUseItem") then
+	CallSecureProtected("endUseItem",1,i)
+else
+	UseItem(1,i)
+end end end end end]]

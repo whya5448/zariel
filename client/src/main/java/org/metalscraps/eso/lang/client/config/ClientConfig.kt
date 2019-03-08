@@ -5,7 +5,7 @@ import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import java.nio.file.Path
 
-class ClientConfig(configDirPath: Path, configPath: Path) : ESOConfig(configDirPath, configPath) {
+class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
 
     internal val isLaunchAfterUpdate: Boolean
         get() = getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()
