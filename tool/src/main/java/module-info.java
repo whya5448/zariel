@@ -5,6 +5,7 @@ open module org.metalscraps.eso.lang.tool {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.module.kotlin;
     requires java.desktop;
+    requires java.net.http;
     requires slf4j.api;
 	requires kotlin.stdlib;
     requires spring.boot;
