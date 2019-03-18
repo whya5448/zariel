@@ -65,8 +65,8 @@ class CompressServerMain(var config:CompressServerConfig) : ESOMain {
                 makeCSV()
 
                 logger.info("대상 압축")
-                Utils.processRun(poDir, "7za a -mx=7 $lang $poDir/*.csv")
-                Utils.processRun(poDir, "7za a -mx=7 $dest $poDir/*.lua")
+                Utils.processRun(poDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $poDir/*.csv")
+                Utils.processRun(poDir, "7za a -mx=9 $dest $poDir/*.lua")
 
                 logger.info("SFX 생성")
                 Utils.processRun(poDir, "cat $baseDir/7zCon.sfx $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
