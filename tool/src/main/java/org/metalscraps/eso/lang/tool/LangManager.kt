@@ -1,7 +1,8 @@
 package org.metalscraps.eso.lang.tool
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.fasterxml.jackson.databind.node.ObjectNode
 import org.metalscraps.eso.lang.lib.bean.PO
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
@@ -9,15 +10,18 @@ import org.metalscraps.eso.lang.lib.util.Utils
 import org.metalscraps.eso.lang.lib.util.Utils.Companion.getMergedPO
 import org.metalscraps.eso.lang.lib.util.Utils.Companion.listFiles
 import org.metalscraps.eso.lang.lib.util.Utils.Companion.makeCSV
+import org.metalscraps.eso.lang.tool.vo.Category
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.net.http.HttpClient
+import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.regex.Pattern
 
 @Component
 class LangManager(private val objectMapper: ObjectMapper) {
@@ -47,9 +51,9 @@ class LangManager(private val objectMapper: ObjectMapper) {
 
         // EsoExtractData.exe -l en_0124.lang -p
         try {
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x kr.csv -o kr.lang")
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x kr_beta.csv -o kr_beta.lang")
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x tr.csv -o tr.lang")
+            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/kr.csv\" -o \"${vars.poDir}/kr.lang\"")
+            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/kr_beta.csv\" -o \"${vars.poDir}/kr_beta.lang\"")
+            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/tr.csv\" -o \"${vars.poDir}/tr.lang\"")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -59,9 +63,9 @@ class LangManager(private val objectMapper: ObjectMapper) {
     internal fun something() {
         val data = Utils.getMergedPO(Utils.listFiles(vars.poDir, "po"))
         val sb = StringBuilder()
-        data.forEach { e:PO -> sb.append(e.toCSVFormat()) }
+        data.forEach { e:PO -> sb.append(e.toPOTFormat()) }
         logger.info(vars.baseDir.toString())
-        Files.writeString(vars.baseDir.resolve("kr.csv"), sb.toString())
+        Files.writeString(vars.baseDir.resolve("kr.pot"), sb.toString())
     } // something
 
     internal fun lineCompare() {
@@ -72,36 +76,45 @@ class LangManager(private val objectMapper: ObjectMapper) {
         ko.keys.forEach { x -> en.remove(x) }
         en.values.forEach { x -> logger.info("$x") }
         logger.info("${en.size}행 모자람.")
+        val sb = StringBuilder()
+        en.values.forEach { sb.append("$it\n") }
+        Files.writeString(vars.baseDir.resolve("compare.txt"), sb.toString(), AppConfig.CHARSET)
     } // lineCompare
 
     fun enCSVtoPOT() {
-        val mapper = objectMapper
-        val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("IndexMatch_modified.json"), AppConfig.CHARSET))
         val list = Utils.textParse(vars.baseDir.resolve("en.lang.csv")).values.toMutableList()
         Collections.sort(list, PO.comparator)
 
+/*
+        val mapper = objectMapper
+        val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("IndexMatch_modified.json"), AppConfig.CHARSET))
         cat.forEach { k, vl ->
-            var sb = getStringBuilderForPOT()
+            var sb = StringBuilder()
             vl.forEach { list.filter { po -> po.id1 == it }.forEach { po -> list.remove(po); sb.append(po.toPOTFormat()) } }
             sb = escapeStringForPOT(sb)
+            sb.insert(0, getPOTTemplate())
             Files.writeString(vars.baseDir.resolve("./pot/$k.pot"), sb, AppConfig.CHARSET)
         }
+*/
 
-        var sb = getStringBuilderForPOT()
+        var sb = StringBuilder()
         list.forEach { sb.append(it.toPOTFormat())  }
         sb = escapeStringForPOT(sb)
-        Files.writeString(vars.baseDir.resolve("./pot/etc.pot"), sb, AppConfig.CHARSET)
+        sb.insert(0, getPOTTemplate())
+        Files.writeString(vars.baseDir.resolve("./pot/kr.pot"), sb, AppConfig.CHARSET)
     }
 
-    private fun getStringBuilderForPOT(): StringBuilder {
-        return StringBuilder("""
+    private fun getPOTTemplate(): String {
+        return """
             #, fuzzy
             msgid ""
             msgstr ""
             "MIME-Version: 1.0\n"
             "Content-Transfer-Encoding: 8bit\n"
             "Content-Type: text/plain; charset=UTF-8\n"
-        """.trimIndent())
+
+
+        """.trimIndent()
     }
 
     private fun escapeStringForPOT(sb: StringBuilder): StringBuilder {
@@ -116,9 +129,25 @@ class LangManager(private val objectMapper: ObjectMapper) {
     }
 
     fun updateCategory() {
-        //val mapper = objectMapper
-        //val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("categories.json"), AppConfig.CHARSET))
-        Utils.getDefaultRestClient("https://esoitem.uesp.net/viewMinedItems.php")
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val mapper = objectMapper
+        val cat = mapper.readTree(Files.readString(vars.baseDir.resolve("categories.json"), AppConfig.CHARSET))
+        val array = JsonNodeFactory.instance.objectNode()
+        val domain = "https://esoitem.uesp.net/viewMinedItems.php"
+        array.put("URL", domain)
+
+        val response: HttpResponse<String> = HttpClient.newHttpClient().send(Utils.getDefaultRestClient(domain), HttpResponse.BodyHandlers.ofString())
+        var body = response.body()
+        body = body.substring(body.indexOf("esovmi_list'>")+"esovmi_list'>".length, body.indexOf("</ol>"))
+        val m = Pattern.compile("<a href='\\?type=(\\d+?)'>(.+?) \\((\\d+) items?\\)</a>").matcher(body)
+        while(m.find()) {
+            val id = m.group(1).toInt()
+            val category = Category(m.group(1).toInt(), m.group(2), volume = m.group(3).toInt())
+            cat["group"].fields().forEach { if(it.value.map { x -> x.asInt() }.contains(id)) category.category = it.key }
+            if(category.category == category.resourceName) array.putPOJO(id.toString(), category)
+        }
+        (cat["categories"] as ObjectNode).set("item", array)
+
+        Files.writeString(vars.baseDir.resolve("categories.json"), mapper.writer().withDefaultPrettyPrinter().writeValueAsString(cat))
+
     }
 }
