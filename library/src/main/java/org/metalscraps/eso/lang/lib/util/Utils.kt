@@ -299,10 +299,11 @@ class Utils {
 
                 val jsonNode = getBodyFromHTTPsRequest(request)
 
-                for (x in jsonNode) {
-                    val id = x.get("id").toString().replace("\"", "")
-                    if ((id.startsWith("ESO-") && !id.equals("ESO-test", true)) && x.get("status").toString() == "\"ACTIVE\"") projectMap[id] = getFileNames(id)
+                for(x in listOf("story", "system", "skill", "item", "book")) {
+                    val id = "ESO-$x"
+                    projectMap[id] = getFileNames(id)
                 }
+
             }
 
             for (x in projectMap.keys) getDocuments(x)
