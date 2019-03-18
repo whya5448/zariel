@@ -145,7 +145,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
             config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
         }
 
-        try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
+        if(config.isDeleteTemp) try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
 
     }
 
@@ -249,6 +249,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     }
     
     override fun start() {
+
         getDataVersion()
         if (needUpdate) if (update()) updateLocalConfig() else logger.error("업데이트 실패")
         else logger.info("최신 버전임")

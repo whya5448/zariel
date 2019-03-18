@@ -19,6 +19,9 @@ class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
     internal val isEnableZanataListener: Boolean
         get() = getConf(ENABLE_ZANATA_LISTENER).toBoolean()
 
+    internal val isDeleteTemp: Boolean
+        get() = (System.getenv("JAVA_DEL_TEMP") ?: "TRUE").toBoolean()
+
     internal val localLangVersion: Long
         get() = getConf(LOCAL_LANG_VERSION).toLong()
 
