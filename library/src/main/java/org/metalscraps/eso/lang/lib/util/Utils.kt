@@ -301,7 +301,7 @@ class Utils {
 
                 for (x in jsonNode) {
                     val id = x.get("id").toString().replace("\"", "")
-                    if (id.startsWith("ESO-") && x.get("status").toString() == "\"ACTIVE\"") projectMap[id] = getFileNames(id)
+                    if ((id.startsWith("ESO-") && !id.equals("ESO-test", true)) && x.get("status").toString() == "\"ACTIVE\"") projectMap[id] = getFileNames(id)
                 }
             }
 

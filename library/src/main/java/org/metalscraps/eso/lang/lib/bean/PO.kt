@@ -57,7 +57,7 @@ open class PO(private val id: String, var source: String, var target: String, va
         else src.compareTo(trg)
     }
 
-    override fun toString(): String { return "$fileName-$id-$isFuzzy','$source','$target'" }
+    override fun toString(): String { return "$fileName-$id-$isFuzzy,'$source','$target'" }
 
     companion object {
         var comparator = Comparator<PO> { o1, o2 ->
