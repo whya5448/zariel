@@ -98,6 +98,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
 
     private fun registClipboardListener() {
         Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener(clipboardListener)
+        logger.info("클립보드 리스너 등록됨.")
     }
 
     private fun update(): Boolean {
@@ -249,13 +250,14 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     }
     
     override fun start() {
-
+/*
         getDataVersion()
         if (needUpdate) if (update()) updateLocalConfig() else logger.error("업데이트 실패")
         else logger.info("최신 버전임")
 
         // 스팀 실행
         if(config.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
+*/
 
         //트레이 아이콘 등록
         registerTrayIcon()
