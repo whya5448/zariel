@@ -143,7 +143,7 @@ class ClipboardListener(private val config: ClientConfig) : FlavorListener {
     private fun getURL(id: ID): String {
         val projectName = Utils.getProjectNameByDocument(id)
         val latestVersion = Utils.getLatestVersion(projectName)
-        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?dswid=-3784&iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}"
+        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}"
     }
 
     companion object {
