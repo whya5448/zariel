@@ -83,7 +83,7 @@ class Utils {
                 val fileName: String = getName(x)
 
                 // pregame 쪽 데이터
-                if (fileName == "00_EsoUI_Client" || fileName == "00_EsoUI_Pregame") continue
+                if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) continue
 
                 map.putAll(textParse(x))
                 logger.trace(x.toString())
@@ -252,7 +252,7 @@ class Utils {
             fileNames.parallelStream().forEach {
                 val fileName = it
                 // 우리가 사용하는 데이터 아님.
-                if (fileName == "00_EsoUI_Client" || fileName == "00_EsoUI_Pregame") return@forEach
+                if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) return@forEach
 
                 val ltStart = LocalTime.now()
                 var fileURL = url + fileName
