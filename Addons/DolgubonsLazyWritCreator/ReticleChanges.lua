@@ -62,12 +62,6 @@ function WritCreater.initializeReticleChanges()
 			local writs = WritCreater.writSearch()
 			if writs[craftingType] then
 
-				--d(text)
-				--d(dispText)
-				--d(writs[craftingType])
-				--d(isQuestComplete(writs[craftingType]))
-				--d(GetJournalQuestIsComplete(writs[craftingType]))
-
 				-- we have a writ. Do we need the reticle green or red
 				if isQuestComplete(writs[craftingType]) or GetJournalQuestIsComplete(writs[craftingType]) then
 					text = "|c66ff66"..dispText.."|r"
