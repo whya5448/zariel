@@ -264,7 +264,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         else logger.info("클립보드 리스너 실행 안함.")
     }
 
-    companion object { private const val CDN = "http://eso-cdn.metalscraps.org/" }
+    companion object { private const val CDN = "https://storage.googleapis.com/eso-team-waldo-bucket/" }
 
 
 }
