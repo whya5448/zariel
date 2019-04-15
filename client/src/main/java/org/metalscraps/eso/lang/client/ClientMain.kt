@@ -17,12 +17,13 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.function.BiPredicate
 
 
 @Component
-class ClientMain(private val config:ClientConfig, private val clipboardListener:ClipboardListener) : ESOMain {
+class ClientMain(private val config:ClientConfig, private val clipboardListener:ClipboardListener, private val toolManager: ToolManager) : ESOMain {
 
     @Autowired lateinit var optionPanel: OptionPanel
     private val logger = LoggerFactory.getLogger(ClientMain::class.java)
@@ -102,15 +103,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     }
 
     private fun update(): Boolean {
-        val tool = config.appPath.resolve("EsoExtractData v0.32/EsoExtractData.exe")
-        if (Files.notExists(tool)) {
-            logger.info("툴 존재하지 않음.")
-            if (downloadTool()) logger.info("툴 전송 성공")
-            else {
-                logger.info("툴 전송 실패")
-                config.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
-            }
-        }
+
 
         if(!config.isUpdateLang) {
             logger.info("업데이트 설정 꺼져있음.")
@@ -120,10 +113,11 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         val langPath = config.appPath.resolve("csv.exe")
         downloadCSVs(langPath)
         decompressCSVs(langPath)
+        toolManager.langDiff()
         try {
-            Utils.processRun(config.appPath, "$tool -p -x kr.csv -o kr.lang")
-            Utils.processRun(config.appPath, "$tool -p -x kr_beta.csv -o kr_beta.lang")
-            Utils.processRun(config.appPath, "$tool -p -x tr.csv -o tr.lang")
+            toolManager.csvTolang(config.appPath.resolve("kr.csv"))
+            toolManager.csvTolang(config.appPath.resolve("kr_beta.csv"))
+            toolManager.csvTolang(config.appPath.resolve("tr.csv"))
         } catch (e: Exception) {
             logger.error("LANG 생성 실패")
             e.printStackTrace()
@@ -132,6 +126,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
 
         return true
     }
+
 
     private fun decompressCSVs(langPath: Path) {
         try {
@@ -152,7 +147,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
 
     private fun downloadCSVs(csvPath: Path) {
 
-        val request = HttpRequest.newBuilder().uri(URI.create("${CDN}lang_$serverFileName.7z.exe")).build()
+        val request = HttpRequest.newBuilder().uri(URI.create("${ClientConfig.CDN}lang_$serverFileName.7z.exe")).build()
 
         if (Files.exists(csvPath) && Utils.crc32(csvPath).toString() == crc32) {
             logger.info("언어 파일 존재함. 다운로드 스킵")
@@ -210,54 +205,14 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         } catch (e: AWTException) {}
     }
 
-    private fun downloadTool(): Boolean {
-        logger.info("다운로드 시도")
-        val request = HttpRequest.newBuilder().uri(URI.create("${CDN}EsoExtractData%20v0.32.exe")).build()
-        val toolPath = config.appPath.resolve("tool.exe")
-
-        try {
-            HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofFile(toolPath))
-        } catch (e: IOException) {
-            e.printStackTrace()
-            logger.error("툴 다운로드 실패")
-            config.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-            logger.error("툴 다운로드 실패")
-            config.exit(AppErrorCode.CANNOT_DOWNLOAD_TOOL.errCode)
-        }
-
-        try {
-            Utils.processRun(config.appPath,  "$toolPath -y")
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-            logger.error("툴 압축해제 실패")
-            config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            logger.error("툴 압축해제 실패")
-            config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
-        }
-
-        try {
-            Files.delete(toolPath)
-            logger.info("임시파일 삭제 성공")
-        } catch (e: IOException) {
-            logger.warn("임시파일 삭제 실패")
-        }
-
-        return Files.exists(config.appPath.resolve("EsoExtractData v0.32/EsoExtractData.exe"))
-    }
     
     override fun start() {
-/*
         getDataVersion()
         if (needUpdate) if (update()) updateLocalConfig() else logger.error("업데이트 실패")
         else logger.info("최신 버전임")
 
         // 스팀 실행
         if(config.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
-*/
 
         //트레이 아이콘 등록
         registerTrayIcon()
@@ -266,8 +221,5 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         if(config.isEnableZanataListener) registClipboardListener()
         else logger.info("클립보드 리스너 실행 안함.")
     }
-
-    companion object { private const val CDN = "https://storage.googleapis.com/eso-team-waldo-bucket/" }
-
 
 }

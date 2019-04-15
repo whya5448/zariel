@@ -6,6 +6,7 @@ import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import java.nio.file.Path
 
 class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
+    companion object { const val CDN = "https://storage.googleapis.com/eso-team-waldo-bucket/" }
 
     internal val isLaunchAfterUpdate: Boolean
         get() = getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()
