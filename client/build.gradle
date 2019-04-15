@@ -1,9 +1,9 @@
 plugins {
-    id 'org.beryx.jlink' version '2.6.5'
-    id "org.javamodularity.moduleplugin" version "1.4.1"
-    id 'org.jetbrains.kotlin.jvm' version "1.3.21"
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.3.21'
-    id 'org.springframework.boot' version '2.1.3.RELEASE'
+    id 'org.beryx.jlink' version '2.10.1'
+    id "org.javamodularity.moduleplugin" version "1.5.0"
+    id 'org.jetbrains.kotlin.jvm' version "1.3.30"
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.3.30'
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
 }
 apply plugin: 'io.spring.dependency-management'
 dependencies {
@@ -16,7 +16,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jackson}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jackson}"
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    implementation 'org.springframework.boot:spring-boot-starter:2.1.3.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter:2.1.4.RELEASE'
 }
 
 def sImageName = 'dc-eso-client'
