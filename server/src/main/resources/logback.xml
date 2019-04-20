@@ -1,8 +1,7 @@
 <configuration>
 
     <property name="LOG_DIR" value="./log/" />
-    <property name="LOG_PATH_NAME" value="${LOG_DIR}/log" />
-
+    <property name="LOG_PATH_NAME" value="${LOG_DIR}/app.log" />
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH_NAME}</file>
         <!-- 일자별로 로그파일 적용하기 -->
