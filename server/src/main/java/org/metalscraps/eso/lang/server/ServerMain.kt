@@ -1,10 +1,5 @@
 package org.metalscraps.eso.lang.server
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.services.compute.Compute
-import com.google.api.services.compute.model.Operation
 import org.metalscraps.eso.lang.lib.AddonManager
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.config.ESOMain
@@ -12,24 +7,31 @@ import org.metalscraps.eso.lang.lib.util.Utils
 import org.metalscraps.eso.lang.server.config.ServerConfig
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.io.FileInputStream
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.security.GeneralSecurityException
+import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.function.Predicate
 
 @Component
 class ServerMain(private val config:ServerConfig) : ESOMain {
+    private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
-    private val logger = LoggerFactory.getLogger(ServerMain::class.java)
+    private final val lang:Path
+    private final val dest:Path
+
+    init {
+        vars.relocate(config.workDir)
+        lang = vars.workDir.resolve("lang_${AppVariables.todayWithYear}.7z")
+        dest = vars.workDir.resolve("destinations_${AppVariables.todayWithYear}.7z")
+    }
 
     override fun start() {
         vars.run {
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
-            baseDir = config.workDir
-            poDir = baseDir.resolve("PO_$today")
+            if(Files.notExists(baseDir)) Files.createDirectories(baseDir)
 
             // 이전 데이터 삭제
             logger.info("이전 데이터 삭제")
@@ -38,21 +40,62 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             Utils.downloadPOs()
             logger.info("다운로드 된 PO 파일 문자셋 변경")
             Utils.convertKO_POtoCN()
+
+            Addons()
             logger.info("CSV 생성")
-            if(Files.notExists(poDir.resolve("po2.7z"))) Utils.processRun(baseDir, "7za a -mx=1 ${poDir.resolve("po2.7z")} $poDir/*.po2")
+            makeCSV()
+            compress()
+            sfx()
+            //upload()
+        }
+    }
 
-            // 데스티네이션
-            AddonManager(vars).destination()
+    private fun Addons() {
+        // 데스티네이션
+        AddonManager().destination()
+    }
 
-            logger.info("인스턴스 시작")
-            val res = startCompressServer()
-            logger.info(res?.status)
+    private fun compress() {
+        vars.run {
+            logger.info("대상 압축")
+            Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv")
+            Utils.processRun(workDir, "7za a -mx=9 $dest $baseDir/Addons/Destinations/*")
+        }
+    }
+
+    private fun sfx() {
+        vars.run {
+            val loader = javaClass.classLoader
+
+            logger.info("SFX 생성")
+            Utils.processRun(workDir, "cat ${loader.getResource("7zCon.sfx").path} $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
+            Utils.processRun(workDir, "cat ${loader.getResource("7zCon.sfx").path} $dest", ProcessBuilder.Redirect.to(Paths.get("$dest.exe").toFile()))
+        }
+    }
+
+    private fun upload() {
+        vars.run {
+            val bucket = "gs://eso-team-waldo-bucket"
+
+            logger.info("기존 업로드된 목적파일 삭제")
+            Utils.processRun(poDir, "gsutil rm $bucket/lang*.exe")
+            Utils.processRun(poDir, "gsutil rm $bucket/dest*.exe")
+
+            logger.info("목적파일 업로드")
+            Utils.processRun(poDir, "gsutil cp $lang.exe $bucket/")
+            Utils.processRun(poDir, "gsutil cp $dest.exe $bucket/")
+
+            logger.info("버전 문서 생성")
+            Utils.processRun(poDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(poDir.resolve("ver.html").toFile()))
+
+            logger.info("버전 문서 업로드")
+            //Utils.processRun(poDir, "$scp ${poDir.resolve("ver.html")} $mainServerCredential${config.mainServerVersionDocumentPath}")
         }
     }
 
     private fun deletePO() {
         vars.run {
-            val workDir = "$baseDir/PO_"
+            val workDir = "$baseDir/WORK_"
             val p = Predicate { x:Path -> x.toString().startsWith(workDir) && !x.toString().startsWith("$workDir$today") }
             try {
                 // 디렉토리 사용중 오류, 파일 먼저 지우고 디렉토리 지우기
@@ -65,28 +108,14 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         }
     }
 
-    private fun startCompressServer(): Operation? {
+    private fun makeCSV() {
+        vars.run {
+            val listFiles = Utils.listFiles(poDir, "po2")
+            val list = Utils.getMergedPO(listFiles)
 
-        try {
-            val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-            val jsonFactory = JacksonFactory.getDefaultInstance()
-
-            var credential = GoogleCredential.fromStream(FileInputStream(config.gcpPermJsonPath.toFile()))
-            if (credential.createScopedRequired()) credential = credential.createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
-
-            val computeService = Compute.Builder(httpTransport, jsonFactory, credential)
-                    .setApplicationName("Google-ComputeSample/0.1")
-                    .build()
-
-            val request = computeService.instances().start(config.gcpProjectName, config.gcpProjectZone, config.gcpCompressServerInstanceName)
-            return request.execute()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: GeneralSecurityException) {
-            e.printStackTrace()
+            Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
+            Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
+            Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeSource = true)
         }
-
-        return null
     }
-
 }

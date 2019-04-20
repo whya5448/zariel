@@ -25,11 +25,11 @@ class ServerConfig(configPath: Path) : ESOConfig(configPath) {
 
     enum class ServerConfigOptions(private val v: String) : ESOConfigOptions {
 
-        GCP_PROJECT_NAME("gcp_project_name"),
-        GCP_PROJECT_ZONE("gcp_project_zone"),
-        GCP_COMPRESS_SERVER_INSTANCE_NAME("gcp_compress_server_instance_name"),
-        GCP_PERM_JSON_PATH("gcp_perm_json_path"),
-        WORK_DIR("work_dir");
+        GCP_PROJECT_NAME("GCP_PROJECT_NAME"),
+        GCP_PROJECT_ZONE("GCP_PROJECT_ZONE"),
+        GCP_COMPRESS_SERVER_INSTANCE_NAME("GCP_COMPRESS_SERVER_INSTANCE_NAME"),
+        GCP_PERM_JSON_PATH("GCP_PERM_JSON_PATH"),
+        WORK_DIR("ESO_SERVER_DIR");
 
         override fun toString(): String { return v }
     }
