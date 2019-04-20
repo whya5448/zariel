@@ -15,9 +15,15 @@ git config --global user.name "작은게이"
 
 RUN apt-get install -y libxext-dev libxrender-dev libxtst-dev
 
+ADD ./ssh/known_hosts /root/.ssh/
+
 ENV LC_ALL ko_KR.UTF-8
 ENV ESO_SERVER_DIR /root/eso_server
 
+ADD https://github.com/Whya5448/zariel/releases/download/v1.0.0-server/launch-linux-x64.7z .
+RUN 7z x launch-linux-x64.7z; \
+rm launch-linux-x64.7z; \
+chmod 700 ./bin/*
 
-
-CMD /bin/bash
+WORKDIR /root/bin
+CMD /root/bin/launch

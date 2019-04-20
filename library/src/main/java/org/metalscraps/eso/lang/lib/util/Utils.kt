@@ -17,10 +17,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
+import java.nio.file.*
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -102,11 +99,10 @@ class Utils {
         }
 
         fun makeCSV(path: Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
-            val sb = StringBuilder("\"Location\",\"Source\",\"Target\"\n")
-            for (p in poList) sb.append(p.toCSVFormat(writeSource, writeFileName, beta))
+            Files.newOutputStream(path, StandardOpenOption.WRITE).use {
+                os -> os.bufferedWriter(AppConfig.CHARSET).use { w -> for (p in poList) w.write(p.toCSVFormat(writeSource, writeFileName, beta)) }
+            }
 
-            try { Files.writeString(path, sb.toString(), AppConfig.CHARSET) }
-            catch (e: IOException) { e.printStackTrace() }
         } // makeCSV
 
         /* ////////////////////////////////////////////////////
@@ -119,7 +115,7 @@ class Utils {
         */ ////////////////////////////////////////////////////
 
         private fun getPattern(path:Path): Pattern {
-            val ext = Utils.getExtension(path)
+            val ext = getExtension(path)
             if (ext == "po" || ext == "po2") return AppConfig.POPattern
             else if (ext == "csv") return AppConfig.CSVPattern
             else {
@@ -285,9 +281,9 @@ class Utils {
         fun getProjectMap(): MutableMap<String, MutableList<String>> {
             if (projectMap.isEmpty()) {
                 logger.info("rest/projects")
-                val request = getDefaultRestClient("${AppConfig.ZANATA_DOMAIN}rest/projects?q=ESO-")
 
-                val jsonNode = getBodyFromHTTPsRequest(request)
+                //val request = getDefaultRestClient("${AppConfig.ZANATA_DOMAIN}rest/projects?q=ESO-")
+                //val jsonNode = getBodyFromHTTPsRequest(request)
 
                 for(x in listOf("story", "system", "skill", "item", "book")) {
                     val id = "ESO-$x"

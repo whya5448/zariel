@@ -9,3 +9,4 @@ out/
 /server/temp/
 *.log
 .config
+/Dockerfiles/ssh/id_rsa

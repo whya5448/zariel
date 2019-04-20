@@ -16,7 +16,7 @@ import java.util.*
 import java.util.function.Predicate
 
 @Component
-class ServerMain(private val config:ServerConfig) : ESOMain {
+class ServerMain(config:ServerConfig) : ESOMain {
     private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
     private final val lang:Path
@@ -32,7 +32,6 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         vars.run {
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
             if(Files.notExists(baseDir)) Files.createDirectories(baseDir)
-
             // 이전 데이터 삭제
             logger.info("이전 데이터 삭제")
             deletePO()
@@ -41,16 +40,16 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             logger.info("다운로드 된 PO 파일 문자셋 변경")
             Utils.convertKO_POtoCN()
 
-            Addons()
+            addons()
             logger.info("CSV 생성")
             makeCSV()
             compress()
             sfx()
-            //upload()
+            upload()
         }
     }
 
-    private fun Addons() {
+    private fun addons() {
         // 데스티네이션
         AddonManager().destination()
     }
@@ -59,8 +58,9 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
         vars.run {
             logger.info("대상 압축")
-            Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv")
-            Utils.processRun(workDir, "7za a -mx=9 $dest $baseDir/Addons/Destinations/*")
+            //Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv") // 최대압축/메모리 -1.5G, 아카이브 17mb
+            Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.csv") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
+            Utils.processRun(workDir, "7za a -mx=9 $dest $baseDir/addons/Destinations/*")
         }
     }
 
@@ -75,27 +75,22 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
     private fun upload() {
         vars.run {
-            val bucket = "gs://eso-team-waldo-bucket"
-
-            logger.info("기존 업로드된 목적파일 삭제")
-            Utils.processRun(poDir, "gsutil rm $bucket/lang*.exe")
-            Utils.processRun(poDir, "gsutil rm $bucket/dest*.exe")
-
             logger.info("목적파일 업로드")
-            Utils.processRun(poDir, "gsutil cp $lang.exe $bucket/")
-            Utils.processRun(poDir, "gsutil cp $dest.exe $bucket/")
-
-            logger.info("버전 문서 생성")
-            Utils.processRun(poDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(poDir.resolve("ver.html").toFile()))
-
-            logger.info("버전 문서 업로드")
-            //Utils.processRun(poDir, "$scp ${poDir.resolve("ver.html")} $mainServerCredential${config.mainServerVersionDocumentPath}")
+            // 버전 문서
+            Utils.processRun(workDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(workDir.resolve("version").toFile()))
+            Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
+            Utils.processRun(workDir, "git init")
+            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe")
+            Utils.processRun(workDir, "git commit -m $todayWithYear")
+            Utils.processRun(workDir, "git remote add origin git@github.com:Whya5448/EsoKR-LANG.git")
+            Utils.processRun(workDir, "git push -u origin master --force")
+            Utils.processRun(workDir, "rm .git -rf")
         }
     }
 
     private fun deletePO() {
         vars.run {
-            val workDir = "$baseDir/WORK_"
+            val workDir = "$baseDir/$WORK_DIR_PREFIX"
             val p = Predicate { x:Path -> x.toString().startsWith(workDir) && !x.toString().startsWith("$workDir$today") }
             try {
                 // 디렉토리 사용중 오류, 파일 먼저 지우고 디렉토리 지우기

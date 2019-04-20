@@ -15,9 +15,15 @@ git config --global user.name "작은게이"
 
 RUN echo org.gradle.parallel=true >> /home/gradle/.gradle/gradle.properties
 
+ADD ./ssh/known_hosts /root/.ssh/
+
 ENV LC_ALL ko_KR.UTF-8
 ENV ESO_SERVER_DIR /root/eso_server
 
-EXPOSE 5005
+
+
+
+
+
 
 CMD /bin/bash
