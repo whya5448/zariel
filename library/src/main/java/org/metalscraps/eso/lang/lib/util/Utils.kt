@@ -24,6 +24,7 @@ import java.nio.file.StandardOpenOption
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.ForkJoinPool
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 import java.util.zip.CRC32
@@ -249,36 +250,41 @@ class Utils {
             val poDir = vars.poDir
 
             if (!Files.exists(poDir)) Files.createDirectories(poDir)
-            fileNames.parallelStream().forEach {
-                val fileName = it
-                // 우리가 사용하는 데이터 아님.
-                if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) return@forEach
 
-                val ltStart = LocalTime.now()
-                var fileURL = url + fileName
-                fileURL = fileURL.replace(" ", "%20")
 
-                val pPO = poDir.resolve("$fileName.po")
-                if (!Files.exists(pPO)) {
-                    try {
-                        val server = Channels.newChannel(URL(fileURL).openStream())
-                        val out = FileChannel.open(pPO, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
-                        out.transferFrom(server, 0, Long.MAX_VALUE)
-                    } catch (e: IOException) {
-                        val msg = e.message!!
-                        if(msg.contains("response code: 429") || msg.contains("Premature EOF") || msg.contains("connection closed locally")) {
-                            remainFiles.add(fileName)
-                            logger.warn("오류, 재시도 $fileName ${e.message}")
-                            if (Files.exists(pPO)) try { Files.delete(pPO!!) } catch (e1: IOException) { }
-                        } else e.printStackTrace()
-                    } catch (e: Exception) {
-                        logger.error(e.message)
-                        e.printStackTrace()
+            val forkjoinPool = ForkJoinPool(2)
+            forkjoinPool.submit {
+                fileNames.parallelStream().forEach {
+                    val fileName = it
+                    // 우리가 사용하는 데이터 아님.
+                    if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) return@forEach
+
+                    val ltStart = LocalTime.now()
+                    var fileURL = url + fileName
+                    fileURL = fileURL.replace(" ", "%20")
+
+                    val pPO = poDir.resolve("$fileName.po")
+                    if (!Files.exists(pPO)) {
+                        try {
+                            val server = Channels.newChannel(URL(fileURL).openStream())
+                            val out = FileChannel.open(pPO, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+                            out.transferFrom(server, 0, Long.MAX_VALUE)
+                        } catch (e: IOException) {
+                            val msg = e.message!!
+                            if(msg.contains("response code: 429") || msg.contains("Premature EOF") || msg.contains("connection closed locally")) {
+                                remainFiles.add(fileName)
+                                logger.warn("오류, 재시도 $fileName ${e.message}")
+                                if (Files.exists(pPO)) try { Files.delete(pPO!!) } catch (e1: IOException) { }
+                            } else e.printStackTrace()
+                        } catch (e: Exception) {
+                            logger.error(e.message)
+                            e.printStackTrace()
+                        }
                     }
+                    val ltEnd = LocalTime.now()
+                    logger.debug("downloaded zanata file  [$fileName] to local [$pPO] ${ltStart.until(ltEnd, ChronoUnit.SECONDS)}초")
                 }
-                val ltEnd = LocalTime.now()
-                logger.debug("downloaded zanata file  [$fileName] to local [$pPO] ${ltStart.until(ltEnd, ChronoUnit.SECONDS)}초")
-            }
+            }.get()
 
             if(remainFiles.size > 0) {
                 Thread.sleep(5 * 1000)
