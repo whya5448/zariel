@@ -14,11 +14,12 @@ import java.util.*
  * Created by 안병길 on 2019-02-06.
  * Whya5448@gmail.com
  */
-class AddonManager(var vars:AppVariables) {
+class AddonManager() {
 
     private val logger = LoggerFactory.getLogger(AddonManager::class.java)
 
     fun destination() {
+        val vars = AppVariables
 
         class Quests(var id:String, var quest:String)
         class Runner(var en: Path, var ko: Path, var isEqualOrContains: Boolean = false,
@@ -28,7 +29,7 @@ class AddonManager(var vars:AppVariables) {
                 try {
 
                     // 영문 소스 불러옴
-                    val enText = StringBuilder(Files.readString(vars.baseDir.resolve(en)))
+                    val enText = StringBuilder(Files.readString(vars.baseDir.resolve((en))))
 
                     // 한글 소스맵 불러옴
                     val koText = mutableMapOf<String, PO>()
@@ -67,6 +68,7 @@ class AddonManager(var vars:AppVariables) {
                     enText.replace(enText.indexOf(key), enText.length, builder.toString())
 
                     // 한글 결과물 있을 시 삭제 후 재작성
+                    Files.createDirectories(ko.parent)
                     Files.deleteIfExists(ko)
                     Files.writeString(ko, enText, AppConfig.CHARSET)
                 } catch (e: IOException) {
@@ -79,8 +81,8 @@ class AddonManager(var vars:AppVariables) {
 
         vars.run {
             var runner = Runner(
-                    baseDir.resolve("Destinations/DestinationsQuests_en.lua"),
-                    poDir.resolve("DestinationsQuests_kr.lua"),
+                    baseDir.resolve("Addons/Destinations/DestinationsQuests_en.lua"),
+                    workDir.resolve("Addons/Destinations/DestinationsQuests_kr.lua"),
                     true,
                     "journey.po2",
                     "QuestTableStore = {",
@@ -89,8 +91,8 @@ class AddonManager(var vars:AppVariables) {
             runner.process()
 
             runner = Runner(
-                    baseDir.resolve("Destinations/DestinationsQuestgivers_en.lua"),
-                    poDir.resolve("DestinationsQuestgivers_kr.lua"),
+                    baseDir.resolve("Addons/Destinations/DestinationsQuestgivers_en.lua"),
+                    workDir.resolve("Addons/Destinations/DestinationsQuestgivers_kr.lua"),
                     false,
                     "npc-talk",
                     "QuestGiverStore = {",
