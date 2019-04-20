@@ -43,27 +43,11 @@ class Utils {
         // 데이터 핸들링
         */ ////////////////////////////////////////////////////
 
-        private fun parseSourceToMap(path:Path): String {
-            var source = ""
-            try { source = Files.readString(path, AppConfig.CHARSET) }
-            catch (e: IOException) {
-                logger.error("파일 읽기 에러")
-                e.printStackTrace()
-                System.exit(0)
-            }
-/*
-            source = source.replace("\\\\\"".toRegex(), "\"\"") // \" 로 되어있는 쌍따옴표 이스케이프 변환 "" 더블-더블 쿼테이션으로 이스케이프 시켜야함.
-                    .replace("\\\\\\\\".toRegex(), "\\\\") // 백슬래쉬 두번 나오는거 ex) ESOUI\\ABC\\DEF 하나로 고침.
-*/
-            return source
-        } // parseSourceToMap
-
-
         fun textParse(path:Path, keyGroup:Int = 2): MutableMap<String, PO> {
 
             val poMap = HashMap<String, PO>()
             val fileName = getName(path)
-            val source = parseSourceToMap(path)
+            val source = Files.readString(path, AppConfig.CHARSET)
 
             val pattern = getPattern(path)
             val m = pattern.matcher(source)
