@@ -17,9 +17,17 @@ object AppVariables {
     val today: String = dateTime.format(DateTimeFormatter.ofPattern("MMdd"))
     val todayWithYear: String = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
 
+    const val WORK_DIR_PREFIX = "WORK_"
+
     var baseDir:Path = Utils.getESODir().resolve("EsoKR")
-    var poDir:Path = baseDir.resolve("PO_$today")
+    var workDir:Path = baseDir.resolve("$WORK_DIR_PREFIX$today")
+    var poDir:Path = workDir.resolve("PO")
     var zanataCatDir:Path = baseDir.resolve("ZanataCategory")
 
+    fun relocate(baseDir:Path) {
+        this.baseDir = baseDir
+        workDir = baseDir.resolve("$WORK_DIR_PREFIX$today")
+        poDir = workDir.resolve("PO")
+    }
 
 }
