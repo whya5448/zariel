@@ -12,6 +12,7 @@ open class ESOConfig(private val configPath: Path)  {
     private val logger: Logger = LoggerFactory.getLogger(ESOConfig::class.java)
     private val property = Properties()
     private val configDirPath = configPath.toAbsolutePath().parent
+    private val env = System.getenv()
 
     fun load(map: Map<ESOConfigOptions, Any>) {
 
@@ -68,7 +69,7 @@ open class ESOConfig(private val configPath: Path)  {
     }
 
     fun getConf(key: ESOConfigOptions): String {
-        return property.getProperty(key.toString())
+        return env[key.toString()] ?: property.getProperty(key.toString())
     }
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {
