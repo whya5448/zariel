@@ -1,1 +1,1 @@
-docker run --rm -ti -v C:\Users\whya5\IdeaProjects\zariel:/root/zariel -v C:\Users\whya5\Documents\dev\eso_server:/root/eso_server -p5005:5005 whya5448/dev
+docker run --rm -ti -v C:\Users\whya5\IdeaProjects\zariel:/root/zariel -v C:\Users\Whya5\IdeaProjects\zariel\server\temp:/root/eso_server -p5005:5005 whya5448/dev
