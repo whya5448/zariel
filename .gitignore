@@ -1,16 +1,8 @@
-# Created by .ignore support plugin (hsz.mobi)
+# Created by .ignore support plugin (hsz.mob)
 Thumbs.db
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
 [Dd]esktop.ini
-$RECYCLE.BIN/
 *.jar
-hs_err_pid*
-*.bak
-.gitignore
 .gradle/
 .idea/
 build/
-out/
-log.log
+/server/temp/
