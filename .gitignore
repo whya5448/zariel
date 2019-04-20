@@ -6,3 +6,6 @@ Thumbs.db
 .idea/
 build/
 /server/temp/
+out/
+log*
+.config
