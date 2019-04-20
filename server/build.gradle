@@ -8,11 +8,9 @@ apply plugin: 'io.spring.dependency-management'
 dependencies {
     configurations.all {
         exclude group: "commons-logging", module: "commons-logging"
-        exclude group: "com.google.code.findbugs", module: "jsr305"
     }
 
     compile project(':library')
-    implementation 'com.google.apis:google-api-services-compute:v1-rev199-1.25.0'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.springframework.boot:spring-boot-starter:2.1.4.RELEASE'
 }
@@ -82,33 +80,8 @@ tasks.jlink.doLast {
     }
 
 }
-remotes {
-    server {
-        host = sHost
-        user = sUser
-        port = sPort as int
-        identity = file('id_rsa')
-        passphrase = sPassphrase
-    }
-}
 bootRun {
-    jvmArgs=["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=32323"]
-}
-task zip(type: Zip, dependsOn : 'jlink') {
-    archiveFileName = "${launcherName}-${platformName}.zip"
-    destinationDirectory = file("$buildDir")
-    from "$buildDir/${sImageName}/${launcherName}-${platformName}"
-}
-
-
-task deploy(dependsOn : 'zip') {
-    doLast {
-        ssh.run {
-            settings { knownHosts = file('known_hosts') }
-            session(remotes.server) {
-                put from: "$buildDir/${launcherName}-${platformName}.zip", into: sPath
-                executeSudo sExecute
-            }
-        }
-    }
+    //suspend => 접속전까지 멈출지
+    //jvmArgs=["-Xmx2G", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"]
+    jvmArgs=["-Xmx2G"]
 }
