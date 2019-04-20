@@ -56,6 +56,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
     }
 
     private fun compress() {
+        System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
         vars.run {
             logger.info("대상 압축")
             Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv")
