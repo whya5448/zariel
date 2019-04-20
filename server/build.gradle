@@ -1,7 +1,6 @@
 plugins {
     id 'org.beryx.jlink'
     id 'org.jetbrains.kotlin.plugin.spring'
-    id 'org.hidetake.ssh'
     id 'org.springframework.boot'
 }
 apply plugin: 'io.spring.dependency-management'
@@ -36,25 +35,24 @@ jlink {
     targetPlatform(platformName, 'C:/Program Files/Zulu/zulu12.2.3-ca-jdk12.0.1-linux_x64')
     launcher {
         name = launcherName
-        jvmArgs = ['-Xmx2G', '-Dlogback.configurationFile=./logback.xml',
+        jvmArgs = ['-Xmx768M', '-Dlogback.configurationFile=./logback.xml',
                    "--add-reads ${sModuleName}.merged=${sModuleName}",
                    "--add-reads ${sModuleName}.merged.module=${sModuleName}",
                    "-cp", "config/"]
     }
     mergedModule {
+        requires 'java.management'
+        requires 'java.naming'
         requires 'java.logging'
         requires 'jdk.httpserver'
+        requires 'java.scripting'
         requires 'java.sql'
         requires 'java.prefs'
         requires 'java.rmi'
         requires 'java.xml'
         requires 'java.desktop'
-        requires 'java.security.jgss'
-        requires 'jdk.unsupported'
-        requires 'java.management'
-        requires 'java.naming'
-        requires 'java.scripting'
         requires 'java.instrument'
+        requires 'jdk.unsupported'
         uses 'kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper'
         uses 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader'
         uses 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition'
@@ -83,5 +81,5 @@ tasks.jlink.doLast {
 bootRun {
     //suspend => 접속전까지 멈출지
     //jvmArgs=["-Xmx2G", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"]
-    jvmArgs=["-Xmx1536M", "-XX:+PrintCommandLineFlags", "-verbose:gc"]
+    jvmArgs=["-Xmx768M", "-XX:+PrintCommandLineFlags", "-verbose:gc"]
 }

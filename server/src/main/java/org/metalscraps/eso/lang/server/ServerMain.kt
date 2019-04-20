@@ -66,11 +66,10 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
     private fun sfx() {
         vars.run {
-            val loader = javaClass.classLoader
-
             logger.info("SFX 생성")
-            Utils.processRun(workDir, "cat ${loader.getResource("7zCon.sfx").path} $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
-            Utils.processRun(workDir, "cat ${loader.getResource("7zCon.sfx").path} $dest", ProcessBuilder.Redirect.to(Paths.get("$dest.exe").toFile()))
+            val sfx = javaClass.classLoader.getResource("./7zCon.sfx").path
+            Utils.processRun(workDir, "cat $sfx $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
+            Utils.processRun(workDir, "cat $sfx $dest", ProcessBuilder.Redirect.to(Paths.get("$dest.exe").toFile()))
         }
     }
 
@@ -116,7 +115,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
             Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
             Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
-            Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeSource = true)
+            Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeFileName = true)
         }
     }
 }

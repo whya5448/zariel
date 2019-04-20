@@ -57,9 +57,9 @@ class ToolMain(val mgr: LangManager) {
                 convertKO_POtoCN()
                 mgr.makeCSVs()
                 mgr.makeLang()
-                AddonManager(vars).destination()
+                AddonManager().destination()
             }
-            "6" -> AddonManager(vars).destination()
+            "6" -> AddonManager().destination()
             "66" -> mgr.lineCompare()
             "7" -> mgr.something()
             "8" -> mgr.enCSVtoPOT()
