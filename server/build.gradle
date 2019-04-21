@@ -36,7 +36,7 @@ jlink {
     launcher {
         name = launcherName
         jvmArgs = ["-XX:+PrintCommandLineFlags", "-verbose:gc",
-                   '-Xmx384M', '-Dlogback.configurationFile=./logback.xml',
+                   '-Xmx288M', '-Dlogback.configurationFile=./logback.xml',
                    "--add-reads ${sModuleName}.merged=${sModuleName}",
                    "--add-reads ${sModuleName}.merged.module=${sModuleName}",
                    "-cp", "config/"]
@@ -82,5 +82,5 @@ tasks.jlink.doLast {
 bootRun {
     //suspend => 접속전까지 멈출지
     //jvmArgs=["-Xmx2G", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"]
-    jvmArgs=["-Xmx384M", "-XX:+PrintCommandLineFlags", "-verbose:gc"]
+    jvmArgs=["-Xmx288M", "-XX:+PrintCommandLineFlags", "-verbose:gc"]
 }

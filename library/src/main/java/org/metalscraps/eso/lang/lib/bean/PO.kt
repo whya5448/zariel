@@ -10,7 +10,6 @@ import java.util.*
 
 open class PO(private val id: String, var source: String, var target: String, var fileName:String = "Undefined") : Comparable<PO> {
 
-    private val q = '"'
     val id1: Int
     val id2: Int
     val id3: Int
@@ -60,6 +59,8 @@ open class PO(private val id: String, var source: String, var target: String, va
     override fun toString(): String { return "$fileName-$id-$isFuzzy,'$source','$target'" }
 
     companion object {
+        private const val q = '"'
+
         var comparator = Comparator<PO> { o1, o2 ->
             o1.run {
                 when {

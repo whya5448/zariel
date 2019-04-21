@@ -105,8 +105,7 @@ class ServerMain(config:ServerConfig) : ESOMain {
 
     private fun makeCSV() {
         vars.run {
-            val listFiles = Utils.listFiles(poDir, "po2")
-            val list = Utils.getMergedPO(listFiles)
+            val list = Utils.getMergedPO(Utils.listFiles(poDir, "po2"))
 
             Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
             Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
