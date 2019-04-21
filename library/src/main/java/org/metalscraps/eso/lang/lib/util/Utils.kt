@@ -100,8 +100,9 @@ class Utils {
 
         fun makeCSV(path: Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
             Files.newOutputStream(path, StandardOpenOption.WRITE).use {
-                os -> os.bufferedWriter(AppConfig.CHARSET).use { w -> for (p in poList) w.write(p.toCSVFormat(writeSource, writeFileName, beta)) }
+                while(poList.size > 0) it.write(poList.removeAt(0).toCSVFormat(writeSource, writeFileName, beta).toByteArray())
             }
+
 
         } // makeCSV
 
