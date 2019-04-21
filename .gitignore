@@ -9,4 +9,4 @@ out/
 *.log
 .config
 /Dockerfiles/ssh/id_rsa
-/Dockerfiles/temp/
+/Dockerfiles/dc-eso-kr/
