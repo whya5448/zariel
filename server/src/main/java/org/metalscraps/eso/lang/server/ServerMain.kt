@@ -43,8 +43,8 @@ class ServerMain(config:ServerConfig) : ESOMain {
             addons()
             logger.info("CSV 생성")
             makeCSV()
-            compress()
-            sfx()
+            if(compress()) sfx()
+            else logger.info("SFX 스킵")
             upload()
         }
     }
@@ -54,14 +54,16 @@ class ServerMain(config:ServerConfig) : ESOMain {
         AddonManager().destination()
     }
 
-    private fun compress() {
+    private fun compress() : Boolean {
         System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
+        val needSfx = Files.notExists(lang) or Files.notExists(dest)
         vars.run {
             logger.info("대상 압축")
             //Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv") // 최대압축/메모리 -1.5G, 아카이브 17mb
-            Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.csv") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
-            Utils.processRun(workDir, "7za a -mx=9 $dest $baseDir/addons/Destinations/*")
+            if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.csv") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
+            if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $baseDir/addons/Destinations/*")
         }
+        return needSfx
     }
 
     private fun sfx() {
@@ -105,11 +107,15 @@ class ServerMain(config:ServerConfig) : ESOMain {
 
     private fun makeCSV() {
         vars.run {
-            val list = Utils.getMergedPO(Utils.listFiles(poDir, "po2"))
+            var isNotExist = false
+            for(x in arrayOf("kr.csv", "kr_beta.csv", "tr.csv")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
+            if(isNotExist) {
+                val list = Utils.getMergedPO(Utils.listFiles(poDir, "po2"))
 
-            Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
-            Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
-            Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeFileName = true)
+                if(Files.notExists(workDir.resolve("kr.csv"))) Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
+                if(Files.notExists(workDir.resolve("kr_beta.csv"))) Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
+                if(Files.notExists(workDir.resolve("tr.csv"))) Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeFileName = true)
+            }
         }
     }
 }

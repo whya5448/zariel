@@ -6,7 +6,7 @@ Thumbs.db
 .idea/
 build/
 out/
-/server/temp/
 *.log
 .config
 /Dockerfiles/ssh/id_rsa
+/Dockerfiles/temp/
