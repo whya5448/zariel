@@ -18,11 +18,12 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                [%-5p] LOG: %msg%n
+                [%-5p] %msg%n
             </pattern>
         </encoder>
     </appender>
-    <root level="INFO">
+    <logger name="org.metalscraps.eso.lang.client" level="debug" />
+    <root level="info">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

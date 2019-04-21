@@ -1,27 +1,37 @@
 plugins {
-    id 'org.beryx.jlink' version '2.4.4'
-    id "org.javamodularity.moduleplugin" version "1.4.0"
-    id 'org.jetbrains.kotlin.jvm' version "1.3.21"
+    id 'org.beryx.jlink'
+    id 'org.jetbrains.kotlin.plugin.spring'
+    id 'org.springframework.boot'
 }
-
+apply plugin: 'io.spring.dependency-management'
 dependencies {
+    configurations.all {
+        exclude group: "commons-logging", module: "commons-logging"
+        exclude group: "com.google.code.findbugs", module: "jsr305"
+    }
+
     compile project(':library')
-    implementation 'com.google.cloud:google-cloud-translate:1.14.0'
-    implementation 'org.jsoup:jsoup:1.11.2'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.springframework.boot:spring-boot-starter:2.1.3.RELEASE'
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jackson}"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jackson}"
 }
 
 def sImageName = 'dc-eso-tool'
 def sModuleName = 'org.metalscraps.eso.lang.tool'
-def sMainClass = 'org.metalscraps.eso.lang.tool.ToolMain'
+def sMainClass = 'org.metalscraps.eso.lang.tool.ToolApplication'
 mainClassName = "${sModuleName}/${sMainClass}"
+springBoot { mainClassName = sMainClass }
 jar.manifest { attributes 'Implementation-Title': sModuleName, 'Main-Class': sMainClass }
 
-run {
-    args = ["-opt=5"]
-    // 폴더 설정 참조
-    // args = ["-opt=1", "-base=12", "-po=C:\\Users\\Whya5\\Documents\\Elder Scrolls Online\\EsoKR\\PO_0116"]
-}
+bootRun  {
+    if (project.hasProperty('jvmArgs')) jvmArgs = (project.jvmArgs.split("\\s+") as List)
+    if (project.hasProperty('args')) args project.args.split(',')
 
+    // args  = ["-opt=7", "-po=C:/Users/Whya5/Documents/Elder Scrolls Online/EsoKR/PO_0221"]
+    // 폴더 설정 참조
+    // args = ["-opt=1", "-base=12", "-po=C:/Users/Whya5/Documents/Elder Scrolls Online/EsoKR/PO_0116"]
+}
 jlink {
     mergedModuleName = "${sModuleName}.merged"
     imageName = sImageName
@@ -59,17 +69,3 @@ tasks.jlink.doLast {
         into("$buildDir/${sImageName}/bin")
     }
 }
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-repositories {
-    mavenCentral()
-}
-

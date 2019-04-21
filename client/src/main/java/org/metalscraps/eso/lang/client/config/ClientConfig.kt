@@ -5,7 +5,8 @@ import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import java.nio.file.Path
 
-class ClientConfig(configDirPath: Path, configPath: Path) : ESOConfig(configDirPath, configPath) {
+class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
+    companion object { const val CDN = "https://storage.googleapis.com/eso-team-waldo-bucket/" }
 
     internal val isLaunchAfterUpdate: Boolean
         get() = getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()
@@ -18,6 +19,9 @@ class ClientConfig(configDirPath: Path, configPath: Path) : ESOConfig(configDirP
 
     internal val isEnableZanataListener: Boolean
         get() = getConf(ENABLE_ZANATA_LISTENER).toBoolean()
+
+    internal val isDeleteTemp: Boolean
+        get() = (System.getenv("JAVA_DEL_TEMP") ?: "TRUE").toBoolean()
 
     internal val localLangVersion: Long
         get() = getConf(LOCAL_LANG_VERSION).toLong()

@@ -1,8 +1,7 @@
-rootProject.name = 'eso_korean_translate_project'
+rootProject.name = 'EsoKO'
 include 'client'
 include 'server'
 include 'tool'
 include 'library'
-include 'server.compress'
 include 'tamriel_trade_centre_korean_addon'
-
+include 'test'

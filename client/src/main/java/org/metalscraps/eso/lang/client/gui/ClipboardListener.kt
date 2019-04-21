@@ -2,11 +2,13 @@ package org.metalscraps.eso.lang.client.gui
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.metalscraps.eso.lang.client.config.ClientConfig
 import org.metalscraps.eso.lang.lib.bean.ID
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.event.WindowAdapter
@@ -16,7 +18,8 @@ import java.net.URI
 import java.util.*
 import java.util.regex.Pattern
 
-internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
+@Component
+class ClipboardListener(private val config: ClientConfig) : FlavorListener {
 
     private val frame: Frame
     private val panel: Panel
@@ -45,12 +48,12 @@ internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
         frame.isUndecorated = true
         frame.isResizable = false
         frame.layout = BorderLayout()
-        frame.opacity = cConf.zanataManagerO
+        frame.opacity = config.zanataManagerO
         frame.bounds = Rectangle(
-                cConf.zanataManagerX, cConf.zanataManagerY,
-                cConf.zanataManagerW, cConf.zanataManagerH
+                config.zanataManagerX, config.zanataManagerY,
+                config.zanataManagerW, config.zanataManagerH
         )
-        frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { cConf.exit(0) } })
+        frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { config.exit(0) } })
 
         panel = Panel()
         panel.layout = GridLayout()
@@ -67,17 +70,16 @@ internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
         }
         frame.add(panel, BorderLayout.NORTH)
         frame.add(textField, BorderLayout.SOUTH)
-        frame.isVisible = true
     }
 
-    private fun updatePane(list: List<*>) {
+    private fun updatePane(list: List<ID>) {
         frame.isVisible = false
         frame.removeAll()
         panel.removeAll()
-        for (i in list.indices) {
+        list.forEach {
             val button = Button()
-            button.label = i.toString()
-            try { button.actionCommand = objectMapper.writeValueAsString(list[i]) } catch (e: JsonProcessingException) { e.printStackTrace() }
+            button.label = "$it"
+            try { button.actionCommand = objectMapper.writeValueAsString(it) } catch (e: JsonProcessingException) { e.printStackTrace() }
             button.addActionListener { e -> try { openZanata(objectMapper.readValue<ID>(e.actionCommand, ID::class.java)) } catch (e1: IOException) { e1.printStackTrace() } }
             panel.add(button)
         }
@@ -115,11 +117,10 @@ internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
             while (m.find()) {
                 val id = ID(m.group(1), m.group(2), m.group(3))
                 try { logger.info(id.toString() + "\t\t" + getURL(id)) }
-                catch (ignored: ID.NotFileNameHead) { continue }
+                catch (e: ID.NotFileNameHead) { logger.info("Not filename head $e ${e.message}"); continue }
                 catch (e: Exception) { e.printStackTrace() }
                 arrayList.add(id)
             }
-
             removeDuplicateItem(arrayList)
             if (arrayList.size == 1) openZanata(arrayList[0])
             else if (arrayList.size > 0) updatePane(arrayList)
@@ -142,12 +143,12 @@ internal class ClipboardListener(cConf: ClientConfig) : FlavorListener {
     private fun getURL(id: ID): String {
         val projectName = Utils.getProjectNameByDocument(id)
         val latestVersion = Utils.getLatestVersion(projectName)
-        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?dswid=-3784&iteration=" + latestVersion + "&project=" + projectName + "&locale=ko-KR&localeId=ko#view:doc;doc:" + id.head + ";msgcontext:" + id.body + "-" + id.tail
+        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}"
     }
 
     companion object {
         private val IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'()]+)[_-](\\d)[_-](\\d+)[_-]?")
-        private val objectMapper = ObjectMapper()
+        private val objectMapper = ObjectMapper().registerKotlinModule()
         private val logger = LoggerFactory.getLogger(ClipboardListener::class.java)
     }
 }

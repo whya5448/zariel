@@ -1,20 +1,32 @@
-allprojects {
-    apply plugin: 'java'
-    group 'org.metalscraps.eso.lang'
-    version '1.0'
-    sourceCompatibility = 11
-    targetCompatibility = 11
-    compileJava.options.encoding = "utf-8"
-    compileTestJava.options.encoding = "utf-8"
+plugins {
+    id 'org.beryx.jlink' version '2.10.1' apply false
+    id "org.javamodularity.moduleplugin" version "1.5.0" apply false
+    id 'org.jetbrains.kotlin.jvm' version "1.3.30" apply false
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.3.30' apply false
+    id 'org.hidetake.ssh' version '2.10.1' apply false
+    id 'org.springframework.boot' version '2.1.4.RELEASE' apply false
+}
+apply plugin: 'java'
+group = "EsoKO"
+
+
+compileJava.options.encoding = "utf-8"
+compileTestJava.options.encoding = "utf-8"
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+subprojects {
+    apply plugin: 'org.javamodularity.moduleplugin'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
 
     repositories {
         jcenter()
-        mavenCentral()
     }
 
-}
+    compileKotlin.kotlinOptions.jvmTarget = "1.8"
+    compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
 
-subprojects {
     ext {
         jackson = "2.9.8"
         commonsio = "2.6"
@@ -28,4 +40,12 @@ subprojects {
         compileOnly 'org.slf4j:slf4j-api:1.7.25'
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     }
+}
+
+task serverDeploy() {
+    dependsOn(":library:clean")
+    dependsOn(":server:clean")
+    dependsOn(":server.compress:clean")
+    dependsOn(":server:deploy")
+    dependsOn(":server.compress:deploy")
 }

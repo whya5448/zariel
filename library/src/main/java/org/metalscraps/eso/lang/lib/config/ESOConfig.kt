@@ -7,14 +7,16 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
-open class ESOConfig(private val configDirPath: Path, private val configPath: Path)  {
+open class ESOConfig(private val configPath: Path)  {
 
+    private val logger: Logger = LoggerFactory.getLogger(ESOConfig::class.java)
     private val property = Properties()
-    val logger: Logger = LoggerFactory.getLogger(ESOConfig::class.java)
+    private val configDirPath = configPath.toAbsolutePath().parent
+    private val env = System.getenv()
 
     fun load(map: Map<ESOConfigOptions, Any>) {
 
-        logger.info("앱 설정 폴더 확인")
+        logger.info("앱 설정 폴더 확인 $configDirPath $configPath")
         if (Files.notExists(configDirPath)) {
             logger.info("폴더 존재하지 않음 생성.")
             try {
@@ -67,7 +69,7 @@ open class ESOConfig(private val configDirPath: Path, private val configPath: Pa
     }
 
     fun getConf(key: ESOConfigOptions): String {
-        return property.getProperty(key.toString())
+        return env[key.toString()] ?: property.getProperty(key.toString())
     }
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {
