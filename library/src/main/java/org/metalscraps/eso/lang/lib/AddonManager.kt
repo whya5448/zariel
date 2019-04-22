@@ -91,7 +91,7 @@ class AddonManager {
         vars.run {
             var runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
-                    workDir.resolve("addons/Destinations/DestinationsQuests_kr.lua"),
+                    workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
                     true,
                     "journey.po2",
                     "QuestTableStore = {",
@@ -101,7 +101,7 @@ class AddonManager {
 
             runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuestgivers_en.lua"),
-                    workDir.resolve("addons/Destinations/DestinationsQuestgivers_kr.lua"),
+                    workAddonDir.resolve("Destinations/DestinationsQuestgivers_kr.lua"),
                     false,
                     "npc-talk",
                     "QuestGiverStore = {",

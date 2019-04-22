@@ -19,12 +19,15 @@ object AppVariables {
     val todayWithYear: String = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
 
     const val WORK_DIR_PREFIX = "work_"
+    const val ADDON_DIR = "addons"
 
     var baseDir:Path = Utils.getESODir().resolve("EsoKR")
     val addonDir: Path
-        get() = baseDir.resolve("addons")
+        get() = baseDir.resolve(ADDON_DIR)
     val workDir: Path
         get() = baseDir.resolve("$WORK_DIR_PREFIX$today")
+    val workAddonDir: Path
+        get() = workDir.resolve(ADDON_DIR)
     val poDir:Path
         get() = workDir.resolve("po")
 
