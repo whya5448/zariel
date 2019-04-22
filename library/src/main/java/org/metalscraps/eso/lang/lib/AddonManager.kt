@@ -4,7 +4,6 @@ import org.metalscraps.eso.lang.lib.bean.PO
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.util.Utils
-import org.metalscraps.eso.lang.lib.util.readText
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URL
@@ -35,7 +34,7 @@ class AddonManager {
                     if(Files.notExists(en)) {
                         Files.createDirectories(en.parent)
                         Files.newBufferedWriter(en, StandardOpenOption.CREATE, StandardOpenOption.WRITE).use {
-                            it.write(URL("https://raw.githubusercontent.com/Whya5448/EsoKR/master/Destinations/data/EN/${en.fileName}").openStream().readText())
+                            it.write(URL("https://raw.githubusercontent.com/Whya5448/EsoKR/master/Destinations/data/EN/${en.fileName}").readText())
                         }
                     }
                     val enText = StringBuilder(Files.readString(vars.baseDir.resolve((en))))
