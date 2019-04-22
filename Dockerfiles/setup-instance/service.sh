@@ -12,7 +12,7 @@ Description=Run eso-eso-kr-server daily 03:00
 [Timer]
 OnCalendar=*-*-* 18:00:00
 
-[Install]a
+[Install]
 WantedBy=timers.target
 EOM
 
