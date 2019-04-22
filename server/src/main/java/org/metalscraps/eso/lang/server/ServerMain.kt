@@ -16,22 +16,37 @@ import java.util.*
 import java.util.function.Predicate
 
 @Component
-class ServerMain(config:ServerConfig) : ESOMain {
+class ServerMain(private val config:ServerConfig) : ESOMain {
     private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
     private final val lang:Path
     private final val dest:Path
 
     init {
-        vars.relocate(config.workDir)
+        vars.baseDir = config.workDir
         lang = vars.workDir.resolve("lang_${AppVariables.todayWithYear}.7z")
         dest = vars.workDir.resolve("destinations_${AppVariables.todayWithYear}.7z")
+    }
+
+    fun init() : Boolean {
+        vars.run {
+            for(x in dirs) if(Files.notExists(x)) Files.createDirectories(x)
+            if(config.isLinux) if(Files.notExists(Paths.get("/root/.ssh/id_rsa"))) {
+                logger.error("github id_rsa 존재하지 않음.")
+                return false
+            }
+        }
+        return true
     }
 
     override fun start() {
         vars.run {
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
-            if(Files.notExists(baseDir)) Files.createDirectories(baseDir)
+            if(!init()) {
+                logger.info("초기화 실패")
+                System.exit(-1)
+            }
+
             // 이전 데이터 삭제
             logger.info("이전 데이터 삭제")
             deletePO()
