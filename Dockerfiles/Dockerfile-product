@@ -20,7 +20,8 @@ ADD ./ssh/known_hosts /root/.ssh/
 ENV LC_ALL ko_KR.UTF-8
 ENV ESO_SERVER_DIR /root/eso_server
 
-ADD launch-linux-x64.7z . # From release -server
+# From release -server
+ADD launch-linux-x64.7z . 
 RUN 7z x launch-linux-x64.7z; \
 rm launch-linux-x64.7z; \
 chmod 700 ./bin/*

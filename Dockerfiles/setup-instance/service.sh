@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
+scloc=/etc/systemd/system/
 scnm=dc-eso-kr
 
-touch /etc/systemd/system/${scnm}.service
-touch /etc/systemd/system/${scnm}.timer
+touch ${scloc}${scnm}.service
+touch ${scloc}${scnm}.timer
 
-cat > ${scnm}.timer <<- EOM
+cat > ${scloc}${scnm}.timer <<- EOM
 [Unit]
 Description=Run eso-eso-kr-server daily 03:00
 
 [Timer]
 OnCalendar=*-*-* 03:00:00 Asia/Seoul
 
-[Install]
+[Install]a
 WantedBy=timers.target
 EOM
 
-cat > ${scnm}.service <<- EOM
+cat > ${scloc}${scnm}.service <<- EOM
 [Unit]
 Description=make TESO-Korean Language sfx
 
 [Service]
+WorkingDirectory=/root/
 Type=oneshot
 ExecStart=/root/run-product.sh
 
@@ -28,4 +30,5 @@ WantedBy=${scnm}.timer
 EOM
 
 systemctl enable ${scnm}
-systemctl start ${scnm}
+systemctl enable ${scnm}.timer
+systemctl start ${scnm}.timer

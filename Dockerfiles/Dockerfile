@@ -26,4 +26,5 @@ ENV ESO_SERVER_DIR /root/eso_server
 
 
 
+WORKDIR /root/zariel
 CMD /bin/bash
