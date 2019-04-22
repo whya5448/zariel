@@ -3,8 +3,8 @@
 
 if [[ `id -u` -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 
-./setup-instance/swap.sh
-./setup-instance/service.sh
+./swap.sh
+./service.sh
 wget https://raw.githubusercontent.com/Whya5448/zariel/master/Dockerfiles/run-product.sh
 chmod 700 run-product.sh
 
