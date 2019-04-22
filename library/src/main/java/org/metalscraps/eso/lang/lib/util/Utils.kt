@@ -10,6 +10,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.AWTError
 import java.io.IOException
+import java.io.InputStream
 import java.net.URI
 import java.net.URL
 import java.net.http.HttpClient
@@ -17,6 +18,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
+import java.nio.charset.Charset
 import java.nio.file.*
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -86,7 +88,7 @@ class Utils {
             try {
                 for (file in listFiles(vars.poDir, "po")) {
                     val po2 = Paths.get(file.toString() + "2")
-                    if (!Files.exists(po2)) Files.writeString(po2, Files.readString(file, AppConfig.CHARSET).toChinese())
+                    if (Files.notExists(po2)) Files.writeString(po2, Files.readString(file, AppConfig.CHARSET).toChinese())
                 }
             } catch (e: Exception) { e.printStackTrace() }
 
@@ -232,10 +234,8 @@ class Utils {
             val poDir = vars.poDir
 
             if (!Files.exists(poDir)) Files.createDirectories(poDir)
-
-
-            val forkjoinPool = ForkJoinPool(2)
-            forkjoinPool.submit {
+            val threadPool = ForkJoinPool(2) // 자나타 API 리밋
+            threadPool.submit {
                 fileNames.parallelStream().forEach {
                     val fileName = it
                     // 우리가 사용하는 데이터 아님.
@@ -358,4 +358,8 @@ private fun String.toKorean(): String {
     val c = this.toCharArray()
     for (i in c.indices) if (c[i].toInt() in 0x6E00..0xAC00) c[i] = c[i] + 0x3E00
     return String(c)
+}
+
+fun InputStream.readText(): String {
+    return this.bufferedReader(AppConfig.CHARSET).use { it.readText() }
 }
