@@ -2,6 +2,7 @@ package org.metalscraps.eso.lang.lib.config
 
 import org.metalscraps.eso.lang.lib.util.Utils
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -17,17 +18,16 @@ object AppVariables {
     val today: String = dateTime.format(DateTimeFormatter.ofPattern("MMdd"))
     val todayWithYear: String = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
 
-    const val WORK_DIR_PREFIX = "WORK_"
+    const val WORK_DIR_PREFIX = "work_"
 
     var baseDir:Path = Utils.getESODir().resolve("EsoKR")
-    var workDir:Path = baseDir.resolve("$WORK_DIR_PREFIX$today")
-    var poDir:Path = workDir.resolve("PO")
-    var zanataCatDir:Path = baseDir.resolve("ZanataCategory")
+    val addonDir: Path
+        get() = baseDir.resolve("addons")
+    val workDir: Path
+        get() = baseDir.resolve("$WORK_DIR_PREFIX$today")
+    val poDir:Path
+        get() = workDir.resolve("po")
 
-    fun relocate(baseDir:Path) {
-        this.baseDir = baseDir
-        workDir = baseDir.resolve("$WORK_DIR_PREFIX$today")
-        poDir = workDir.resolve("PO")
-    }
-
+    val dirs:Array<Path>
+        get() = arrayOf(poDir, workDir, addonDir, baseDir)
 }

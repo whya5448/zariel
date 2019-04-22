@@ -33,8 +33,7 @@ class ToolMain(val mgr: LangManager) {
             logger.debug("args $x")
             when {
                 x.startsWith("-opt") -> command = x.substring(x.indexOf('=') + 1)
-                x.startsWith("-base") -> vars.baseDir = Paths.get(x.substring(x.indexOf('=') + 1))
-                x.startsWith("-po") -> vars.poDir = Paths.get(x.substring(x.indexOf('=') + 1))
+                x.startsWith("-base") -> { vars.baseDir = Paths.get(x.substring(x.indexOf('=') + 1)); Files.createDirectories(vars.baseDir) }
             }
         }
 

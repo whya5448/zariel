@@ -13,6 +13,8 @@ open class ESOConfig(private val configPath: Path)  {
     private val property = Properties()
     private val configDirPath = configPath.toAbsolutePath().parent
     private val env = System.getenv()
+    val isWindows = getConf("os.name").contains("windows", true)
+    val isLinux = getConf("os.name").contains("linux", true)
 
     fun load(map: Map<ESOConfigOptions, Any>) {
 
@@ -69,7 +71,12 @@ open class ESOConfig(private val configPath: Path)  {
     }
 
     fun getConf(key: ESOConfigOptions): String {
-        return env[key.toString()] ?: property.getProperty(key.toString())
+        val k = key.toString()
+        return env[k] ?: property.getProperty(k) ?: System.getProperty(k)
+    }
+
+    private fun getConf(key: String): String {
+        return env[key] ?: property.getProperty(key) ?: System.getProperty(key)
     }
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {

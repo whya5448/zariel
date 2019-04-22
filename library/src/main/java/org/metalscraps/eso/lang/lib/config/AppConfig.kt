@@ -16,6 +16,6 @@ object AppConfig {
     val CSVPattern: Pattern = Pattern.compile("\"()(([\\d]+?)-([\\d]+?)-([\\d]+?))\",\"([\\s\\S]*?)\",\"([\\s\\S]*?)\"\n", Pattern.MULTILINE)
     val CSVOffsetPattern: Pattern = Pattern.compile("\"(\\d+)\",\"(\\d+)\",\"(\\d+)\",\"(\\d+)\",\"(.*?)\"", Pattern.MULTILINE)
     val CategoryConfig: Pattern = Pattern.compile("FileName:(.*)((\\r\\n)|(\\n))isDuplicate:(.*)((\\r\\n)|(\\n))type:(.*)((\\r\\n)|(\\n))indexLinkCount:(.*)((\\r\\n)|(\\n))index:(.*)((\\r\\n)|(\\n))", Pattern.MULTILINE)
-    const val ZANATA_DOMAIN = "https://translate.zanata.org/"
     val PATTERN_DESTINATION: Pattern = Pattern.compile("(\\[)(\\d+)(] = \\{\")(.+?)(\"},)")
+    const val ZANATA_DOMAIN = "https://translate.zanata.org/"
 }
