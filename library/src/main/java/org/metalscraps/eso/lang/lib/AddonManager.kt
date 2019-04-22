@@ -4,17 +4,20 @@ import org.metalscraps.eso.lang.lib.bean.PO
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.util.Utils
+import org.metalscraps.eso.lang.lib.util.readText
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.*
 
 /**
  * Created by 안병길 on 2019-02-06.
  * Whya5448@gmail.com
  */
-class AddonManager() {
+class AddonManager {
 
     private val logger = LoggerFactory.getLogger(AddonManager::class.java)
 
@@ -29,6 +32,12 @@ class AddonManager() {
                 try {
 
                     // 영문 소스 불러옴
+                    if(Files.notExists(en)) {
+                        Files.createDirectories(en.parent)
+                        Files.newBufferedWriter(en, StandardOpenOption.CREATE, StandardOpenOption.WRITE).use {
+                            it.write(URL("https://raw.githubusercontent.com/Whya5448/EsoKR/master/Destinations/data/EN/${en.fileName}").openStream().readText())
+                        }
+                    }
                     val enText = StringBuilder(Files.readString(vars.baseDir.resolve((en))))
 
                     // 한글 소스맵 불러옴
@@ -81,8 +90,8 @@ class AddonManager() {
 
         vars.run {
             var runner = Runner(
-                    baseDir.resolve("Addons/Destinations/DestinationsQuests_en.lua"),
-                    workDir.resolve("Addons/Destinations/DestinationsQuests_kr.lua"),
+                    addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
+                    workDir.resolve("addons/Destinations/DestinationsQuests_kr.lua"),
                     true,
                     "journey.po2",
                     "QuestTableStore = {",
@@ -91,8 +100,8 @@ class AddonManager() {
             runner.process()
 
             runner = Runner(
-                    baseDir.resolve("Addons/Destinations/DestinationsQuestgivers_en.lua"),
-                    workDir.resolve("Addons/Destinations/DestinationsQuestgivers_kr.lua"),
+                    addonDir.resolve("Destinations/DestinationsQuestgivers_en.lua"),
+                    workDir.resolve("addons/Destinations/DestinationsQuestgivers_kr.lua"),
                     false,
                     "npc-talk",
                     "QuestGiverStore = {",
