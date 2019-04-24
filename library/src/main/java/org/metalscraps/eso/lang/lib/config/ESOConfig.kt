@@ -72,11 +72,11 @@ open class ESOConfig(private val configPath: Path)  {
 
     fun getConf(key: ESOConfigOptions): String {
         val k = key.toString()
-        return env[k] ?: property.getProperty(k) ?: System.getProperty(k)
+        return env[k] ?: property.getProperty(k) ?: System.getProperty(k) ?: "NULL"
     }
 
-    private fun getConf(key: String): String {
-        return env[key] ?: property.getProperty(key) ?: System.getProperty(key)
+    fun getConf(key: String): String {
+        return env[key] ?: property.getProperty(key) ?: System.getProperty(key) ?: "NULL"
     }
 
     fun put(key: ESOConfigOptions, value: Any?): Any? {
