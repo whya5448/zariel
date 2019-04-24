@@ -18,7 +18,7 @@ class OptionPanel(config:ClientConfig) {
     private val frame = Frame()
 
     init {
-        val height = 222
+        val height = 242
         val width = 222
         val ss = Toolkit.getDefaultToolkit().screenSize
         frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { frame.isVisible = false } })
