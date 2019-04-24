@@ -31,6 +31,7 @@ jlink {
     mergedModuleName = "${sModuleName}.merged.module"
     imageName = sImageName
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    //options = []
     imageZip = file("$buildDir/${sImageName}-${version}.zip")
     launcher {
         name = 'launch'
@@ -53,6 +54,7 @@ jlink {
         requires 'java.desktop'
         requires 'java.instrument'
         requires 'jdk.unsupported'
+        requires 'jdk.crypto.ec'
 
         uses 'kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper'
         uses 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader'
