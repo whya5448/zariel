@@ -7,10 +7,10 @@ touch ${scloc}${scnm}.timer
 
 cat > ${scloc}${scnm}.timer <<- EOM
 [Unit]
-Description=Run eso-eso-kr-server daily 03:00
+Description=Run eso-eso-kr-server daily 00:05
 
 [Timer]
-OnCalendar=*-*-* 03:00:00 Asia/Seoul
+OnCalendar=*-*-* 00:05:00 Asia/Seoul
 
 [Install]
 WantedBy=timers.target
