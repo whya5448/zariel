@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component
 import java.awt.*
 import java.io.IOException
 import java.net.URI
+import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.function.BiPredicate
 
@@ -32,6 +32,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     private var crc32: String? = null
     private var needUpdate = false
     private val localVer = config.localLangVersion
+    private var sha = getSHA()
 
     private fun updateLocalConfig() {
         if (config.isUpdateLang) {
@@ -60,31 +61,8 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     private fun getDataVersion() {
 
         logger.info("서버 버전 확인 중...")
-        var response: HttpResponse<String>? = null
-
-        try {
-            response = HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("http://eso.metalscraps.org/ver.html")).GET().build(), HttpResponse.BodyHandlers.ofString())
-        } catch (e: IOException) {
-            logger.error("서버 버전 확인 실패")
-            for (x in e.stackTrace) logger.error(x.toString())
-            e.printStackTrace()
-            config.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
-        } catch (e: InterruptedException) {
-            logger.error("서버 버전 확인 실패")
-            for (x in e.stackTrace) logger.error(x.toString())
-            e.printStackTrace()
-            config.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
-        } catch (e: Exception) {
-            logger.debug(e.message)
-            e.printStackTrace()
-            config.exit(-1)
-        }
-
-        if (response!!.statusCode() != 200) {
-            logger.error("서버 버전 확인 실패 / STATUS : " + response.statusCode())
-            config.exit(AppErrorCode.CANNOT_FIND_SERVER_VERSION.errCode)
-        }
-        val resData = response.body().trim { it <= ' ' }.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val ver = URL("https://raw.githubusercontent.com/Whya5448/EsoKR-LANG/master/version").readText()
+        val resData = ver.trim { it <= ' ' }.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         serverVer = resData[0].toLong()
         serverFileName = resData[1]
         crc32 = resData[2]
@@ -103,25 +81,27 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
     }
 
     private fun update(): Boolean {
+        config.run {
 
+            if(!config.isUpdateLang) {
+                logger.info("업데이트 설정 꺼져있음.")
+                return true
+            }
 
-        if(!config.isUpdateLang) {
-            logger.info("업데이트 설정 꺼져있음.")
-            return true
-        }
+            val langPath = appPath.resolve("csv.exe")
+            downloadCSVs(langPath)
+            decompressCSVs(langPath)
+            //toolManager.langDiff()
+            try {
+                toolManager.csvTolang(appPath.resolve("kr.csv"))
+                toolManager.csvTolang(appPath.resolve("kr_beta.csv"))
+                toolManager.csvTolang(appPath.resolve("tr.csv"))
+            } catch (e: Exception) {
+                logger.error("LANG 생성 실패")
+                e.printStackTrace()
+                exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.errCode)
+            }
 
-        val langPath = config.appPath.resolve("csv.exe")
-        downloadCSVs(langPath)
-        decompressCSVs(langPath)
-        toolManager.langDiff()
-        try {
-            toolManager.csvTolang(config.appPath.resolve("kr.csv"))
-            toolManager.csvTolang(config.appPath.resolve("kr_beta.csv"))
-            toolManager.csvTolang(config.appPath.resolve("tr.csv"))
-        } catch (e: Exception) {
-            logger.error("LANG 생성 실패")
-            e.printStackTrace()
-            config.exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.errCode)
         }
 
         return true
@@ -129,25 +109,32 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
 
 
     private fun decompressCSVs(langPath: Path) {
-        try {
-            Utils.processRun(config.appPath, "$langPath -y")
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-            logger.error("언어파일 압축해제 실패")
-            config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            logger.error("언어파일 압축해제 실패")
-            config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+      config.run {
+            try {
+                Utils.processRun(config.appPath, "$langPath -y")
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+                logger.error("언어파일 압축해제 실패")
+                config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                logger.error("언어파일 압축해제 실패")
+                config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
+            }
+
+            if(config.isDeleteTemp) try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
         }
+    }
 
-        if(config.isDeleteTemp) try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
 
+    private fun getSHA(): String {
+        val x = URL("https://api.github.com/repos/Whya5448/EsoKR-LANG/git/refs/heads/master").readText()
+        sha = x.substring( x.indexOf("sha")+6, x.indexOf("sha")+6+40)
+        return sha
     }
 
     private fun downloadCSVs(csvPath: Path) {
-
-        val request = HttpRequest.newBuilder().uri(URI.create("${ClientConfig.CDN}lang_$serverFileName.7z.exe")).build()
+        val request = HttpRequest.newBuilder().uri(URI.create("${ClientConfig.CDN}$sha/lang_$serverFileName.7z.exe")).build()
 
         if (Files.exists(csvPath) && Utils.crc32(csvPath).toString() == crc32) {
             logger.info("언어 파일 존재함. 다운로드 스킵")
@@ -193,7 +180,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         pop.addSeparator()
         pop.add(exit)
 
-        val image = Toolkit.getDefaultToolkit().getImage("eso_256x256.png")
+        val image = Toolkit.getDefaultToolkit().createImage(javaClass.classLoader.getResource("eso_256x256.png"))
         val trayIcon = TrayIcon(image)
         trayIcon.isImageAutoSize = true
         trayIcon.toolTip = "엘온갤 업데이터"
@@ -205,7 +192,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         } catch (e: AWTException) {}
     }
 
-    
+
     override fun start() {
         getDataVersion()
         if (needUpdate) if (update()) updateLocalConfig() else logger.error("업데이트 실패")
