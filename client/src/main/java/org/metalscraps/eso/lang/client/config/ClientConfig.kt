@@ -21,7 +21,7 @@ class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
         get() = getConf(ENABLE_ZANATA_LISTENER).toBoolean()
 
     internal val isDeleteTemp: Boolean
-        get() = getConf("JAVA_DEL_TEMP").toBoolean()
+        get() = getConf(DEL_TEMP).toBoolean()
 
     internal val localLangVersion: Long
         get() = getConf(LOCAL_LANG_VERSION).toLong()
@@ -52,7 +52,8 @@ class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
         LAUNCH_ESO_AFTER_UPDATE("launchESOafterUpdate"),
         UPDATE_LANG("doUpdateLang"),
         UPDATE_DESTINATIONS("doUpdateDestnations"),
-        ENABLE_ZANATA_LISTENER("enableZanataListener");
+        ENABLE_ZANATA_LISTENER("enableZanataListener"),
+        DEL_TEMP("DEL_TEMP");
 
         override fun toString(): String { return v }
     }
