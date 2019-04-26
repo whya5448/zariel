@@ -23,7 +23,6 @@ class AddonManager {
     fun destination() {
         val vars = AppVariables
 
-        class Quests(var id:String, var quest:String)
         class Runner(var en: Path, var ko: Path, var isEqualOrContains: Boolean = false,
                      var fileName: String, var key: String, var id: Int = 0) {
 
@@ -50,25 +49,22 @@ class AddonManager {
                     koText.values.removeIf { x -> x.id1 != id }
 
                     // 영문 소스 객체-맵화
-                    val enQuests = ArrayList<Quests>()
+                    val enQuests = ArrayList<Pair<String, String>>()
                     val questsMatcher = AppConfig.PATTERN_DESTINATION.matcher(enText)
-                    while (questsMatcher.find()) enQuests.add(Quests(questsMatcher.group(2), questsMatcher.group(4)))
+                    while (questsMatcher.find()) enQuests.add(Pair(questsMatcher.group(2), questsMatcher.group(4)))
 
                     // 최종본 생성용 빌더
                     val builder = StringBuilder( "$key\n")
 
                     // 영문 맵에 있는 객체 ID로 한글맵에서 데이터 가져와 빌더에 붙힘.
                     for (x in enQuests) {
-                        val xid = "$id-0-${x.id}"
+                        val xid = "$id-0-${x.first}"
                         val t = koText[xid]
 
-                        if(t == null || t.isFuzzy) {
-                            builder.append("\t[${x.id}] = {\"${x.quest}\"},\n")
-                            if(t == null) logger.warn("Missing Data? $xid")
-                            continue
-                        }
+                        // 한글 맵에 없을경우엔 그냥 무시
+                        if(t == null) logger.warn("Missing Data? $xid $x")
+                        else builder.append("\t[${x.first}] = {\"${ if(t.isFuzzy) x.second else t.target }\"},\n")
 
-                        builder.append("\t[${x.id}] = {\"${t.target}\"},\n")
                     }
                     builder.append("}\n")
 
@@ -79,7 +75,7 @@ class AddonManager {
                     Files.createDirectories(ko.parent)
                     Files.deleteIfExists(ko)
                     Files.writeString(ko, enText, AppConfig.CHARSET)
-                } catch (e: IOException) {
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
 

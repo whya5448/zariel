@@ -41,6 +41,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
     override fun start() {
         vars.run {
+            var error = false
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
             if(!init()) {
                 logger.info("초기화 실패")
@@ -49,9 +50,9 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
             // 이전 데이터 삭제
             logger.info("이전 데이터 삭제")
-            deletePO()
+            deleteOldData()
             logger.info("PO 다운로드")
-            Utils.downloadPOs()
+            try { Utils.downloadPOs() } catch (e: Exception) { logger.error(e.toString()); e.printStackTrace(); error = true }
             logger.info("다운로드 된 PO 파일 문자셋 변경")
             Utils.convertKO_POtoCN()
 
@@ -60,7 +61,9 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             makeCSV()
             if(compress()) sfx()
             else logger.info("SFX 스킵")
-            upload()
+
+            Utils.processRun(workDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(workDir.resolve("version").toFile()))
+            if(!error || config.forceUpload) upload()
         }
     }
 
@@ -78,6 +81,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.csv") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
             if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $addonDir/Destinations/*")
         }
+        if(!needSfx) logger.info("압축 스킵")
         return needSfx
     }
 
@@ -94,7 +98,6 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         vars.run {
             logger.info("목적파일 업로드")
             // 버전 문서
-            Utils.processRun(workDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(workDir.resolve("version").toFile()))
             Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
             Utils.processRun(workDir, "git init")
             Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe")
@@ -105,7 +108,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         }
     }
 
-    private fun deletePO() {
+    private fun deleteOldData() {
         vars.run {
             val workDir = "$baseDir/$WORK_DIR_PREFIX"
             val p = Predicate { x:Path -> x.toString().startsWith(workDir) && !x.toString().startsWith("$workDir$today") }

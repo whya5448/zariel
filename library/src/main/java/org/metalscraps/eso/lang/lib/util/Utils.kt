@@ -88,11 +88,24 @@ class Utils {
             try {
                 for (file in listFiles(vars.poDir, "po")) {
                     val po2 = Paths.get(file.toString() + "2")
-                    if (Files.notExists(po2)) Files.writeString(po2, Files.readString(file, AppConfig.CHARSET).toChinese())
+                    if (Files.notExists(po2)) Files.writeString(po2, poParse(Files.readString(file, AppConfig.CHARSET)))
                 }
             } catch (e: Exception) { e.printStackTrace() }
 
         } // convertKO_PO_to_CN
+
+        private fun poParse(s:String): String {
+            val data = StringBuilder(s.toChinese())
+            val list = arrayOf(Pair("\\\"", "\""))
+            for(x in list) {
+                var index = data.indexOf(x.first)
+                while(index != -1) {
+                    data.replace(index, index+x.first.length, x.second)
+                    index = data.indexOf(x.first)
+                }
+            }
+            return data.toString()
+        }
 
         fun makeCSVwithLog(path:Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
             val timeTaken = LocalTime.now()

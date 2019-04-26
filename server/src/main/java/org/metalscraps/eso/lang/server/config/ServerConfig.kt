@@ -11,9 +11,13 @@ class ServerConfig(configPath: Path) : ESOConfig(configPath) {
     internal val workDir: Path
         get() = Paths.get(getConf(WORK_DIR))
 
+    internal val forceUpload: Boolean
+        get() = getConf(FORCE_UPLOAD).toBoolean()
+
     enum class ServerConfigOptions(private val v: String) : ESOConfigOptions {
 
-        WORK_DIR("ESO_SERVER_DIR");
+        WORK_DIR("ESO_SERVER_DIR"),
+        FORCE_UPLOAD("FORCE_UPLOAD");
 
         override fun toString(): String { return v }
     }
