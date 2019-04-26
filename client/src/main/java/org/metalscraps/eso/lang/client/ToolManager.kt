@@ -58,7 +58,7 @@ class ToolManager(private val config: ClientConfig) {
         }
     }
 
-    fun csvTolang(csv: Path, lang: Path = csv.resolveSibling("$csv.lang")) {
+    fun csvTolang(csv: Path, lang: Path = csv.resolveSibling("${Utils.getName(csv)}.lang")) {
         Utils.processRun(config.appPath, "$tool -p -x $csv -o $lang")
     }
 

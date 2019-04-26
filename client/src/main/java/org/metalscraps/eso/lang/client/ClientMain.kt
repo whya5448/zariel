@@ -1,8 +1,8 @@
 package org.metalscraps.eso.lang.client
 
+import org.metalscraps.eso.lang.client.clipboard.ClipboardManager
 import org.metalscraps.eso.lang.client.config.ClientConfig
 import org.metalscraps.eso.lang.client.config.ClientConfig.ClientConfigOptions.LOCAL_LANG_VERSION
-import org.metalscraps.eso.lang.client.gui.ClipboardListener
 import org.metalscraps.eso.lang.client.gui.OptionPanel
 import org.metalscraps.eso.lang.lib.config.ESOMain
 import org.metalscraps.eso.lang.lib.util.Utils
@@ -23,7 +23,7 @@ import java.util.function.BiPredicate
 
 
 @Component
-class ClientMain(private val config:ClientConfig, private val clipboardListener:ClipboardListener, private val toolManager: ToolManager) : ESOMain {
+class ClientMain(private val config:ClientConfig, private val clipboardManager: ClipboardManager, private val toolManager: ToolManager) : ESOMain {
 
     @Autowired lateinit var optionPanel: OptionPanel
     private val logger = LoggerFactory.getLogger(ClientMain::class.java)
@@ -75,11 +75,6 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         if (needUpdate) logger.info("업데이트 필요함.")
     }
 
-    private fun registClipboardListener() {
-        Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener(clipboardListener)
-        logger.info("클립보드 리스너 등록됨.")
-    }
-
     private fun update(): Boolean {
         config.run {
 
@@ -94,7 +89,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
             //toolManager.langDiff()
             try {
                 toolManager.csvTolang(appPath.resolve("kr.csv"))
-                toolManager.csvTolang(appPath.resolve("kr_beta.csv"))
+                toolManager.csvTolang(appPath.resolve("kr_beta.csv"), appPath.resolve("kb.lang"))
                 toolManager.csvTolang(appPath.resolve("tr.csv"))
             } catch (e: Exception) {
                 logger.error("LANG 생성 실패")
@@ -201,11 +196,12 @@ class ClientMain(private val config:ClientConfig, private val clipboardListener:
         // 스팀 실행
         if(config.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
 
+
         //트레이 아이콘 등록
         registerTrayIcon()
 
         // 클립보드 리스너 등록
-        if(config.isEnableZanataListener) registClipboardListener()
+        if(config.isEnableZanataListener) clipboardManager.addClipboardListener()
         else logger.info("클립보드 리스너 실행 안함.")
     }
 
