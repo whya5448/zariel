@@ -96,8 +96,7 @@ class Utils {
 
         private fun poParse(s:String): String {
             val data = StringBuilder(s.toChinese())
-            val list = arrayOf(Pair("\\\"", "\""))
-            for(x in list) {
+            for(x in arrayOf(Pair("\\\"\\\"", "\"\""))) {
                 var index = data.indexOf(x.first)
                 while(index != -1) {
                     data.replace(index, index+x.first.length, x.second)
@@ -161,7 +160,7 @@ class Utils {
         }
 
         fun getESOLangDir(): Path {
-            return getESODir().resolve("live/AddOns/gamedata/lang")
+            return getESODir().resolve("live/addOns/gamedata/lang")
         }
 
         fun getESODir(): Path {
