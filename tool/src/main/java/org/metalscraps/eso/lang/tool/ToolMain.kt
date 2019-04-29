@@ -2,7 +2,6 @@ package org.metalscraps.eso.lang.tool
 
 import org.metalscraps.eso.lang.lib.AddonManager
 import org.metalscraps.eso.lang.lib.config.AppVariables
-import org.metalscraps.eso.lang.lib.util.Utils.Companion.convertKO_POtoCN
 import org.metalscraps.eso.lang.lib.util.Utils.Companion.downloadPOs
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -44,17 +43,12 @@ class ToolMain(val mgr: LangManager) {
             "0" -> lm.CsvToPo()
             */
             "1" -> downloadPOs()
-            "2" -> convertKO_POtoCN()
-            "3" -> mgr.makeCSVs()
             "34" -> {
-                mgr.makeCSVs()
                 mgr.makeLang()
             }
             "4" -> mgr.makeLang()
             "5" -> {
                 downloadPOs()
-                convertKO_POtoCN()
-                mgr.makeCSVs()
                 mgr.makeLang()
                 AddonManager().destination()
             }

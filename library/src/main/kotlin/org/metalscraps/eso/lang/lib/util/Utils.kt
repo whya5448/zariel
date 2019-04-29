@@ -1,3 +1,5 @@
+@file:Suppress("RedundantVisibilityModifier")
+
 package org.metalscraps.eso.lang.lib.util
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -10,16 +12,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.AWTError
 import java.io.IOException
-import java.io.InputStream
 import java.net.URI
 import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
-import java.nio.charset.Charset
-import java.nio.file.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -33,9 +37,9 @@ class Utils {
 
     companion object {
 
-        private var vars: AppVariables = AppVariables
         private val versionMap = mutableMapOf<String, String>()
         private val projectMap = mutableMapOf<String, MutableList<String>>()
+        private var vars: AppVariables = AppVariables
         val logger:Logger = LoggerFactory.getLogger(Utils::class.java)
 
         /* ////////////////////////////////////////////////////
@@ -46,17 +50,34 @@ class Utils {
 
             val poMap = HashMap<String, PO>()
             val fileName = getName(path)
-            val source = Files.readString(path, AppConfig.CHARSET)
 
+            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET).toChineseOffset())
+            val find = "\\\"\\\""
+            val replace = "\""
+            val length = find.length
+
+            var idx = sb.indexOf(find)
+            while(idx != -1) {
+                sb.replace(idx, idx+length, replace)
+                idx = sb.indexOf(find)
+            }
+
+            val source = sb.toString()
             val pattern = getPattern(path)
             val m = pattern.matcher(source)
             val isPOPattern = pattern == AppConfig.POPattern
+
             while (m.find()) {
-                val po = PO(id = m.group(2), source = m.group(6), target = m.group(7), fileName = fileName)
+                // 원문에서 \n가 있지만 정규식이 파싱하는 순간 무시되버림. 멀티라인→싱글라인 되므로 백업 \n 개행문자로 변경
+                val po = PO(
+                        id = m.group(2),
+                        source = m.group(6).replace("\\n","\n").replace("\\r","\r"),
+                        target = m.group(7).replace("\\n","\n").replace("\\r","\r"),
+                        fileName = fileName
+                )
                 if (isPOPattern && m.group(1) != null && m.group(1) == "#, fuzzy") po.isFuzzy = true
                 poMap[m.group(keyGroup)] = po
             }
-
             return poMap
         } // textParse
 
@@ -73,7 +94,7 @@ class Utils {
                 logger.trace(x.toString())
             }
 
-            map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChinese(); v; }
+            map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChineseOffset(); v; }
             return map
         } // getMergedPOtoMap
 
@@ -83,43 +104,26 @@ class Utils {
             return sourceList
         } // getMergedPO
 
-
-        fun convertKO_POtoCN() {
-            try {
-                for (file in listFiles(vars.poDir, "po")) {
-                    val po2 = Paths.get(file.toString() + "2")
-                    if (Files.notExists(po2)) Files.writeString(po2, poParse(Files.readString(file, AppConfig.CHARSET)))
-                }
-            } catch (e: Exception) { e.printStackTrace() }
-
-        } // convertKO_PO_to_CN
-
-        private fun poParse(s:String): String {
-            val data = StringBuilder(s.toChinese())
-            for(x in arrayOf(Pair("\\\"\\\"", "\"\""))) {
-                var index = data.indexOf(x.first)
-                while(index != -1) {
-                    data.replace(index, index+x.first.length, x.second)
-                    index = data.indexOf(x.first)
-                }
-            }
-            return data.toString()
-        }
-
-        fun makeCSVwithLog(path:Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
+        public fun makeLANGwithLog(path:Path, poList: MutableList<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
             val timeTaken = LocalTime.now()
-            makeCSV(path, poList, writeSource, writeFileName, beta)
+            makeLANG(path, poList, writeFileName, beta)
             logger.info("${path.fileName} ${timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS)}초")
-        }
+        } // makeLANGwithLog
 
-        fun makeCSV(path: Path, poList: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
-            Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).use {
-                for (p in poList) it.write(p.toCSVFormat(writeSource, writeFileName, beta).toByteArray())
+        fun makeLANG(path: Path, poList: MutableList<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
+            var offset = 0
+            FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).use {
+                it.write(ByteBuffer.allocate(Int.SIZE_BYTES * 2).putInt(2).putInt(poList.size).flip())
+                for (p in poList) {
+                    it.write(ByteBuffer.allocate(16).putInt(p.id1).putInt(p.id2).putInt(p.id3).putInt(offset).flip())
+                    offset += p.getLengthForLang(writeFileName, beta) + 1
+                }
+                for (p in poList) {
+                    val x = p.getTextForLang(writeFileName, beta)
+                    it.write(ByteBuffer.allocate(x.size + 1).put(x).put(0).flip())
+                }
             }
-
-
-
-        } // makeCSV
+        } // makeLANG
 
         /* ////////////////////////////////////////////////////
         // 데이터 핸들링 끝
@@ -358,16 +362,4 @@ class Utils {
         */ ////////////////////////////////////////////////////
 
     } // companion object
-}
-
-private fun String.toChinese(): String {
-    val c = this.toCharArray()
-    for (i in c.indices) if (c[i].toInt() in 0xAC00..0xEA00) c[i] = c[i] - 0x3E00
-    return String(c)
-}
-
-private fun String.toKorean(): String {
-    val c = this.toCharArray()
-    for (i in c.indices) if (c[i].toInt() in 0x6E00..0xAC00) c[i] = c[i] + 0x3E00
-    return String(c)
 }

@@ -40,10 +40,10 @@ class AddonManager {
 
                     // 한글 소스맵 불러옴
                     val koText = mutableMapOf<String, PO>()
-                    Utils.listFiles(vars.poDir, "po2")
+                    Utils.listFiles(vars.poDir, "po")
                             .stream()
-                            .filter { e -> if (isEqualOrContains) e.fileName.toString() == fileName else e.fileName.toString().contains(fileName) }
-                            .forEach { e -> koText.putAll(Utils.textParse(e, 2)) }
+                            .filter { if (isEqualOrContains) it.fileName.toString() == fileName else it.fileName.toString().contains(fileName) }
+                            .forEach { koText.putAll(Utils.textParse(it, 2)) }
 
                     // 해당 Index 아닌 경우 불러온 데이터 삭제
                     koText.values.removeIf { x -> x.id1 != id }
@@ -88,7 +88,7 @@ class AddonManager {
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
                     workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
                     true,
-                    "journey.po2",
+                    "journey.po",
                     "QuestTableStore = {",
                     52420949
             )

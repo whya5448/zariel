@@ -7,9 +7,6 @@ import org.metalscraps.eso.lang.lib.bean.PO
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.util.Utils
-import org.metalscraps.eso.lang.lib.util.Utils.Companion.getMergedPO
-import org.metalscraps.eso.lang.lib.util.Utils.Companion.listFiles
-import org.metalscraps.eso.lang.lib.util.Utils.Companion.makeCSV
 import org.metalscraps.eso.lang.tool.vo.Category
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,9 +14,6 @@ import org.springframework.stereotype.Component
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
 import java.nio.file.Files
-import java.nio.file.Path
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.regex.Pattern
 
@@ -29,33 +23,12 @@ class LangManager(private val objectMapper: ObjectMapper) {
     companion object { val logger: Logger = LoggerFactory.getLogger(LangManager::class.java) }
     private var vars:AppVariables = AppVariables
 
-    fun makeCSVwithLog(path: Path, list: MutableList<PO>, writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false) {
-        val timeTaken = LocalTime.now()
-        makeCSV(path, list, writeSource, writeFileName, beta)
-        logger.info("${path.fileName} ${timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS)}초")
-    } // makeCSVwithLog
-
-    internal fun makeCSVs() {
-        val listFiles = listFiles(vars.poDir, "po2")
-
-        // 합쳐서 csv 로 한번에 생성
-        val list = getMergedPO(listFiles)
-
-        makeCSVwithLog(vars.poDir.resolve("kr.csv"), list)
-        makeCSVwithLog(vars.poDir.resolve("kr_beta.csv"), list, beta = true)
-        makeCSVwithLog(vars.poDir.resolve("tr.csv"), list, writeFileName = true)
-
-    } // makeCSVs
-
     internal fun makeLang() {
-
-        // EsoExtractData.exe -l en_0124.lang -p
-        try {
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/kr.csv\" -o \"${vars.poDir}/kr.lang\"")
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/kr_beta.csv\" -o \"${vars.poDir}/kr_beta.lang\"")
-            Utils.processRun(vars.baseDir, "${vars.baseDir}/EsoExtractData v0.32/EsoExtractData.exe -p -x \"${vars.poDir}/tr.csv\" -o \"${vars.poDir}/tr.lang\"")
-        } catch (e: Exception) {
-            e.printStackTrace()
+        vars.run {
+            val list = Utils.getMergedPO(Utils.listFiles(poDir, "po"))
+            Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
+            Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, writeFileName = true)
+            Utils.makeLANGwithLog(workDir.resolve("tr.lang"), list, beta = true)
         }
 
     } // makeLang

@@ -13,7 +13,6 @@ open class PO(private val id: String, var source: String, var target: String, va
     val id1: Int
     val id2: Int
     val id3: Int
-
     open var isFuzzy = false
 
     init {
@@ -27,6 +26,20 @@ open class PO(private val id: String, var source: String, var target: String, va
 
         if (target == "") this.target = source
         else if (source == "") this.source = target
+    }
+
+    fun getLengthForLang(writeFileName:Boolean = false, beta:Boolean = false) : Int {
+        return getTextForLang(writeFileName, beta).size
+    }
+
+    fun getTextForLang(writeFileName:Boolean = false, beta:Boolean = false): ByteArray {
+        val text: String = when {
+            writeFileName -> "${fileName}_${id2}_${id3}_$target"
+            beta -> target
+            else -> if (isFuzzy || target.contains("-G-")) source else target
+        }
+
+        return text.toByteArray()
     }
 
     fun toCSVFormat(writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false): String {
@@ -60,7 +73,6 @@ open class PO(private val id: String, var source: String, var target: String, va
 
     companion object {
         private const val q = '"'
-
         var comparator = Comparator<PO> { o1, o2 ->
             o1.run {
                 when {

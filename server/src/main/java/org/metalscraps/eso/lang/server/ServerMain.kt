@@ -53,12 +53,10 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             deleteOldData()
             logger.info("PO 다운로드")
             try { Utils.downloadPOs() } catch (e: Exception) { logger.error(e.toString()); e.printStackTrace(); error = true }
-            logger.info("다운로드 된 PO 파일 문자셋 변경")
-            Utils.convertKO_POtoCN()
 
             addons()
-            logger.info("CSV 생성")
-            makeCSV()
+            logger.info("LANG 생성")
+            makeLANG()
             if(compress()) sfx()
             else logger.info("SFX 스킵")
 
@@ -77,8 +75,8 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         val needSfx = Files.notExists(lang) or Files.notExists(dest)
         vars.run {
             logger.info("대상 압축")
-            //Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.csv") // 최대압축/메모리 -1.5G, 아카이브 17mb
-            if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.csv") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
+            //Utils.kt.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang") // 최대압축/메모리 -1.5G, 아카이브 17mb
+            if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
             if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $addonDir/Destinations/*")
         }
         if(!needSfx) logger.info("압축 스킵")
@@ -123,16 +121,16 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         }
     }
 
-    private fun makeCSV() {
+    private fun makeLANG() {
         vars.run {
             var isNotExist = false
-            for(x in arrayOf("kr.csv", "kr_beta.csv", "tr.csv")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
+            for(x in arrayOf("kr.lang", "kb.lang", "tr.lang")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
             if(isNotExist) {
-                val list = Utils.getMergedPO(Utils.listFiles(poDir, "po2"))
+                val list = Utils.getMergedPO(Utils.listFiles(poDir, "po"))
 
-                if(Files.notExists(workDir.resolve("kr.csv"))) Utils.makeCSVwithLog(workDir.resolve("kr.csv"), list)
-                if(Files.notExists(workDir.resolve("kr_beta.csv"))) Utils.makeCSVwithLog(workDir.resolve("kr_beta.csv"), list, beta = true)
-                if(Files.notExists(workDir.resolve("tr.csv"))) Utils.makeCSVwithLog(workDir.resolve("tr.csv"), list, writeFileName = true)
+                if(Files.notExists(workDir.resolve("kr.lang"))) Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
+                if(Files.notExists(workDir.resolve("kb.lang"))) Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, beta = true)
+                if(Files.notExists(workDir.resolve("tr.lang"))) Utils.makeLANGwithLog(workDir.resolve("tr.lang"), list, writeFileName = true)
             }
         }
     }
