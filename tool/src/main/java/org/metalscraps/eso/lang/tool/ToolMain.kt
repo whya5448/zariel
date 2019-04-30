@@ -39,9 +39,6 @@ class ToolMain(val mgr: LangManager) {
         //val CG = CategoryGenerator(vars)
         if (!Files.exists(vars.poDir)) try { Files.createDirectories(vars.poDir) } catch (ignored: IOException) { }
         when (command) {
-            /*
-            "0" -> lm.CsvToPo()
-            */
             "1" -> downloadPOs()
             "34" -> {
                 mgr.makeLang()

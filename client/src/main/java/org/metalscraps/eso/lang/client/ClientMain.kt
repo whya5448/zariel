@@ -23,7 +23,7 @@ import java.util.function.BiPredicate
 
 
 @Component
-class ClientMain(private val config:ClientConfig, private val clipboardManager: ClipboardManager, private val toolManager: ToolManager) : ESOMain {
+class ClientMain(private val config:ClientConfig, private val clipboardManager: ClipboardManager) : ESOMain {
 
     @Autowired lateinit var optionPanel: OptionPanel
     private val logger = LoggerFactory.getLogger(ClientMain::class.java)
@@ -44,13 +44,9 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
         val esoDir = Utils.getESOLangDir()
         try {
             if (Files.notExists(esoDir)) Files.createDirectories(esoDir)
-            Files.find(config.appPath, 1, BiPredicate { _, attr -> attr.isRegularFile }).forEach { x ->
-                try {
-                    if (x.fileName.toString().endsWith(".csv")) Files.delete(x)
-                    else if (x.fileName.toString().endsWith(".lang")) Files.move(x, esoDir.resolve(x.fileName), StandardCopyOption.REPLACE_EXISTING)
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+            Files.find(config.appPath, 1, BiPredicate { x, attr -> attr.isRegularFile && x.toString().endsWith(".lang") }).forEach {
+                try { Files.move(it, esoDir.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                catch (e: IOException) { e.printStackTrace() }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -86,16 +82,6 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
             val langPath = appPath.resolve("csv.exe")
             downloadCSVs(langPath)
             decompressCSVs(langPath)
-            //toolManager.langDiff()
-            try {
-                toolManager.csvTolang(appPath.resolve("kr.csv"))
-                toolManager.csvTolang(appPath.resolve("kr_beta.csv"), appPath.resolve("kb.lang"))
-                toolManager.csvTolang(appPath.resolve("tr.csv"))
-            } catch (e: Exception) {
-                logger.error("LANG 생성 실패")
-                e.printStackTrace()
-                exit(AppErrorCode.CANNOT_CREATE_LANG_USING_TOOL.errCode)
-            }
 
         }
 
