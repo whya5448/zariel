@@ -87,7 +87,7 @@ class AddonManager {
             var runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
                     workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
-                    true,
+                    false,
                     "journey.po",
                     "QuestTableStore = {",
                     52420949
