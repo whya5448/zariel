@@ -61,9 +61,11 @@ class AddonManager {
                         val xid = "$id-0-${x.first}"
                         val t = koText[xid]
 
-                        // 한글 맵에 없을경우엔 그냥 무시
-                        if(t == null) logger.warn("Missing Data? $xid $x")
-                        else builder.append("\t[${x.first}] = {\"${ if(t.isFuzzy) x.second else t.target }\"},\n")
+                        // 한글 맵에 없을경우엔 그냥 무시 → 인게임 애드온에서 계속 Missing NPC 뜸
+                        if(t == null) {
+                            logger.warn("Missing Data? $xid $x")
+                            builder.append("\t[${x.first}] = {\"${x.second}\"},\n")
+                        } else builder.append("\t[${x.first}] = {\"${ if(t.isFuzzy) x.second else t.target }\"},\n")
 
                     }
                     builder.append("}\n")
@@ -86,7 +88,7 @@ class AddonManager {
         vars.run {
             var runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
-                    workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
+                    workAddonDir.resolve("Destinations/ADestinationsQuests_kr.lua"),
                     false,
                     "journey.po",
                     "QuestTableStore = {",
