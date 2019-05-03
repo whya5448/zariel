@@ -64,11 +64,11 @@ internal class ClipboardDataManager(private val manager: ClipboardManager) {
     private fun getURL(id: ID): String {
         val projectName = Utils.getProjectNameByDocument(id)
         val latestVersion = Utils.getLatestVersion(projectName)
-        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}"
+        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}".replace(" ", "%20")
     }
 
     companion object {
-        private val IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'()]+)[_-](\\d)[_-](\\d+)[_-]?")
+        private val IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'() ]+)[_-](\\d)[_-](\\d+)[_-]?")
         private val objectMapper = ObjectMapper().registerKotlinModule()
         private val logger = LoggerFactory.getLogger(ClipboardDataManager::class.java)
     }
