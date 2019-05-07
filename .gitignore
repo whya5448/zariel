@@ -10,3 +10,4 @@ out/
 .config
 /Dockerfiles/ssh/id_rsa
 /Dockerfiles/dc-eso-kr/
+/Dockerfiles/*.7z
