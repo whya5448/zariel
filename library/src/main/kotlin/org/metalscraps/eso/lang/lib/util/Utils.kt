@@ -168,11 +168,7 @@ class Utils {
         }
 
         fun getESODir(): Path {
-            return try {
-                FileSystemView.getFileSystemView().defaultDirectory.toPath().resolve("Elder Scrolls Online/")
-            } catch (e:AWTError) {
-                Paths.get("~/Elder Scrolls Online/")
-            }
+            return Paths.get(System.getProperty("user.home")).resolve("Documents/Elder Scrolls Online/")
         }
 
 
