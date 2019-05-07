@@ -1,19 +1,15 @@
-FROM ubuntu
+FROM alpine:3.9.3
 
 USER root
 WORKDIR /root
 
-RUN sed -i 's@archive.ubuntu.com@mirror.kakao.com@g' /etc/apt/sources.list; \
-sed -i 's@security.ubuntu.com@mirror.kakao.com@g' /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y locales p7zip p7zip-full git
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata; \
-ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime; \
-localedef -f UTF-8 -i ko_KR ko_KR.UTF-8; \
+RUN apk add p7zip git tzdata openssh-client
+RUN cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime; \
+echo "Asia/Seoul" > /etc/timezone; \
 git config --global user.email "whya5448@gmail.com"; \
 git config --global user.name "작은게이"
 
-RUN apt-get install -y libxext-dev libxrender-dev libxtst-dev
+RUN apk del tzdata
 
 ADD ./ssh/known_hosts /root/.ssh/
 
