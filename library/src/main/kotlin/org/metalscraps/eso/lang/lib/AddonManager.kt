@@ -4,6 +4,7 @@ import org.metalscraps.eso.lang.lib.bean.PO
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.util.Utils
+import org.metalscraps.eso.lang.lib.util.toKorean
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URL
@@ -65,7 +66,7 @@ class AddonManager {
                         if(t == null) {
                             logger.warn("Missing Data? $xid $x")
                             builder.append("\t[${x.first}] = {\"${x.second}\"},\n")
-                        } else builder.append("\t[${x.first}] = {\"${ if(t.isFuzzy) x.second else t.target }\"},\n")
+                        } else builder.append("\t[${x.first}] = {EsoKR:E(\"${ if(t.isFuzzy) x.second else t.target.toKorean() }\")},\n")
 
                     }
                     builder.append("}\n")
@@ -88,7 +89,7 @@ class AddonManager {
         vars.run {
             var runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
-                    workAddonDir.resolve("Destinations/ADestinationsQuests_kr.lua"),
+                    workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
                     false,
                     "journey.po",
                     "QuestTableStore = {",

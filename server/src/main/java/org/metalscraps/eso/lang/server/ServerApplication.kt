@@ -17,7 +17,6 @@ class ServerApplication : CommandLineRunner {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            System.setProperty("java.awt.headless", "false")
             runApplication<ServerApplication>(*args)
         }
     }

@@ -77,7 +77,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             logger.info("대상 압축")
             //Utils.kt.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang") // 최대압축/메모리 -1.5G, 아카이브 17mb
             if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
-            if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $addonDir/Destinations/*")
+            if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $workAddonDir/Destinations/*")
         }
         if(!needSfx) logger.info("압축 스킵")
         return needSfx
