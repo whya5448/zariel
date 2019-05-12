@@ -14,7 +14,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter:2.1.4.RELEASE'
 }
 
-version = "1.2.0"
+version = "1.2.1"
 def sImageName = 'dc-eso-server'
 def sModuleName = 'org.metalscraps.eso.lang.server'
 def sMergedModuleName = "${sModuleName}.merged.module"
