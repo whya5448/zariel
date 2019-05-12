@@ -68,6 +68,8 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
     private fun addons() {
         // 데스티네이션
         AddonManager().destination()
+        AddonManager().destination("kb", beta = true)
+        AddonManager().destination("tr", writeFileName = true)
     }
 
     private fun compress() : Boolean {
