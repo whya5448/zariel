@@ -28,30 +28,14 @@ open class PO(private val id: String, var source: String, var target: String, va
         else if (source == "") this.source = target
     }
 
-    fun getLengthForLang(writeFileName:Boolean = false, beta:Boolean = false) : Int {
-        return getTextForLang(writeFileName, beta).size
-    }
-
-    fun getTextForLang(writeFileName:Boolean = false, beta:Boolean = false): ByteArray {
-        val text: String = when {
+    fun getLengthForLang(writeFileName:Boolean = false, beta:Boolean = false) : Int { return getTextForLang(writeFileName, beta).size}
+    fun getTextForLang(writeFileName:Boolean = false, beta:Boolean = false): ByteArray { return getText(writeFileName, beta).toByteArray() }
+    fun getText(writeFileName:Boolean = false, beta:Boolean = false): String {
+        return when {
             writeFileName -> "${fileName}_${id2}_${id3}_$target"
             beta -> target
             else -> if (isFuzzy || target.contains("-G-")) source else target
         }
-
-        return text.toByteArray()
-    }
-
-    fun toCSVFormat(writeSource:Boolean = false, writeFileName:Boolean = false, beta:Boolean = false): String {
-        var translatedMsg: String
-
-        if (writeFileName) translatedMsg = "${fileName}_${id2}_${id3}_$target"
-        else if (beta) translatedMsg = target
-        else {
-            translatedMsg = target
-            if (isFuzzy || target.contains("-G-")) translatedMsg = source
-        }
-        return "$q$id$q,$q${if(writeSource) source else ""}$q,$q$translatedMsg$q\n"
     }
 
     fun toPOTFormat(): String {

@@ -21,7 +21,7 @@ class AddonManager {
 
     private val logger = LoggerFactory.getLogger(AddonManager::class.java)
 
-    fun destination() {
+    fun destination(lang: String = "kr", writeFileName: Boolean = false, beta: Boolean = false) {
         val vars = AppVariables
 
         class Runner(var en: Path, var ko: Path, var isEqualOrContains: Boolean = false,
@@ -44,7 +44,7 @@ class AddonManager {
                     Utils.listFiles(vars.poDir, "po")
                             .stream()
                             .filter { if (isEqualOrContains) it.fileName.toString() == fileName else it.fileName.toString().contains(fileName) }
-                            .forEach { koText.putAll(Utils.textParse(it, 2)) }
+                            .forEach { koText.putAll(Utils.textParse(it, 2, chineseOffset = false)) }
 
                     // 해당 Index 아닌 경우 불러온 데이터 삭제
                     koText.values.removeIf { x -> x.id1 != id }
@@ -66,7 +66,7 @@ class AddonManager {
                         if(t == null) {
                             logger.warn("Missing Data? $xid $x")
                             builder.append("\t[${x.first}] = {\"${x.second}\"},\n")
-                        } else builder.append("\t[${x.first}] = {EsoKR:E(\"${ if(t.isFuzzy) x.second else t.target.toKorean() }\")},\n")
+                        } else builder.append("\t[${x.first}] = {EsoKR:E(\"${t.getText(writeFileName, beta)}\")},\n")
 
                     }
                     builder.append("}\n")
@@ -89,7 +89,7 @@ class AddonManager {
         vars.run {
             var runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuests_en.lua"),
-                    workAddonDir.resolve("Destinations/DestinationsQuests_kr.lua"),
+                    workAddonDir.resolve("Destinations/DestinationsQuests_$lang.lua"),
                     false,
                     "journey.po",
                     "QuestTableStore = {",
@@ -99,7 +99,7 @@ class AddonManager {
 
             runner = Runner(
                     addonDir.resolve("Destinations/DestinationsQuestgivers_en.lua"),
-                    workAddonDir.resolve("Destinations/DestinationsQuestgivers_kr.lua"),
+                    workAddonDir.resolve("Destinations/DestinationsQuestgivers_$lang.lua"),
                     false,
                     "npc-talk",
                     "QuestGiverStore = {",

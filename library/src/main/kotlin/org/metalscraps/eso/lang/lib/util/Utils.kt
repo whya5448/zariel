@@ -46,12 +46,12 @@ class Utils {
         // 데이터 핸들링
         */ ////////////////////////////////////////////////////
 
-        fun textParse(path:Path, keyGroup:Int = 2): MutableMap<String, PO> {
+        fun textParse(path:Path, keyGroup:Int = 2, chineseOffset: Boolean = true): MutableMap<String, PO> {
 
             val poMap = HashMap<String, PO>()
             val fileName = getName(path)
 
-            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET).toChineseOffset())
+            val sb = StringBuilder( if(chineseOffset) Files.readString(path, AppConfig.CHARSET).toChineseOffset() else Files.readString(path, AppConfig.CHARSET) )
             val find = "\\\"\\\""
             val replace = "\""
             val length = find.length
