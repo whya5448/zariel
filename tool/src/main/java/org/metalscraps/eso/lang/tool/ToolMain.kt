@@ -50,9 +50,7 @@ class ToolMain(val mgr: LangManager) {
                 AddonManager().destination()
             }
             "6" -> AddonManager().destination()
-            "66" -> mgr.lineCompare()
             "7" -> mgr.something()
-            "8" -> mgr.enCSVtoPOT()
             "9" -> mgr.updateCategory()
             else -> logger.error("command not found. $command")
         }

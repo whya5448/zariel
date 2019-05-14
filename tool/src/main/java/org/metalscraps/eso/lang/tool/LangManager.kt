@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
 import java.nio.file.Files
-import java.util.*
 import java.util.regex.Pattern
 
 @Component
@@ -25,7 +24,7 @@ class LangManager(private val objectMapper: ObjectMapper) {
 
     internal fun makeLang() {
         vars.run {
-            val list = Utils.getMergedPO(Utils.listFiles(poDir, "po"))
+            val list = Utils.getMergedPOtoList(Utils.listFiles(poDir, "po"))
             Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
             Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, writeFileName = true)
             Utils.makeLANGwithLog(workDir.resolve("tr.lang"), list, beta = true)
@@ -34,48 +33,13 @@ class LangManager(private val objectMapper: ObjectMapper) {
     } // makeLang
 
     internal fun something() {
-        val data = Utils.getMergedPO(Utils.listFiles(vars.poDir, "po"))
+        val data = Utils.getMergedPOtoList(Utils.listFiles(vars.poDir, "po"))
         val sb = StringBuilder()
         data.forEach { e:PO -> sb.append(e.toPOTFormat()) }
         logger.info(vars.baseDir.toString())
         Files.writeString(vars.baseDir.resolve("kr.pot"), sb.toString())
     } // something
 
-    internal fun lineCompare() {
-        val en = Utils.textParse(vars.baseDir.resolve("en.lang.csv"))
-        logger.info("en.lang.csv ${en.size}행")
-        val ko = Utils.textParse(vars.baseDir.resolve("kr.csv"))
-        logger.info("kr.csv ${ko.size}행")
-        ko.keys.forEach { x -> en.remove(x) }
-        en.values.forEach { x -> logger.info("$x") }
-        logger.info("${en.size}행 모자람.")
-        val sb = StringBuilder()
-        en.values.forEach { sb.append("$it\n") }
-        Files.writeString(vars.baseDir.resolve("compare.txt"), sb.toString(), AppConfig.CHARSET)
-    } // lineCompare
-
-    fun enCSVtoPOT() {
-        val list = Utils.textParse(vars.baseDir.resolve("en.lang.csv")).values.toMutableList()
-        Collections.sort(list, PO.comparator)
-
-/*
-        val mapper = objectMapper
-        val cat:HashMap<String, Array<Int>> = mapper.readValue(Files.readString(vars.baseDir.resolve("IndexMatch_modified.json"), AppConfig.CHARSET))
-        cat.forEach { k, vl ->
-            var sb = StringBuilder()
-            vl.forEach { list.filter { po -> po.id1 == it }.forEach { po -> list.remove(po); sb.append(po.toPOTFormat()) } }
-            sb = escapeStringForPOT(sb)
-            sb.insert(0, getPOTTemplate())
-            Files.writeString(vars.baseDir.resolve("./pot/$k.pot"), sb, AppConfig.CHARSET)
-        }
-*/
-
-        var sb = StringBuilder()
-        list.forEach { sb.append(it.toPOTFormat())  }
-        sb = escapeStringForPOT(sb)
-        sb.insert(0, getPOTTemplate())
-        Files.writeString(vars.baseDir.resolve("./pot/kr.pot"), sb, AppConfig.CHARSET)
-    }
 
     private fun getPOTTemplate(): String {
         return """

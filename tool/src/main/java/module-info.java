@@ -1,5 +1,4 @@
 open module org.metalscraps.eso.lang.tool {
-    requires static lombok;
     requires org.metalscraps.eso.lang.library;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
