@@ -70,6 +70,9 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         AddonManager().destination()
         AddonManager().destination("kb", beta = true)
         AddonManager().destination("tr", writeFileName = true)
+        AddonManager().tamrielTradeCentre()
+        AddonManager().tamrielTradeCentre("kb", beta = true)
+        AddonManager().tamrielTradeCentre("tr", writeFileName = true)
     }
 
     private fun compress() : Boolean {
@@ -128,7 +131,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             var isNotExist = false
             for(x in arrayOf("kr.lang", "kb.lang", "tr.lang")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
             if(isNotExist) {
-                val list = Utils.getMergedPO(Utils.listFiles(poDir, "po"))
+                val list = Utils.getMergedPOtoList(Utils.listFiles(poDir, "po"))
 
                 if(Files.notExists(workDir.resolve("kr.lang"))) Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
                 if(Files.notExists(workDir.resolve("kb.lang"))) Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, beta = true)

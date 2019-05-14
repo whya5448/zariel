@@ -8,39 +8,37 @@ import java.util.*
  * Whya5448@gmail.com
  */
 
-open class PO(private val id: String, var source: String, var target: String, var fileName:String = "Undefined") : Comparable<PO> {
-
-    val id1: Int
-    val id2: Int
-    val id3: Int
-    open var isFuzzy = false
+open class PO(
+        val id1: Int,
+        val id2: Int,
+        val id3: Int,
+        private var source: String,
+        private var target: String,
+        var isFuzzy:Boolean = false,
+        var fileName:String = "Undefined"
+) : Comparable<PO> {
 
     init {
-        source = source.replace("$q\n$q".toRegex(), "")
-        target = target.replace("$q\n$q".toRegex(), "")
-
-        val ids = id.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        id1 = ids[0].toInt()
-        id2 = ids[1].toInt()
-        id3 = ids[2].toInt()
-
-        if (target == "") this.target = source
-        else if (source == "") this.source = target
+        //source = source.replace("$q\n$q".toRegex(), "")
+        //target = target.replace("$q\n$q".toRegex(), "")
     }
 
+    fun getID(): String { return "$id1-$id2-$id3" }
     fun getLengthForLang(writeFileName:Boolean = false, beta:Boolean = false) : Int { return getTextForLang(writeFileName, beta).size}
     fun getTextForLang(writeFileName:Boolean = false, beta:Boolean = false): ByteArray { return getText(writeFileName, beta).toByteArray() }
     fun getText(writeFileName:Boolean = false, beta:Boolean = false): String {
         return when {
-            writeFileName -> "${fileName}_${id2}_${id3}_$target"
+            writeFileName -> "${fileName}_${id3}_$target"
             beta -> target
-            else -> if (isFuzzy || target.contains("-G-")) source else target
+            isFuzzy -> source
+            target.contains("-G-") -> source
+            else -> target
         }
     }
 
     fun toPOTFormat(): String {
-        return "#: $id\n" +
-                "msgctxt $q$id$q\n" +
+        return "#: ${getID()}\n" +
+                "msgctxt $q${getID()}$q\n" +
                 "msgid $q$source$q\n" +
                 "msgstr $q$q\n\n"
     }
@@ -53,7 +51,7 @@ open class PO(private val id: String, var source: String, var target: String, va
         else src.compareTo(trg)
     }
 
-    override fun toString(): String { return "$fileName-$id-$isFuzzy,'$source','$target'" }
+    override fun toString(): String { return "$fileName-$id3,'$source','$target'" }
 
     companion object {
         private const val q = '"'

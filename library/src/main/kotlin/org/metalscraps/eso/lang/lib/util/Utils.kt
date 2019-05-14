@@ -10,7 +10,6 @@ import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.awt.AWTError
 import java.io.IOException
 import java.net.URI
 import java.net.URL
@@ -28,81 +27,124 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.ForkJoinPool
-import java.util.regex.Pattern
+import java.util.regex.Matcher
 import java.util.stream.Collectors
 import java.util.zip.CRC32
-import javax.swing.filechooser.FileSystemView
+import kotlin.collections.ArrayList
 
 class Utils {
+    data class TextParseOptions(
+            var toChineseOffset: Boolean = true,
+            var toLower: Boolean = false,
+            var parseSource: Boolean = false,
+            var excludeId: Array<Regex> = arrayOf(),
+            var keyGroup:Int = 2
+    )
 
     companion object {
 
         private val versionMap = mutableMapOf<String, String>()
-        private val projectMap = mutableMapOf<String, MutableList<String>>()
-        private var vars: AppVariables = AppVariables
-        val logger:Logger = LoggerFactory.getLogger(Utils::class.java)
+        private val projectMap = mutableMapOf<String, MutableList<String>>(
+                "ESO-skill" to mutableListOf(),
+                "ESO-system" to mutableListOf(),
+                "ESO-item" to mutableListOf(),
+                "ESO-story" to mutableListOf(),
+                "ESO-book" to mutableListOf()
+        )
+        private val logger:Logger = LoggerFactory.getLogger(Utils::class.java)
+        private val vars: AppVariables = AppVariables
 
         /* ////////////////////////////////////////////////////
         // 데이터 핸들링
         */ ////////////////////////////////////////////////////
 
-        fun textParse(path:Path, keyGroup:Int = 2, chineseOffset: Boolean = true): MutableMap<String, PO> {
+        private fun getStringFromPO(path: Path, toChineseOffset: Boolean): StringBuilder {
+            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET))
 
-            val poMap = HashMap<String, PO>()
-            val fileName = getName(path)
-
-            val sb = StringBuilder( if(chineseOffset) Files.readString(path, AppConfig.CHARSET).toChineseOffset() else Files.readString(path, AppConfig.CHARSET) )
-            val find = "\\\"\\\""
-            val replace = "\""
-            val length = find.length
-
-            var idx = sb.indexOf(find)
-            while(idx != -1) {
-                sb.replace(idx, idx+length, replace)
-                idx = sb.indexOf(find)
+            return when(toChineseOffset) {
+                true -> sb.toChineseOffset()
+                false -> sb
             }
+        } // getStringFromPO
 
-            val source = sb.toString()
-            val pattern = getPattern(path)
-            val m = pattern.matcher(source)
-            val isPOPattern = pattern == AppConfig.POPattern
+        private fun parsePO(m: Matcher, fileName: String, opt: TextParseOptions): PO {
+            m.run {
+                val id = group(2).split("-")
+                var source = group(6)
+                var target = group(7)
+                if(opt.toLower) {
+                    source = source.toLowerCase()
+                    target = target.toLowerCase()
+                }
 
-            while (m.find()) {
-                // 원문에서 \n가 있지만 정규식이 파싱하는 순간 무시되버림. 멀티라인→싱글라인 되므로 백업 \n 개행문자로 변경
-                val po = PO(
-                        id = m.group(2),
-                        source = m.group(6).replace("\\n","\n").replace("\\r","\r"),
-                        target = m.group(7).replace("\\n","\n").replace("\\r","\r"),
-                        fileName = fileName
+                /*
+                msgstr ""
+                "이 귀족 은행원은 필요하면 어디든지 동행하며 모든 개인 은행 서비스를 제공해줄 수 있습니다. 이 친구에게는 너무 위험한 시로딜이나 "
+                "전장같은 장소를 제외하면 말이죠.\n"
+                "\n"
+                "소환하면 당신과 그룹 멤버들이 서비스를 이용할 수 있습니다."
+                */
+
+                /*
+                이 귀족 은행원은 필요하면 어디든지 동행하며 모든 개인 은행 서비스를 제공해줄 수 있습니다. 이 친구에게는 너무 위험한 시로딜이나 전장같은 장소를 제외하면 말이죠.
+
+                소환하면 당신과 그룹 멤버들이 서비스를 이용할 수 있습니다.
+                */
+
+                // 자나타 포맷 버그. 자나타 내에선 개행 없으나 po 다운로드시 생김.
+                // 진짜 개행 데이터 \r \n 문자로 표기되있음. → \r 안쓰는거같음. 확인필요
+
+                source = source.replace("\\\"\\\"","\"").replace("\"\n\"", "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+                target = target.replace("\\\"\\\"","\"").replace("\"\n\"", "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+
+                if (target == "") target = source
+                else if (source == "") source = target
+
+                if(!opt.parseSource) source = ""
+
+
+                return PO(
+                        id1 = id[0].toInt(), id2 = id[1].toInt(), id3 = id[2].toInt(),
+                        source = source, target = target,
+                        fileName = fileName, isFuzzy = group(1) == "#, fuzzy"
                 )
-                if (isPOPattern && m.group(1) != null && m.group(1) == "#, fuzzy") po.isFuzzy = true
-                poMap[m.group(keyGroup)] = po
+            }
+        }
+
+        private fun getPOtoMap(path:Path, opt: TextParseOptions): MutableMap<String, PO> {
+            val poMap = HashMap<String, PO>()
+            val source = getStringFromPO(path, opt.toChineseOffset)
+            val fileName = path.fileName()
+
+            AppConfig.POPattern.matcher(source).run {
+                while (find()) {
+                    if (opt.excludeId.any{ group(2).contains(it) }) continue
+                    poMap[
+                            if (opt.toLower) group(opt.keyGroup).toLowerCase()
+                            else group(opt.keyGroup).toLowerCase()
+                    ] = parsePO(this, fileName, opt)
+                }
             }
             return poMap
-        } // textParse
+        } // getPOtoMap
 
-        private fun getMergedPOtoMap(fileList: Collection<Path>): MutableMap<String, PO> {
+        fun getMergedPOtoMap(fileList: Collection<Path>, options: TextParseOptions = TextParseOptions()): MutableMap<String, PO> {
             val map = HashMap<String, PO>()
 
             for (x in fileList) {
-                val fileName: String = getName(x)
+                if (x.fileName() in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) continue
 
-                // pregame 쪽 데이터
-                if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) continue
-
-                map.putAll(textParse(x))
+                map.putAll(getPOtoMap(x, options))
                 logger.trace(x.toString())
             }
 
-            map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChineseOffset(); v; }
+            //map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChineseOffset(); v; }
             return map
         } // getMergedPOtoMap
 
-        fun getMergedPO(fileList: MutableList<Path>): ArrayList<PO> {
-            val sourceList = ArrayList<PO>(getMergedPOtoMap(fileList).values)
-            Collections.sort(sourceList, PO.comparator)
-            return sourceList
-        } // getMergedPO
+        fun getMergedPOtoList(fileList: MutableList<Path>, options: TextParseOptions = TextParseOptions()): MutableList<PO> {
+            return ArrayList(getMergedPOtoMap(fileList, options).values)
+        } // getMergedPOtoList
 
         public fun makeLANGwithLog(path:Path, poList: MutableList<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
             val timeTaken = LocalTime.now()
@@ -131,49 +173,21 @@ class Utils {
 
 
         /* ////////////////////////////////////////////////////
-        // Path/이름 제어
+        // Path 제어
         */ ////////////////////////////////////////////////////
 
-        private fun getPattern(path:Path): Pattern {
-            val ext = getExtension(path)
-            if (ext == "po" || ext == "po2") return AppConfig.POPattern
-            else if (ext == "csv") return AppConfig.CSVPattern
-            else {
-                logger.error("알 수 없는 패턴 ${path.toAbsolutePath()}")
-                System.exit(0)
-            }
-            return AppConfig.CSVOffsetPattern
-        }
-
-        fun listFiles(path:Path, ext:String) : MutableList<Path> {
-            try { return Files.list(path).filter { x -> !Files.isDirectory(x) && getExtension(x) == ext }.collect(Collectors.toList()) }
+        fun listFiles(path:Path = vars.poDir, ext:String = "po") : MutableList<Path> {
+            try { return Files.list(path).filter { x -> !Files.isDirectory(x) && x.ext() == ext }.collect(Collectors.toList()) }
             catch (e: IOException) { e.printStackTrace() }
             return ArrayList()
         }
 
-        fun getName(path: Path): String {
-            if (Files.isDirectory(path)) logger.warn("파일 아님 ${path.toAbsolutePath()}")
-            val x = path.fileName.toString()
-            return x.substring(0, x.lastIndexOf('.'))
-        }
-
-        fun getExtension(path: Path): String {
-            if (Files.isDirectory(path)) logger.warn("파일 아님 ${path.toAbsolutePath()}")
-            val x = path.fileName.toString()
-            return x.substring(x.lastIndexOf('.') + 1)
-        }
-
-        fun getESOLangDir(): Path {
-            return getESODir().resolve("live/addOns/gamedata/lang")
-        }
-
-        fun getESODir(): Path {
-            return Paths.get(System.getProperty("user.home")).resolve("Documents/Elder Scrolls Online/")
-        }
+        fun getESOLangDir(): Path { return getESODir().resolve("live/addOns/gamedata/lang") }
+        fun getESODir(): Path { return Paths.get(System.getProperty("user.home")).resolve("Documents/Elder Scrolls Online/") }
 
 
         /* ////////////////////////////////////////////////////
-        // Path/이름 끝
+        // Path 끝
         */ ////////////////////////////////////////////////////
 
 
@@ -232,11 +246,7 @@ class Utils {
 
         fun downloadPOs() {
             val timeTaken = LocalTime.now()
-            downloadPO("ESO-item")
-            downloadPO("ESO-skill")
-            downloadPO("ESO-system")
-            downloadPO("ESO-book")
-            downloadPO("ESO-story")
+            for(x in arrayOf("item","skill","system","book","story")) downloadPO("ESO-$x")
             logger.info("총 ${timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS)}초")
         } // downloadPOs
 
@@ -246,29 +256,25 @@ class Utils {
             val poDir = vars.poDir
 
             if (!Files.exists(poDir)) Files.createDirectories(poDir)
-            val threadPool = ForkJoinPool(2) // 자나타 API 리밋
-            threadPool.submit {
+            // 자나타 API 리밋
+            ForkJoinPool(2).submit {
                 fileNames.parallelStream().forEach {
-                    val fileName = it
-                    // 우리가 사용하는 데이터 아님.
-                    if (fileName in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) return@forEach
-
                     val ltStart = LocalTime.now()
-                    var fileURL = url + fileName
+                    var fileURL = url + it
                     fileURL = fileURL.replace(" ", "%20")
 
-                    val pPO = poDir.resolve("$fileName.po")
+                    val pPO = poDir.resolve("$it.po")
                     if (!Files.exists(pPO)) {
                         try {
                             val server = Channels.newChannel(URL(fileURL).openStream())
                             val out = FileChannel.open(pPO, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
                             out.transferFrom(server, 0, Long.MAX_VALUE)
                         } catch (e: IOException) {
-                            val msg = e.message!!
+                            val msg = e.message as String
                             if(msg.contains("response code: 429") || msg.contains("Premature EOF") || msg.contains("connection closed locally")) {
-                                remainFiles.add(fileName)
-                                logger.warn("오류, 재시도 $fileName ${e.message}")
-                                if (Files.exists(pPO)) try { Files.delete(pPO!!) } catch (e1: IOException) { }
+                                remainFiles.add(it)
+                                logger.warn("오류, 재시도 $it $msg")
+                                if (Files.exists(pPO)) try { Files.delete(pPO) } catch (e1: IOException) { }
                             } else e.printStackTrace()
                         } catch (e: Exception) {
                             logger.error(e.message)
@@ -276,7 +282,7 @@ class Utils {
                         }
                     }
                     val ltEnd = LocalTime.now()
-                    logger.debug("downloaded zanata file  [$fileName] to local [$pPO] ${ltStart.until(ltEnd, ChronoUnit.SECONDS)}초")
+                    logger.debug("downloaded zanata file  [$it] to local [$pPO] ${ltStart.until(ltEnd, ChronoUnit.SECONDS)}초")
                 }
             }.get()
 
@@ -286,38 +292,20 @@ class Utils {
             }
         } // downloadPO
 
-        fun getDocuments(projectName: String): MutableList<String> {
-            val list = projectMap[projectName] ?: mutableListOf()
-            if(list.size == 0) list.addAll(getFileNames(projectName))
-            return list
-        }
-
         fun getProjectMap(): MutableMap<String, MutableList<String>> {
-            if (projectMap.isEmpty()) {
-                logger.info("rest/projects")
-
-                //val request = getDefaultRestClient("${AppConfig.ZANATA_DOMAIN}rest/projects?q=ESO-")
-                //val jsonNode = getBodyFromHTTPsRequest(request)
-
-                for(x in listOf("story", "system", "skill", "item", "book")) {
-                    val id = "ESO-$x"
-                    projectMap[id] = getFileNames(id)
-                }
-
-            }
-
-            for (x in projectMap.keys) getDocuments(x)
+            projectMap.filter { it.value.size == 0 }.forEach { it.value.addAll(getFileNames(it.key)) }
             return projectMap
         }
 
         @Throws(Exception::class)
         fun getProjectNameByDocument(id: ID): String {
             if (!id.isFileNameHead()) throw ID.NotFileNameHead()
-            for (x in getProjectMap().entries) for (y in x.value)
-                if (y.equals(id.head, true)) {
-                    id.head = y
-                    return x.key
+            getProjectMap().forEach { (pName, docs) ->
+                docs.filter { it.equals(id.head, false) }.takeIf { it.isNotEmpty() }?.run {
+                    id.head = first()
+                    return pName
                 }
+            }
             throw Exception("프로젝트 못찾음 /$id")
         }
 
