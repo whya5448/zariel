@@ -29,9 +29,9 @@ class AddonManager {
 
     fun getSource(sPath: String, commit: String): StringBuilder {
         val addonPath = vars.addonDir.resolve(sPath)
-        if (Files.notExists(addonPath)) {
+        if (Files.notExists(addonPath) or (Files.size(addonPath) <= 0L)) {
             Files.createDirectories(addonPath.parent)
-            Files.newBufferedWriter(addonPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE).use {
+            Files.newBufferedWriter(addonPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING).use {
                 it.write(URL("$CDN/$commit/$sPath").readText())
             }
         }

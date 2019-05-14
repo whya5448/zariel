@@ -21,11 +21,13 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
     private val vars = AppVariables
     private final val lang:Path
     private final val dest:Path
+    private final val ttc:Path
 
     init {
         vars.baseDir = config.workDir
         lang = vars.workDir.resolve("lang_${AppVariables.todayWithYear}.7z")
         dest = vars.workDir.resolve("destinations_${AppVariables.todayWithYear}.7z")
+        ttc = vars.workDir.resolve("tamrielTradeCentre_${AppVariables.todayWithYear}.7z")
     }
 
     fun init() : Boolean {
@@ -77,12 +79,13 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
     private fun compress() : Boolean {
         System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
-        val needSfx = Files.notExists(lang) or Files.notExists(dest)
+        val needSfx = Files.notExists(lang) or Files.notExists(dest) or Files.notExists(ttc)
         vars.run {
             logger.info("대상 압축")
             //Utils.kt.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang") // 최대압축/메모리 -1.5G, 아카이브 17mb
             if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
             if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $workAddonDir/Destinations/*")
+            if(Files.notExists(ttc)) Utils.processRun(workDir, "7za a -mx=9 $ttc $workAddonDir/TamrielTradeCentre/*")
         }
         if(!needSfx) logger.info("압축 스킵")
         return needSfx
@@ -94,6 +97,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             val sfx = javaClass.classLoader.getResource("./7zCon.sfx").path
             Utils.processRun(workDir, "cat $sfx $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
             Utils.processRun(workDir, "cat $sfx $dest", ProcessBuilder.Redirect.to(Paths.get("$dest.exe").toFile()))
+            Utils.processRun(workDir, "cat $sfx $ttc", ProcessBuilder.Redirect.to(Paths.get("$ttc.exe").toFile()))
         }
     }
 
@@ -103,7 +107,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             // 버전 문서
             Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
             Utils.processRun(workDir, "git init")
-            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe")
+            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe $ttc.exe")
             Utils.processRun(workDir, "git commit -m $todayWithYear")
             Utils.processRun(workDir, "git remote add origin git@github.com:Whya5448/EsoKR-LANG.git")
             Utils.processRun(workDir, "git push -u origin master --force")
