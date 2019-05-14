@@ -3,7 +3,7 @@
     <property name="LOG_DIR" value="./" />
     <property name="LOG_PATH_NAME" value="${LOG_DIR}/log.log" />
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.Rollin gFileAppender">
         <file>${LOG_PATH_NAME}</file>
         <!-- 일자별로 로그파일 적용하기 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
