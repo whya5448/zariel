@@ -36,7 +36,7 @@ internal class ClipboardDataManager(private val manager: ClipboardManager) {
         val m = IDPattern.matcher(data)
         val arrayList = ArrayList<ID>()
         while (m.find()) {
-            val id = ID(m.group(1), m.group(2), m.group(3))
+            val id = ID(m.group(1), m.group(2))
             try { logger.info(id.toString() + "\t\t" + getURL(id)) }
             catch (e: ID.NotFileNameHead) { logger.info("Not filename head $e ${e.message}"); continue }
             catch (e: Exception) { e.printStackTrace() }
@@ -64,12 +64,11 @@ internal class ClipboardDataManager(private val manager: ClipboardManager) {
     private fun getURL(id: ID): String {
         val projectName = Utils.getProjectNameByDocument(id)
         val latestVersion = Utils.getLatestVersion(projectName)
-        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:${id.body}-${id.tail}".replace(" ", "%20")
+        return AppConfig.ZANATA_DOMAIN + "webtrans/translate?iteration=$latestVersion&project=$projectName&locale=ko-KR&localeId=ko#view:doc;doc:${id.head};msgcontext:-${id.tail}".replace(" ", "%20")
     }
 
     companion object {
-        private val IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'() ]+)[_-](\\d)[_-](\\d+)[_-]?")
-        private val objectMapper = ObjectMapper().registerKotlinModule()
+        private val IDPattern = Pattern.compile("([a-zA-Z][a-zA-Z\\d-_,'() ]+)[_-](\\d+)[_-]?")
         private val logger = LoggerFactory.getLogger(ClipboardDataManager::class.java)
     }
 }

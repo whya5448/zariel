@@ -40,6 +40,7 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
         }
         frame.add(panel, BorderLayout.NORTH)
         frame.add(textField, BorderLayout.SOUTH)
+        frame.isVisible = true
     }
 
     internal fun updatePane(list: List<ID>) {
