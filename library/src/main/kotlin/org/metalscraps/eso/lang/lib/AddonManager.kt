@@ -29,7 +29,7 @@ class AddonManager {
 
     fun getSource(sPath: String, commit: String): StringBuilder {
         val addonPath = vars.addonDir.resolve(sPath)
-        if (Files.notExists(addonPath) or (Files.size(addonPath) <= 0L)) {
+        if (Files.notExists(addonPath) || (Files.exists(addonPath) && (Files.size(addonPath) <= 0L))) {
             Files.createDirectories(addonPath.parent)
             Files.newBufferedWriter(addonPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING).use {
                 it.write(URL("$CDN/$commit/$sPath").readText())
@@ -51,6 +51,7 @@ class AddonManager {
                     // 한글 소스맵 불러옴
                     val list = Utils.listFiles(vars.poDir, "po").filter { if (isEqualOrContains) it.fileName.toString() == fileName else it.fileName.toString().contains(fileName) }
                     val koText = Utils.getMergedPOtoMap(list, Utils.TextParseOptions(toChineseOffset = false))
+                    val missingList = ArrayList<String>()
 
                     // 해당 Index 아닌 경우 불러온 데이터 삭제
                     koText.values.removeIf { x -> x.id1 != id }
@@ -70,12 +71,13 @@ class AddonManager {
 
                         // 한글 맵에 없을경우엔 그냥 무시 → 인게임 애드온에서 계속 Missing NPC 뜸
                         if (t == null) {
-                            logger.warn("Missing Data? $xid $x")
+                            missingList.add("$xid $x")
                             builder.append("\t[${x.first}] = {\"${x.second}\"},\n")
                         } else builder.append("\t[${x.first}] = {EsoKR:E(\"${t.getText(writeFileName, beta)}\")},\n")
 
                     }
                     builder.append("}\n")
+                    if(missingList.size > 0) logger.warn("missingData $missingList")
 
                     // 불러왔던 원본 소스 replace
                     enText.replace(enText.indexOf(key), enText.length, builder.toString())
