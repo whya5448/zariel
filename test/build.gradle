@@ -36,7 +36,6 @@ jlink {
     launcher {
         name = launcherName
         jvmArgs = ['-Xmx768M', '-Dlogback.configurationFile=./logback.xml',
-                   "--add-reads ${sModuleName}.merged=${sModuleName}",
                    "--add-reads ${sModuleName}.merged.module=${sModuleName}",
                    "-cp", "config/"]
     }

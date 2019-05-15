@@ -20,7 +20,7 @@ def sModuleName = 'org.metalscraps.eso.lang.server'
 def sMergedModuleName = "${sModuleName}.merged.module"
 def sMainClass = 'org.metalscraps.eso.lang.server.ServerApplication'
 def launcherName = 'launch'
-def platformName = 'linux-x64'
+def platformName = 'alpine'
 mainClassName = "${sModuleName}/${sMainClass}"
 springBoot { mainClassName = sMainClass }
 jar {
@@ -30,14 +30,13 @@ jar {
 jlink {
     mergedModuleName = "${sMergedModuleName}"
     imageName = sImageName
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    options = ['--compress', '2', '--no-header-files', '--no-man-pages']
     //options = []
     targetPlatform(platformName, 'C:/Program Files/Zulu/zulu12.2.3-ca-jdk12.0.1-linux_musl_x64')
     launcher {
         name = launcherName
         jvmArgs = ["-XX:+PrintCommandLineFlags", "-verbose:gc",
                    '-Xmx288M', '-Dlogback.configurationFile=./logback.xml',
-                   "--add-reads ${sModuleName}.merged=${sModuleName}",
                    "--add-reads ${sModuleName}.merged.module=${sModuleName}",
                    "-cp", "config/"]
     }
@@ -55,6 +54,8 @@ jlink {
         requires 'java.desktop'
         requires 'java.instrument'
         requires 'jdk.unsupported'
+        requires 'jdk.crypto.ec'
+
         uses 'kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper'
         uses 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader'
         uses 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition'
