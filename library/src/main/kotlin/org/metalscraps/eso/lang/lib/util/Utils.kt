@@ -93,20 +93,21 @@ class Utils {
 
                 // 자나타 포맷 버그. 자나타 내에선 개행 없으나 po 다운로드시 생김.
                 // 진짜 개행 데이터 \r \n 문자로 표기되있음. → \r 안쓰는거같음. 확인필요
-
-                source = source.replace("\\\"\\\"","\"").replace("\"\n\"", "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
-                target = target.replace("\\\"\\\"","\"").replace("\"\n\"", "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+                // \"\" -> ", "\n" -> ""
+                source = source.replace("\\\"\\\"","\"").replace("\"\n\"".toRegex(), "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+                target = target.replace("\\\"\\\"","\"").replace("\"\n\"".toRegex(), "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
 
                 if (target == "") target = source
                 else if (source == "") source = target
 
-                if(!opt.parseSource) source = ""
+                val isFuzzy = group(1) == "#, fuzzy" || target.contains("-G-")
+                if(!opt.parseSource && !isFuzzy) source = ""
 
 
                 return PO(
                         id1 = id[0].toInt(), id2 = id[1].toInt(), id3 = id[2].toInt(),
                         source = source, target = target,
-                        fileName = fileName, isFuzzy = group(1) == "#, fuzzy"
+                        fileName = fileName, isFuzzy = isFuzzy
                 )
             }
         }

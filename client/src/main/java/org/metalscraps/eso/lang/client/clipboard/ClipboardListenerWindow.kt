@@ -40,7 +40,6 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
         }
         frame.add(panel, BorderLayout.NORTH)
         frame.add(textField, BorderLayout.SOUTH)
-        frame.isVisible = true
     }
 
     internal fun updatePane(list: List<ID>) {
@@ -58,6 +57,8 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
         frame.add(textField, BorderLayout.SOUTH)
         frame.isVisible = true
     }
+
+    internal fun show() { frame.isVisible = true }
 
     companion object {
         private val logger = LoggerFactory.getLogger(ClipboardListenerWindow::class.java)

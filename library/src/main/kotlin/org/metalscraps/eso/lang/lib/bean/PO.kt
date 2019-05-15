@@ -18,10 +18,6 @@ open class PO(
         var fileName:String = "Undefined"
 ) : Comparable<PO> {
 
-    init {
-        //source = source.replace("$q\n$q".toRegex(), "")
-        //target = target.replace("$q\n$q".toRegex(), "")
-    }
 
     fun getID(): String { return "$id1-$id2-$id3" }
     fun getLengthForLang(writeFileName:Boolean = false, beta:Boolean = false) : Int { return getTextForLang(writeFileName, beta).size}
@@ -31,7 +27,6 @@ open class PO(
             writeFileName -> "${fileName}_${id3}_$target"
             beta -> target
             isFuzzy -> source
-            target.contains("-G-") -> source
             else -> target
         }
     }

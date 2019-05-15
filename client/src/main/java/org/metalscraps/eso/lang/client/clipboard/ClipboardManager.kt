@@ -9,7 +9,7 @@ final class ClipboardManager(config: ClientConfig) {
     fun getContent(s: String) { return dataManager.getContent(s) }
     fun updatePane(arrayList: ArrayList<ID>) { gui.updatePane(arrayList) }
     fun openZanata(readValue: ID) { dataManager.openZanata(readValue) }
-    fun addClipboardListener() { listener.addClipboardListener() }
+    fun addClipboardListener() { gui.show();listener.addClipboardListener() }
 
     private val gui = ClipboardListenerWindow(this, config)
     private val dataManager = ClipboardDataManager(this)
