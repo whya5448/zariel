@@ -7,6 +7,7 @@ plugins {
 }
 apply plugin: 'java'
 group = "EsoKO"
+version = "1.3.0"
 
 
 compileJava.options.encoding = "utf-8"
@@ -18,6 +19,8 @@ targetCompatibility = 11
 subprojects {
     apply plugin: 'org.javamodularity.moduleplugin'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    
+    version = "1.3.0"
 
     repositories {
         jcenter()

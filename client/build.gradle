@@ -17,8 +17,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter:2.1.4.RELEASE'
 }
 
-version = "1.1.2"
-def sImageName = 'dc-eso-client'
+def sImageName = "dc-eso-client-$version"
 def sModuleName = 'org.metalscraps.eso.lang.client'
 def sMainClass = 'org.metalscraps.eso.lang.client.ClientApplication'
 mainClassName = "${sModuleName}/${sMainClass}"
@@ -30,6 +29,7 @@ jar {
 jlink {
     moduleName = sModuleName
     mergedModuleName = "${sModuleName}.merged.module"
+    imageDir = file("$buildDir/../../javaImages/")
     imageName = sImageName
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     //options = []
