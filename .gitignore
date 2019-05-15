@@ -10,4 +10,5 @@ out/
 .config
 /Dockerfiles/ssh/id_rsa
 /Dockerfiles/dc-eso-kr/
+/Dockerfiles/launch-alpine/
 /Dockerfiles/*.7z
