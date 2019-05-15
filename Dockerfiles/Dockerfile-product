@@ -1,4 +1,4 @@
-FROM alpine:3.9.3
+FROM alpine:3.9.4
 
 USER root
 WORKDIR /root
@@ -16,11 +16,8 @@ ADD ./ssh/known_hosts /root/.ssh/
 ENV LC_ALL ko_KR.UTF-8
 ENV ESO_SERVER_DIR /root/eso_server
 
-# From release -server
-ADD launch-linux-x64.7z . 
-RUN 7z x launch-linux-x64.7z; \
-rm launch-linux-x64.7z; \
-chmod 700 ./bin/*
+copy launch-alpine . 
+RUN chmod 700 ./bin/*
 
 WORKDIR /root/bin
 CMD /root/bin/launch
