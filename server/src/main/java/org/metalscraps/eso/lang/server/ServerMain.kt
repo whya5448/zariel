@@ -107,7 +107,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             // 버전 문서
             Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
             Utils.processRun(workDir, "git init")
-            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe $ttc.exe")
+            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe $ttc.exe po")
             Utils.processRun(workDir, "git commit -m $todayWithYear")
             Utils.processRun(workDir, "git remote add origin git@github.com:Whya5448/EsoKR-LANG.git")
             Utils.processRun(workDir, "git push -u origin master --force")
