@@ -245,14 +245,14 @@ class Utils {
         } // getFileNames
 
 
-        fun downloadPOs() {
+        fun downloadPOs(language: String = "ko") {
             val timeTaken = LocalTime.now()
-            for(x in arrayOf("item","skill","system","book","story")) downloadPO("ESO-$x")
+            for(x in arrayOf("item","skill","system","book","story")) downloadPO("ESO-$x", language = language)
             logger.info("총 ${timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS)}초")
         } // downloadPOs
 
-        private fun downloadPO(projectName: String, remainFiles:MutableList<String> = mutableListOf()) {
-            val url = "${AppConfig.ZANATA_DOMAIN}rest/file/translation/$projectName/${getLatestVersion(projectName)}/ko/po?docId="
+        private fun downloadPO(projectName: String, language: String = "ko", remainFiles:MutableList<String> = mutableListOf()) {
+            val url = "${AppConfig.ZANATA_DOMAIN}rest/file/translation/$projectName/${getLatestVersion(projectName)}/$language/po?docId="
             val fileNames = if(remainFiles.size == 0) getFileNames(projectName) else remainFiles
             val poDir = vars.poDir
 
