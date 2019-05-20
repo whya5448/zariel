@@ -50,7 +50,7 @@ class AddonManager {
 
                     // 한글 소스맵 불러옴
                     val list = Utils.listFiles(vars.poDir, "po").filter { if (isEqualOrContains) it.fileName.toString() == fileName else it.fileName.toString().contains(fileName) }
-                    val koText = Utils.getMergedPOtoMap(list, Utils.TextParseOptions(toChineseOffset = false))
+                    val koText = Utils.getPOMap(list, Utils.TextParseOptions(toChineseOffset = false))
                     val missingList = ArrayList<String>()
 
                     // 해당 Index 아닌 경우 불러온 데이터 삭제
@@ -138,7 +138,7 @@ class AddonManager {
                 enText.replace(enText.length-6, enText.length, "")
 
                 val fileList = Utils.listFiles().filter { p-> pattern.any { p.fileName().contains(it) } } as MutableList
-                val koMap = Utils.getMergedPOtoMap(fileList,
+                val koMap = Utils.getPOMap(fileList,
                         Utils.TextParseOptions(
                                 toLower = true,
                                 keyGroup = 6,

@@ -135,7 +135,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             var isNotExist = false
             for(x in arrayOf("kr.lang", "kb.lang", "tr.lang")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
             if(isNotExist) {
-                val list = Utils.getMergedPOtoList(Utils.listFiles(poDir, "po"))
+                val list = Utils.getPOList(Utils.listFiles(poDir, "po"))
 
                 if(Files.notExists(workDir.resolve("kr.lang"))) Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
                 if(Files.notExists(workDir.resolve("kb.lang"))) Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, beta = true)

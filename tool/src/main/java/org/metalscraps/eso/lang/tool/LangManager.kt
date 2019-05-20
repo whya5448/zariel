@@ -24,7 +24,7 @@ class LangManager(private val objectMapper: ObjectMapper) {
 
     internal fun makeLang() {
         vars.run {
-            val list = Utils.getMergedPOtoList(Utils.listFiles(poDir, "po"))
+            val list = Utils.getPOList(Utils.listFiles(poDir, "po"))
             Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
             Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, writeFileName = true)
             Utils.makeLANGwithLog(workDir.resolve("tr.lang"), list, beta = true)
@@ -33,7 +33,7 @@ class LangManager(private val objectMapper: ObjectMapper) {
     } // makeLang
 
     internal fun something() {
-        val data = Utils.getMergedPOtoList(Utils.listFiles(vars.poDir, "po"))
+        val data = Utils.getPOList(Utils.listFiles(vars.poDir, "po"))
         val sb = StringBuilder()
         data.forEach { e:PO -> sb.append(e.toPOTFormat()) }
         logger.info(vars.baseDir.toString())

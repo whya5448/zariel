@@ -38,7 +38,7 @@ class Utils {
             var toLower: Boolean = false,
             var parseSource: Boolean = false,
             var excludeId: Array<Regex> = arrayOf(),
-            var keyGroup:Int = 2
+            var keyGroup:Int = 3
     )
 
     companion object {
@@ -58,20 +58,25 @@ class Utils {
         // 데이터 핸들링
         */ ////////////////////////////////////////////////////
 
-        private fun getStringFromPO(path: Path, toChineseOffset: Boolean): StringBuilder {
-            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET))
+        private fun getStringBuilderFromPO(path: Path, toChineseOffset: Boolean): StringBuilder {
+
+            // 자나타 개행 제거, "" 이스케이프 복원
+            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET)
+                            .replace("\"\$(\\r\\n|\\r|\\n)^\"".toRegex(RegexOption.MULTILINE), "")
+                            .replace("[^(msgid |msgstr )]\"\"".toRegex(), "\"")
+            )
 
             return when(toChineseOffset) {
                 true -> sb.toChineseOffset()
                 false -> sb
             }
-        } // getStringFromPO
+        } // getStringBuilderFromPO
 
         private fun parsePO(m: Matcher, fileName: String, opt: TextParseOptions): PO {
             m.run {
-                val id = group(2).split("-")
+                val id = group(3).split("-")
                 var source = group(6)
-                var target = group(7)
+                var target = group(9)
                 if(opt.toLower) {
                     source = source.toLowerCase()
                     target = target.toLowerCase()
@@ -94,8 +99,8 @@ class Utils {
                 // 자나타 포맷 버그. 자나타 내에선 개행 없으나 po 다운로드시 생김.
                 // 진짜 개행 데이터 \r \n 문자로 표기되있음. → \r 안쓰는거같음. 확인필요
                 // \"\" -> ", "\n" -> ""
-                source = source.replace("\\\"\\\"","\"").replace("\"\n\"".toRegex(), "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
-                target = target.replace("\\\"\\\"","\"").replace("\"\n\"".toRegex(), "").replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+                source = source.replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
+                target = target.replace("\\\\n".toRegex(RegexOption.IGNORE_CASE),"\n")
 
                 if (target == "") target = source
                 else if (source == "") source = target
@@ -112,9 +117,9 @@ class Utils {
             }
         }
 
-        private fun getPOtoMap(path:Path, opt: TextParseOptions): MutableMap<String, PO> {
+        private fun getPO(path:Path, opt: TextParseOptions): MutableMap<String, PO> {
             val poMap = HashMap<String, PO>()
-            val source = getStringFromPO(path, opt.toChineseOffset)
+            val source = getStringBuilderFromPO(path, opt.toChineseOffset)
             val fileName = path.fileName()
 
             AppConfig.POPattern.matcher(source).run {
@@ -122,51 +127,95 @@ class Utils {
                     if (opt.excludeId.any{ group(2).contains(it) }) continue
                     poMap[
                             if (opt.toLower) group(opt.keyGroup).toLowerCase()
-                            else group(opt.keyGroup).toLowerCase()
+                            else group(opt.keyGroup)
                     ] = parsePO(this, fileName, opt)
                 }
             }
             return poMap
-        } // getPOtoMap
+        } // getPO
 
-        fun getMergedPOtoMap(fileList: Collection<Path>, options: TextParseOptions = TextParseOptions()): MutableMap<String, PO> {
+        fun getPOMap(fileList: Collection<Path>, options: TextParseOptions = TextParseOptions()): MutableMap<String, PO> {
             val map = HashMap<String, PO>()
 
-            for (x in fileList) {
-                if (x.fileName() in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) continue
+            fileList.parallelStream().forEach {
+                if (it.fileName() in arrayOf("00_EsoUI_Client", "00_EsoUI_Pregame")) return@forEach
 
-                map.putAll(getPOtoMap(x, options))
-                logger.trace(x.toString())
+                map.putAll(getPO(it, options))
+                logger.trace(it.toString())
             }
 
             //map.computeIfPresent("242841733-0-54340") { _, v -> v.target = "매지카 물약".toChineseOffset(); v; }
             return map
-        } // getMergedPOtoMap
+        } // getPOMap
 
-        fun getMergedPOtoList(fileList: MutableList<Path>, options: TextParseOptions = TextParseOptions()): MutableList<PO> {
-            return ArrayList(getMergedPOtoMap(fileList, options).values)
-        } // getMergedPOtoList
+        fun getPOList(fileList: List<Path>, options: TextParseOptions = TextParseOptions()): MutableList<PO> {
+            return ArrayList(getPOMap(fileList, options).values)
+        } // getPOList
 
-        public fun makeLANGwithLog(path:Path, poList: MutableList<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
+        public fun makeLANGwithLog(path:Path, poList: List<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
             val timeTaken = LocalTime.now()
             makeLANG(path, poList, writeFileName, beta)
             logger.info("${path.fileName} ${timeTaken.until(LocalTime.now(), ChronoUnit.SECONDS)}초")
         } // makeLANGwithLog
 
-        fun makeLANG(path: Path, poList: MutableList<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
+        fun makeLANG(path: Path, poList: List<PO>, writeFileName:Boolean = false, beta:Boolean = false) {
             var offset = 0
-            FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).use {
-                it.write(ByteBuffer.allocate(Int.SIZE_BYTES * 2).putInt(2).putInt(poList.size).flip())
-                for (p in poList) {
-                    it.write(ByteBuffer.allocate(16).putInt(p.id1).putInt(p.id2).putInt(p.id3).putInt(offset).flip())
-                    offset += p.getLengthForLang(writeFileName, beta) + 1
+            FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).use { fc ->
+                fc.write(ByteBuffer.allocate(Int.SIZE_BYTES * 2).putInt(2).putInt(poList.size).flip())
+                poList.forEach {
+                    fc.write(ByteBuffer.allocate(16).putInt(it.id1).putInt(it.id2).putInt(it.id3).putInt(offset).flip())
+                    offset += it.getLengthForLang(writeFileName, beta) + 1
                 }
-                for (p in poList) {
-                    val x = p.getTextForLang(writeFileName, beta)
-                    it.write(ByteBuffer.allocate(x.size + 1).put(x).put(0).flip())
+                poList.forEach {
+                    val x = it.getTextForLang(writeFileName, beta)
+                    fc.write(ByteBuffer.allocate(x.size + 1).put(x).put(0).flip())
                 }
             }
+
         } // makeLANG
+
+
+        fun readLANG(path: Path): MutableList<PO> {
+            val nil = 0.toByte()
+            val list:ArrayList<PO> = ArrayList()
+
+            fun parseBuffer(data: ByteArray, offset: Int, fileSize: Long): String {
+                var res = ""
+
+                if (offset >= fileSize) return res
+                var i = 0
+
+                while(data[offset+i] != nil) i++
+
+                res = data.copyOfRange(offset, offset+i).toString(AppConfig.CHARSET)
+
+                return res
+            }
+
+            val TEXT_RECORD_SIZE = 16
+            val data = Files.readAllBytes(path)
+            val fileSize = Files.size(path)
+            //val fileID = copyInt(data, 0)
+            val recordCnt = data.copyInt(4)
+
+            val startTextOffset = recordCnt * 16 + 8
+            for (i in 0 until recordCnt) {
+                val recordOffset = 8 + i * TEXT_RECORD_SIZE
+
+                val id = data.copyInt(recordOffset)
+                val body = data.copyInt(recordOffset+4)
+                val index = data.copyInt(recordOffset+8)
+                val offset = data.copyInt(recordOffset+12) + startTextOffset
+
+                if (offset < fileSize) {
+                    //std::string Temp = ParseBufferString(pData, TextOffset, (size_t)Size);
+                    //Record.Text = ReplaceStrings(ReplaceStrings(Temp, "\x0d", "\\r"), "\x0a", "\\n");
+                    val text = parseBuffer(data, offset, fileSize)
+                    list.add( PO(id1 = id, id2 = body, id3 = index, source = text, target = text) )
+                } else logger.error("Warning: Read passed end of file (offset $offset) in text record $i")
+            }
+            return list
+        } // readLANG
 
         /* ////////////////////////////////////////////////////
         // 데이터 핸들링 끝
