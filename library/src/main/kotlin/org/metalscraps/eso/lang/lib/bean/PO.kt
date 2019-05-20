@@ -15,8 +15,8 @@ open class PO(
         private var source: String,
         private var target: String,
         var isFuzzy:Boolean = false,
-        var fileName:String = "Undefined"
-) : Comparable<PO> {
+        var fileName:String = "x"
+    ) : Comparable<PO> {
 
 
     fun getID(): String { return "$id1-$id2-$id3" }
