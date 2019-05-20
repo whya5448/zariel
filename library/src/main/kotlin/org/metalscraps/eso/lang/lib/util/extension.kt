@@ -8,7 +8,7 @@ import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 
-val logger: Logger = LoggerFactory.getLogger(Utils::class.java)
+private val logger: Logger = LoggerFactory.getLogger(Utils::class.java)
 
 public fun String.toChineseOffset(): String {
     val c = this.toCharArray()
@@ -48,3 +48,6 @@ public fun Path.ext() : String {
     val x = this.fileName.toString()
     return x.substring(x.lastIndexOf('.') + 1)
 }
+
+public fun ByteArray.toHexString() = toUByteArray().joinToString("") { it.toString(16).padStart(2, '0') }
+public fun ByteArray.copyInt(offset: Int) = this.copyOfRange(offset, offset+4).toHexString().toInt(16)
