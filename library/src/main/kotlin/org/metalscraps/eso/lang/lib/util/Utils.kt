@@ -61,10 +61,15 @@ class Utils {
         private fun getStringBuilderFromPO(path: Path, toChineseOffset: Boolean): StringBuilder {
 
             // 자나타 개행 제거, "" 이스케이프 복원
-            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET)
-                            .replace("\"\$(\\r\\n|\\r|\\n)^\"".toRegex(RegexOption.MULTILINE), "")
-                            .replace("[^(msgid |msgstr )]\"\"".toRegex(), "\"")
-            )
+            val sb = StringBuilder(Files.readString(path, AppConfig.CHARSET).replace("\"\$(\\r\\n|\\r|\\n)^\"".toRegex(RegexOption.MULTILINE), ""))
+
+            var idx = sb.indexOf("\\\"\\\"")
+            while(idx != -1) {
+                sb.replace(idx, idx+4, "\"")
+                idx = sb.indexOf("\\\"\\\"", idx)
+            }
+
+            //Files.writeString(path.resolveSibling("${path.fileName()}.mod.po"), sb.toString(), AppConfig.CHARSET)
 
             return when(toChineseOffset) {
                 true -> sb.toChineseOffset()
