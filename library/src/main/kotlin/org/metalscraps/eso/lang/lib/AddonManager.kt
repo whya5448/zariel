@@ -62,7 +62,8 @@ class AddonManager {
                     while (questsMatcher.find()) enQuests.add(Pair(questsMatcher.group(2), questsMatcher.group(4)))
 
                     // 최종본 생성용 빌더
-                    val builder = StringBuilder("$key\n")
+                    val builder = StringBuilder("$key")
+                    builder.append("EsoKR:E({\n")
 
                     // 영문 맵에 있는 객체 ID로 한글맵에서 데이터 가져와 빌더에 붙힘.
                     for (x in enQuests) {
@@ -73,10 +74,10 @@ class AddonManager {
                         if (t == null) {
                             missingList.add("$xid $x")
                             builder.append("\t[${x.first}] = {\"${x.second}\"},\n")
-                        } else builder.append("\t[${x.first}] = {EsoKR:E(\"${t.getText(writeFileName, beta)}\")},\n")
+                        } else builder.append("\t[${x.first}] = {\"${t.getText(writeFileName, beta)}\"},\n")
 
                     }
-                    builder.append("}\n")
+                    builder.append("})")
                     if(missingList.size > 0) logger.warn("missingData $missingList")
 
                     // 불러왔던 원본 소스 replace
@@ -100,7 +101,7 @@ class AddonManager {
                     workAddonDir.resolve("Destinations/DestinationsQuests_$lang.lua"),
                     false,
                     "journey.po",
-                    "QuestTableStore = {",
+                    "QuestTableStore = ",
                     52420949
             )
             runner.process()
@@ -110,7 +111,7 @@ class AddonManager {
                     workAddonDir.resolve("Destinations/DestinationsQuestgivers_$lang.lua"),
                     false,
                     "npc-talk",
-                    "QuestGiverStore = {",
+                    "QuestGiverStore = ",
                     8290981
             )
             runner.process()
