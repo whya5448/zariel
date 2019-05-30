@@ -24,7 +24,7 @@ class AddonManager {
     private val vars = AppVariables
 
     companion object {
-        private const val CDN = "https://rawcdn.githack.com/Whya5448/EsoKR"
+        private const val CDN = "https://rawcdn.githack.com/Whya5448/EsoKR-RawAddonData"
     }
 
     fun getSource(sPath: String, commit: String): StringBuilder {
@@ -39,7 +39,7 @@ class AddonManager {
     }
 
     fun destination(lang: String = "kr", writeFileName: Boolean = false, beta: Boolean = false) {
-        val commit = "5450c42d1a037ff907906c8361b077a398983c0d"
+        val commit = "master"
 
         class Runner(var en: String, var ko: Path, var isEqualOrContains: Boolean = false,
                      var fileName: String, var key: String, var id: Int = 0) {
@@ -62,7 +62,7 @@ class AddonManager {
                     while (questsMatcher.find()) enQuests.add(Pair(questsMatcher.group(2), questsMatcher.group(4)))
 
                     // 최종본 생성용 빌더
-                    val builder = StringBuilder("$key")
+                    val builder = StringBuilder(key)
                     builder.append("EsoKR:E({\n")
 
                     // 영문 맵에 있는 객체 ID로 한글맵에서 데이터 가져와 빌더에 붙힘.
@@ -121,7 +121,7 @@ class AddonManager {
     }
 
     fun tamrielTradeCentre(lang: String = "kr", writeFileName: Boolean = false, beta: Boolean = false) {
-        val commit = "5450c42d1a037ff907906c8361b077a398983c0d"
+        val commit = "master"
 
         // ESO-item
         val pattern = arrayOf(
@@ -170,7 +170,7 @@ class AddonManager {
 
                 for (entry in koMap.entries)
                     enMap[entry.key]?.let {
-                        val v = entry.value.getText(writeFileName, beta);
+                        val v = entry.value.getText(writeFileName, beta)
                         if(entry.key != v) enText.append("[EsoKR:E(\"$v\")]={[${it.first}]=${it.second},},\n")
                     }
                 enText.delete(enText.length-2, enText.length)
