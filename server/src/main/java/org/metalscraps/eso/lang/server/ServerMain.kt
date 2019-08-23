@@ -14,6 +14,7 @@ import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.function.Predicate
+import kotlin.system.exitProcess
 
 @Component
 class ServerMain(private val config:ServerConfig) : ESOMain {
@@ -47,7 +48,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
             if(!init()) {
                 logger.info("초기화 실패")
-                System.exit(-1)
+                exitProcess(-1)
             }
 
             // 이전 데이터 삭제
