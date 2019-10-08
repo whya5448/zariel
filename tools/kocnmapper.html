@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title></title>
+    <style type="text/css">
+        label {
+            display: block;
+        }
+
+        div {
+            display: inline-block;
+        }
+
+        textarea {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <label for="ko">
+        <button type="button" id="btnKocn">KO->CN</button>
+    </label>
+    <textarea id="ko"></textarea>
+</div>
+<div>
+    <label for="cn">
+        <button type="button" id="btnCnko">CN->KO</button>
+    </label>
+    <textarea id="cn"></textarea>
+</div>
+<script type="text/javascript">
+
+    const koStart = parseInt("0xAC00", 16);
+    const koEnd = parseInt("0xEA00", 16);
+    const charOffset = parseInt("0x3E00", 16);
+
+    const $ = function (query) {
+        const r = document.querySelectorAll(query);
+        return r.length === 1 ? r[0] : r;
+    };
+
+    $("#btnKocn").addEventListener("click", function () {
+        const source = $("#ko");
+        let val = source.value.split("");
+        for (let x in val) {
+            let c = val[x].charCodeAt(0);
+            if (c >= koStart && c <= koEnd) val[x] = String.fromCharCode(c - charOffset);
+        }
+
+        $("#cn").value = val.join("");
+    });
+
+    $("#btnCnko").addEventListener("click", function () {
+        const source = $("#cn");
+        let val = source.value.split("");
+        for (let x in val) {
+            let c = val[x].charCodeAt(0);
+            if (c >= koStart - charOffset && c <= koEnd - charOffset) val[x] = String.fromCharCode(c + charOffset);
+        }
+
+        $("#ko").value = val.join("");
+    });
+
+
+</script>
+</body>
+</html>
