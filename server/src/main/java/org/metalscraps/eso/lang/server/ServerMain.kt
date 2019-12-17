@@ -1,11 +1,14 @@
 package org.metalscraps.eso.lang.server
 
 import org.metalscraps.eso.lang.lib.AddonManager
+import org.metalscraps.eso.lang.lib.bean.Lang
+import org.metalscraps.eso.lang.lib.config.AppConfig.langFiles
 import org.metalscraps.eso.lang.lib.config.AppVariables
 import org.metalscraps.eso.lang.lib.config.ESOMain
 import org.metalscraps.eso.lang.lib.util.Utils
 import org.metalscraps.eso.lang.server.config.ServerConfig
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.io.IOException
 import java.nio.file.Files
@@ -17,12 +20,12 @@ import java.util.function.Predicate
 import kotlin.system.exitProcess
 
 @Component
-class ServerMain(private val config:ServerConfig) : ESOMain {
+class ServerMain(private val config: ServerConfig) : ESOMain {
     private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
-    private final val lang:Path
-    private final val dest:Path
-    private final val ttc:Path
+    private final val lang: Path
+    private final val dest: Path
+    private final val ttc: Path
 
     init {
         vars.baseDir = config.workDir
@@ -31,10 +34,10 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         ttc = vars.workDir.resolve("tamrielTradeCentre_${AppVariables.todayWithYear}.7z")
     }
 
-    fun init() : Boolean {
+    fun init(): Boolean {
         vars.run {
-            for(x in dirs) if(Files.notExists(x)) Files.createDirectories(x)
-            if(config.isLinux) if(Files.notExists(Paths.get("/root/.ssh/id_rsa"))) {
+            for (x in dirs) if (Files.notExists(x)) Files.createDirectories(x)
+            if (config.isLinux) if (Files.notExists(Paths.get("/root/.ssh/id_rsa"))) {
                 logger.error("github id_rsa 존재하지 않음.")
                 return false
             }
@@ -42,11 +45,12 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         return true
     }
 
+    @Scheduled(cron = "0 0 3 * * ?")
     override fun start() {
         vars.run {
             var error = false
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
-            if(!init()) {
+            if (!init()) {
                 logger.info("초기화 실패")
                 exitProcess(-1)
             }
@@ -55,16 +59,20 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
             logger.info("이전 데이터 삭제")
             deleteOldData()
             logger.info("PO 다운로드")
-            try { Utils.downloadPOs() } catch (e: Exception) { logger.error(e.toString()); e.printStackTrace(); error = true }
+            try {
+                Utils.downloadPOs()
+            } catch (e: Exception) {
+                logger.error(e.toString()); e.printStackTrace(); error = true
+            }
 
             addons()
             logger.info("LANG 생성")
             makeLANG()
-            if(compress()) sfx()
+            if (compress()) sfx()
             else logger.info("SFX 스킵")
 
             Utils.processRun(workDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(workDir.resolve("version").toFile()))
-            if(!error || config.forceUpload) upload()
+            if (!error || config.forceUpload) upload()
         }
     }
 
@@ -78,17 +86,17 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
         AddonManager().tamrielTradeCentre("tr", writeFileName = true)
     }
 
-    private fun compress() : Boolean {
+    private fun compress(): Boolean {
         System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
         val needSfx = Files.notExists(lang) or Files.notExists(dest) or Files.notExists(ttc)
         vars.run {
             logger.info("대상 압축")
             //Utils.kt.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang") // 최대압축/메모리 -1.5G, 아카이브 17mb
-            if(Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
-            if(Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $workAddonDir/Destinations/*")
-            if(Files.notExists(ttc)) Utils.processRun(workDir, "7za a -mx=9 $ttc $workAddonDir/TamrielTradeCentre/*")
+            if (Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
+            if (Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $workAddonDir/Destinations/*")
+            if (Files.notExists(ttc)) Utils.processRun(workDir, "7za a -mx=9 $ttc $workAddonDir/TamrielTradeCentre/*")
         }
-        if(!needSfx) logger.info("압축 스킵")
+        if (!needSfx) logger.info("압축 스킵")
         return needSfx
     }
 
@@ -105,6 +113,13 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
     private fun upload() {
         vars.run {
             logger.info("목적파일 업로드")
+
+            // 10MB 미만일 경우.
+            if (Files.size(lang) < 1024 * 1024 * 10) {
+                logger.error("목적파일 용량이 작음. " + Files.size(lang))
+                return
+            };
+
             // 버전 문서
             Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
             Utils.processRun(workDir, "git init")
@@ -119,7 +134,7 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
     private fun deleteOldData() {
         vars.run {
             val workDir = "$baseDir/$WORK_DIR_PREFIX"
-            val p = Predicate { x:Path -> x.toString().startsWith(workDir) && !x.toString().startsWith("$workDir$today") }
+            val p = Predicate { x: Path -> x.toString().startsWith(workDir) && !x.toString().startsWith("$workDir$today") && !x.toString().startsWith("$workDir$yesterday") }
             try {
                 // 디렉토리 사용중 오류, 파일 먼저 지우고 디렉토리 지우기
                 Files.walk(baseDir).filter(p.and { x -> Files.isRegularFile(x) }).forEach(Files::delete)
@@ -133,14 +148,12 @@ class ServerMain(private val config:ServerConfig) : ESOMain {
 
     private fun makeLANG() {
         vars.run {
-            var isNotExist = false
-            for(x in arrayOf("kr.lang", "kb.lang", "tr.lang")) isNotExist = isNotExist || Files.notExists(workDir.resolve(x))
-            if(isNotExist) {
-                val list = Utils.getPOList(Utils.listFiles(poDir, "po"))
+            val notExistLangFiles = arrayListOf<Lang>()
 
-                if(Files.notExists(workDir.resolve("kr.lang"))) Utils.makeLANGwithLog(workDir.resolve("kr.lang"), list)
-                if(Files.notExists(workDir.resolve("kb.lang"))) Utils.makeLANGwithLog(workDir.resolve("kb.lang"), list, beta = true)
-                if(Files.notExists(workDir.resolve("tr.lang"))) Utils.makeLANGwithLog(workDir.resolve("tr.lang"), list, writeFileName = true)
+            langFiles.forEach { if (Files.notExists(it.file)) notExistLangFiles.add(it) }
+            if (notExistLangFiles.size > 0) {
+                val list = Utils.getPOList(Utils.listFiles(poDir, "po"))
+                notExistLangFiles.forEach { Utils.makeLANGwithLog(it.file, list, beta = it.beta, writeFileName = it.writeFileName) }
             }
         }
     }

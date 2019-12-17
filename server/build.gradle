@@ -30,13 +30,13 @@ jlink {
     mergedModuleName = "${sMergedModuleName}"
     imageName = sImageName
     options = ['--compress', '2', '--no-header-files', '--no-man-pages']
-    //options = []
-    targetPlatform(platformName, 'C:/Program Files/Zulu/zulu12.2.3-ca-jdk12.0.1-linux_musl_x64')
+    targetPlatform(platformName, 'C:/dev/zulu13.28.11-ca-jdk13.0.1-linux_musl_x64')
+
     launcher {
         name = launcherName
         jvmArgs = ["-XX:+PrintCommandLineFlags", "-verbose:gc",
                    '-Xmx288M', '-Dlogback.configurationFile=./logback.xml',
-                   "--add-reads ${sModuleName}.merged.module=${sModuleName}",
+                   "--add-reads=${sModuleName}.merged.module=${sModuleName}",
                    "-cp", "config/"]
     }
 

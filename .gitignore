@@ -12,3 +12,5 @@ out/
 /Dockerfiles/dc-eso-kr/
 /Dockerfiles/launch-alpine/
 /Dockerfiles/*.7z
+/Dockerfiles/eso_server/
+/Dockerfiles/gradle_libs/

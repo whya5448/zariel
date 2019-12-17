@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+mkdir dc-eso-kr
+mkdir gradle_libs
+docker run --rm -ti -v "$(pwd)/../:/root/zariel" -v "$(pwd)/eso_server:/root/eso_server" -v "$(pwd)/gradle_libs:/root/.gradle/caches/modules-2/files-2.1/" --name dc-eso-kr-dev whya5448/dc-eso-kr

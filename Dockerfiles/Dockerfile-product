@@ -20,4 +20,4 @@ copy launch-alpine .
 RUN chmod 700 ./bin/*
 
 WORKDIR /root/bin
-CMD /root/bin/launch
+ENTRYPOINT ["/root/bin/launch"]
