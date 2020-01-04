@@ -3,4 +3,4 @@ nm=eso-product
 mkdir eso_server/addons/Destinations/ -p
 
 if [[ ! -f "id_rsa" ]] ; then echo "need id_rsa" ; exit 1 ; fi
-docker run --name "${nm}" --rm -ti -v "${pwd}/id_rsa:/root/.ssh/id_rsa"  -v "${pwd}/eso_server:/root/eso_server" whya5448/dc-eso-kr:product "$@"
+docker run --name "${nm}" --rm -ti -v "$(pwd)/id_rsa:/root/.ssh/id_rsa"  -v "$(pwd)/eso_server:/root/eso_server" whya5448/dc-eso-kr:product "$@"
