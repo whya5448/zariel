@@ -4,7 +4,6 @@ package org.metalscraps.eso.lang.lib.util
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -49,5 +48,7 @@ public fun Path.ext() : String {
     return x.substring(x.lastIndexOf('.') + 1)
 }
 
+@ExperimentalUnsignedTypes
 public fun ByteArray.toHexString() = toUByteArray().joinToString("") { it.toString(16).padStart(2, '0') }
+@ExperimentalUnsignedTypes
 public fun ByteArray.copyInt(offset: Int) = this.copyOfRange(offset, offset+4).toHexString().toInt(16)

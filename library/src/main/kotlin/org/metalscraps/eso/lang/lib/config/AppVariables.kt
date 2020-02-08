@@ -12,11 +12,13 @@ import java.time.format.DateTimeFormatter
  */
 
 object AppVariables {
-
-    val dateTime: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
-    val today: String = dateTime.format(DateTimeFormatter.ofPattern("MMdd"))
-    val yesterday: String = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(1).format(DateTimeFormatter.ofPattern("MMdd"))
-    val todayWithYear: String = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
+    var dateTime: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    val today: String
+        get() = dateTime.format(DateTimeFormatter.ofPattern("MMdd"))
+    val yesterday: String
+        get() = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(1).format(DateTimeFormatter.ofPattern("MMdd"))
+    val todayWithYear: String
+        get() = dateTime.format(DateTimeFormatter.ofPattern("yyMMdd"))
 
     const val WORK_DIR_PREFIX = "work_"
     const val ADDON_DIR = "addons"
@@ -33,4 +35,8 @@ object AppVariables {
 
     val dirs: Array<Path>
         get() = arrayOf(poDir, workDir, addonDir, baseDir)
+
+    fun reload() {
+        dateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    }
 }

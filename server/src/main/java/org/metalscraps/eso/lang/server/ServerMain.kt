@@ -23,19 +23,17 @@ import kotlin.system.exitProcess
 class ServerMain(private val config: ServerConfig) : ESOMain {
     private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
-    private final val lang: Path
-    private final val dest: Path
-    private final val ttc: Path
-
-    init {
-        vars.baseDir = config.workDir
-        lang = vars.workDir.resolve("lang_${AppVariables.todayWithYear}.7z")
-        dest = vars.workDir.resolve("destinations_${AppVariables.todayWithYear}.7z")
-        ttc = vars.workDir.resolve("tamrielTradeCentre_${AppVariables.todayWithYear}.7z")
-    }
+    private lateinit var lang: Path
+    private lateinit var dest: Path
+    private lateinit var ttc: Path
 
     fun init(): Boolean {
         vars.run {
+            baseDir = config.workDir
+            lang = workDir.resolve("lang_${todayWithYear}.7z")
+            dest = workDir.resolve("destinations_${todayWithYear}.7z")
+            ttc = workDir.resolve("tamrielTradeCentre_${todayWithYear}.7z")
+
             for (x in dirs) if (Files.notExists(x)) Files.createDirectories(x)
             if (config.isLinux) if (Files.notExists(Paths.get("/root/.ssh/id_rsa"))) {
                 logger.error("github id_rsa 존재하지 않음.")
@@ -45,9 +43,11 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
         return true
     }
 
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(cron = "0 0 3 * * ?", zone = "Asia/Seoul")
     override fun start() {
         vars.run {
+            reload()
+
             var error = false
             logger.info(dateTime.format(DateTimeFormatter.ofPattern("yy-MM-dd hh:mm:ss")) + " / 작업 시작")
             if (!init()) {
@@ -62,7 +62,9 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
             try {
                 Utils.downloadPOs()
             } catch (e: Exception) {
-                logger.error(e.toString()); e.printStackTrace(); error = true
+                logger.error(e.toString())
+                e.printStackTrace();
+                error = true
             }
 
             addons()
@@ -73,6 +75,9 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
 
             Utils.processRun(workDir, "echo ${Date().time}/$todayWithYear/${Utils.crc32(Paths.get("$lang.exe"))}", ProcessBuilder.Redirect.to(workDir.resolve("version").toFile()))
             if (!error || config.forceUpload) upload()
+
+            // 스케쥴러 대기할 예정이므로 gc해서 메모리 비워두기
+            System.gc()
         }
     }
 
