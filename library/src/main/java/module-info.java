@@ -6,6 +6,7 @@ open module org.metalscraps.eso.lang.library {
     requires java.desktop;
     requires kotlin.stdlib;
     requires jackson.annotations;
+    requires kotlin.stdlib.jdk8;
     exports org.metalscraps.eso.lang.lib;
     exports org.metalscraps.eso.lang.lib.util;
     exports org.metalscraps.eso.lang.lib.bean;
