@@ -36,11 +36,17 @@ internal class ClipboardListener(private val manager: ClipboardManager) : Flavor
             val ss = StringSelection(s)
             clipboard.setContents(ss, ss)
 
-            try { manager.getContent(s) }
-            catch (e1: IOException) { e1.printStackTrace() }
-            catch (e1: UnsupportedFlavorException) { e1.printStackTrace() }
-            catch (e1: IllegalStateException) {
-                try { manager.getContent(s) } catch (ignored: Exception) {}
+            try {
+                manager.getContent(s)
+            } catch (e1: IOException) {
+                e1.printStackTrace()
+            } catch (e1: UnsupportedFlavorException) {
+                e1.printStackTrace()
+            } catch (e1: IllegalStateException) {
+                try {
+                    manager.getContent(s)
+                } catch (ignored: Exception) {
+                }
             }
         }
     }

@@ -8,7 +8,8 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class ClientApplication : CommandLineRunner {
 
-    @Autowired lateinit var main:ClientMain
+    @Autowired
+    lateinit var main: ClientMain
 
     override fun run(vararg args: String?) {
         main.start()

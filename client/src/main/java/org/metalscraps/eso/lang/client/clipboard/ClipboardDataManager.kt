@@ -1,7 +1,5 @@
 package org.metalscraps.eso.lang.client.clipboard
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.metalscraps.eso.lang.lib.bean.ID
 import org.metalscraps.eso.lang.lib.config.AppConfig
 import org.metalscraps.eso.lang.lib.util.Utils
@@ -37,9 +35,13 @@ internal class ClipboardDataManager(private val manager: ClipboardManager) {
         val arrayList = ArrayList<ID>()
         while (m.find()) {
             val id = ID(m.group(1), m.group(2))
-            try { logger.info(id.toString() + "\t\t" + getURL(id)) }
-            catch (e: ID.NotFileNameHead) { logger.info("Not filename head $e ${e.message}"); continue }
-            catch (e: Exception) { e.printStackTrace() }
+            try {
+                logger.info(id.toString() + "\t\t" + getURL(id))
+            } catch (e: ID.NotFileNameHead) {
+                logger.info("Not filename head $e ${e.message}"); continue
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             arrayList.add(id)
         }
         removeDuplicateItem(arrayList)

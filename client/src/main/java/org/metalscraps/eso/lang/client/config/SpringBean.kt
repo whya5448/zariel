@@ -10,7 +10,7 @@ import java.nio.file.Paths
 class SpringBean {
 
     @Bean
-    fun getClientConfig() : ClientConfig {
+    fun getClientConfig(): ClientConfig {
         val appPath = Paths.get(System.getenv("localappdata") + "/" + "dc_eso_client")
         val config = ClientConfig(appPath, appPath.resolve(".config"))
         config.load(mapOf(

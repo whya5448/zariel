@@ -12,19 +12,23 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 
 @Component
-class OptionPanel(config:ClientConfig) {
+class OptionPanel(config: ClientConfig) {
 
-    private val logger:Logger = LoggerFactory.getLogger(OptionPanel::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(OptionPanel::class.java)
     private val frame = Frame()
 
     init {
         val height = 242
         val width = 222
         val ss = Toolkit.getDefaultToolkit().screenSize
-        frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { frame.isVisible = false } })
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                frame.isVisible = false
+            }
+        })
         frame.layout = FlowLayout()
         frame.isResizable = false
-        frame.bounds = Rectangle(ss.width/2 - width/2, ss.height/2 - height/2, width, height)
+        frame.bounds = Rectangle(ss.width / 2 - width / 2, ss.height / 2 - height / 2, width, height)
         frame.title = "설정"
 
         val launchESO = Checkbox("패치 완료 후 ESO 자동 실행")
@@ -57,10 +61,14 @@ class OptionPanel(config:ClientConfig) {
 
     }
 
-    fun isVisible(b:Boolean) { frame.isVisible = b }
+    fun isVisible(b: Boolean) {
+        frame.isVisible = b
+    }
 
-    private class OptionItemListener(private val cConf: ClientConfig, private val opt:ClientConfig.ClientConfigOptions) : ItemListener {
-        override fun itemStateChanged(e: ItemEvent) { cConf.put(opt, e.stateChange == ItemEvent.SELECTED); cConf.store() }
+    private class OptionItemListener(private val cConf: ClientConfig, private val opt: ClientConfig.ClientConfigOptions) : ItemListener {
+        override fun itemStateChanged(e: ItemEvent) {
+            cConf.put(opt, e.stateChange == ItemEvent.SELECTED); cConf.store()
+        }
     }
 
 }

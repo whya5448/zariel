@@ -23,9 +23,10 @@ import java.util.function.BiPredicate
 
 
 @Component
-class ClientMain(private val config:ClientConfig, private val clipboardManager: ClipboardManager) : ESOMain {
+class ClientMain(private val config: ClientConfig, private val clipboardManager: ClipboardManager) : ESOMain {
 
-    @Autowired lateinit var optionPanel: OptionPanel
+    @Autowired
+    lateinit var optionPanel: OptionPanel
     private val logger = LoggerFactory.getLogger(ClientMain::class.java)
     private var serverFileName: String? = null
     private var serverVer: Long = 0
@@ -45,8 +46,11 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
         try {
             if (Files.notExists(esoDir)) Files.createDirectories(esoDir)
             Files.find(config.appPath, 1, BiPredicate { x, attr -> attr.isRegularFile && x.toString().endsWith(".lang") }).forEach {
-                try { Files.move(it, esoDir.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
-                catch (e: IOException) { e.printStackTrace() }
+                try {
+                    Files.move(it, esoDir.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -74,7 +78,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
     private fun update(): Boolean {
         config.run {
 
-            if(!config.isUpdateLang) {
+            if (!config.isUpdateLang) {
                 logger.info("업데이트 설정 꺼져있음.")
                 return true
             }
@@ -90,7 +94,7 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
 
 
     private fun decompressCSVs(langPath: Path) {
-      config.run {
+        config.run {
             try {
                 Utils.processRun(config.appPath, "$langPath -y")
             } catch (e: InterruptedException) {
@@ -103,14 +107,17 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
                 config.exit(AppErrorCode.CANNOT_DECOMPRESS_TOOL.errCode)
             }
 
-            if(config.isDeleteTemp) try { Files.deleteIfExists(langPath) } catch (ignored: IOException) {}
+            if (config.isDeleteTemp) try {
+                Files.deleteIfExists(langPath)
+            } catch (ignored: IOException) {
+            }
         }
     }
 
 
     private fun getSHA(): String {
         val x = URL("https://api.github.com/repos/Whya5448/EsoKR-LANG/git/refs/heads/master").readText()
-        sha = x.substring( x.indexOf("sha")+6, x.indexOf("sha")+6+40)
+        sha = x.substring(x.indexOf("sha") + 6, x.indexOf("sha") + 6 + 40)
         return sha
     }
 
@@ -170,7 +177,8 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
             val sysTray = SystemTray.getSystemTray()
             sysTray.trayIcons.iterator().forEach(sysTray::remove)
             sysTray.add(trayIcon)
-        } catch (e: AWTException) {}
+        } catch (e: AWTException) {
+        }
     }
 
 
@@ -180,14 +188,14 @@ class ClientMain(private val config:ClientConfig, private val clipboardManager: 
         else logger.info("최신 버전임")
 
         // 스팀 실행
-        if(config.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
+        if (config.isLaunchAfterUpdate) Desktop.getDesktop().browse(URI("steam://rungameid/306130"))
 
 
         //트레이 아이콘 등록
         registerTrayIcon()
 
         // 클립보드 리스너 등록
-        if(config.isEnableZanataListener) clipboardManager.addClipboardListener()
+        if (config.isEnableZanataListener) clipboardManager.addClipboardListener()
         else logger.info("클립보드 리스너 실행 안함.")
     }
 

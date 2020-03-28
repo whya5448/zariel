@@ -5,8 +5,10 @@ import org.metalscraps.eso.lang.lib.config.ESOConfig
 import org.metalscraps.eso.lang.lib.config.ESOConfigOptions
 import java.nio.file.Path
 
-class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
-    companion object { const val CDN = "https://rawcdn.githack.com/Whya5448/EsoKR-LANG/" }
+class ClientConfig(val appPath: Path, configPath: Path) : ESOConfig(configPath) {
+    companion object {
+        const val CDN = "https://rawcdn.githack.com/Whya5448/EsoKR-LANG/"
+    }
 
     internal val isLaunchAfterUpdate: Boolean
         get() = getConf(LAUNCH_ESO_AFTER_UPDATE).toBoolean()
@@ -55,6 +57,8 @@ class ClientConfig(val appPath:Path, configPath: Path) : ESOConfig(configPath) {
         ENABLE_ZANATA_LISTENER("enableZanataListener"),
         DEL_TEMP("DEL_TEMP");
 
-        override fun toString(): String { return v }
+        override fun toString(): String {
+            return v
+        }
     }
 }

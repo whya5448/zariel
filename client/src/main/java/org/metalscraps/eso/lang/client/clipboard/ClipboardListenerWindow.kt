@@ -28,7 +28,11 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
                 config.zanataManagerX, config.zanataManagerY,
                 config.zanataManagerW, config.zanataManagerH
         )
-        frame.addWindowListener(object : WindowAdapter() { override fun windowClosing(e: WindowEvent?) { config.exit(0) } })
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                config.exit(0)
+            }
+        })
 
         panel = Panel()
         panel.layout = GridLayout()
@@ -49,8 +53,18 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
         list.forEach {
             val button = Button()
             button.label = "$it"
-            try { button.actionCommand = objectMapper.writeValueAsString(it) } catch (e: JsonProcessingException) { e.printStackTrace() }
-            button.addActionListener { e -> try { manager.openZanata(objectMapper.readValue<ID>(e.actionCommand, ID::class.java)) } catch (e1: IOException) { e1.printStackTrace() } }
+            try {
+                button.actionCommand = objectMapper.writeValueAsString(it)
+            } catch (e: JsonProcessingException) {
+                e.printStackTrace()
+            }
+            button.addActionListener { e ->
+                try {
+                    manager.openZanata(objectMapper.readValue<ID>(e.actionCommand, ID::class.java))
+                } catch (e1: IOException) {
+                    e1.printStackTrace()
+                }
+            }
             panel.add(button)
         }
         frame.add(panel, BorderLayout.NORTH)
@@ -58,7 +72,9 @@ internal class ClipboardListenerWindow(private val manager: ClipboardManager, pr
         frame.isVisible = true
     }
 
-    internal fun show() { frame.isVisible = true }
+    internal fun show() {
+        frame.isVisible = true
+    }
 
     companion object {
         private val logger = LoggerFactory.getLogger(ClipboardListenerWindow::class.java)
