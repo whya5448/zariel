@@ -375,7 +375,7 @@ class Utils {
         fun getProjectNameByDocument(id: ID): String {
             if (!id.isFileNameHead()) throw ID.NotFileNameHead()
             getProjectMap().forEach { (pName, docs) ->
-                docs.filter { it.equals(id.head, false) }.takeIf { it.isNotEmpty() }?.run {
+                docs.filter { it.equals(id.head, true) }.takeIf { it.isNotEmpty() }?.run {
                     id.head = first()
                     return pName
                 }
