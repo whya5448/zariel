@@ -14,7 +14,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jackson}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jackson}"
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    implementation 'org.springframework.boot:spring-boot-starter:2.1.4.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter:2.2.6.RELEASE'
 }
 
 def sImageName = "dc-eso-client-$version"
@@ -37,12 +37,16 @@ jlink {
     launcher {
         name = 'launch'
         jvmArgs = ['-Dlogback.configurationFile=./logback.xml',
-                     "--add-reads ${sModuleName}.merged.module=${sModuleName}",
+                     "--add-reads", "${sModuleName}.merged.module=${sModuleName}",
                      "-cp", "config/"
         ]
     }
 
     mergedModule {
+        requires 'com.fasterxml.jackson.core';
+        requires 'com.fasterxml.jackson.annotation';
+        requires 'com.fasterxml.jackson.databind';
+
         requires 'java.management'
         requires 'java.naming'
         requires 'java.logging'
@@ -62,14 +66,12 @@ jlink {
         uses 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition'
         uses 'java.nio.file.spi.FileSystemProvider'
 
-        provides 'com.fasterxml.jackson.core.JsonFactory' with 'com.fasterxml.jackson.core.JsonFactory'
         provides 'org.apache.commons.logging.LogFactory' with 'org.apache.commons.logging.LogFactoryService'
         provides 'kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition' with 'kotlin.reflect.jvm.internal.impl.load.java.ErasedOverridabilityCondition',
                 'kotlin.reflect.jvm.internal.impl.load.java.FieldOverridabilityCondition',
                 'kotlin.reflect.jvm.internal.impl.load.java.JavaIncompatibilityRulesOverridabilityCondition'
         provides 'kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader' with 'kotlin.reflect.jvm.internal.impl.serialization.deserialization.builtins.BuiltInsLoaderImpl'
         provides 'com.fasterxml.jackson.databind.Module' with 'com.fasterxml.jackson.module.kotlin.KotlinModule'
-        provides 'com.fasterxml.jackson.core.ObjectCodec' with 'com.fasterxml.jackson.databind.ObjectMapper'
     }
 
 }
