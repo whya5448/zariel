@@ -253,6 +253,8 @@ class Utils {
         }
 
         fun getESODir(): Path {
+            if (Files.exists(Paths.get(System.getProperty("user.home")).resolve("Onedrive/문서/Elder Scrolls Online/")))
+                return Paths.get(System.getProperty("user.home")).resolve("Onedrive/문서/Elder Scrolls Online/")
             return Paths.get(System.getProperty("user.home")).resolve("Documents/Elder Scrolls Online/")
         }
 
