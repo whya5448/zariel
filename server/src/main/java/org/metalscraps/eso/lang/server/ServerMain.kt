@@ -1,6 +1,5 @@
 package org.metalscraps.eso.lang.server
 
-import org.metalscraps.eso.lang.lib.AddonManager
 import org.metalscraps.eso.lang.lib.bean.Lang
 import org.metalscraps.eso.lang.lib.config.AppConfig.langFiles
 import org.metalscraps.eso.lang.lib.config.AppVariables
@@ -24,15 +23,11 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
     private final val logger = LoggerFactory.getLogger(ServerMain::class.java)
     private val vars = AppVariables
     private lateinit var lang: Path
-    private lateinit var dest: Path
-    private lateinit var ttc: Path
 
     fun init(): Boolean {
         vars.run {
             baseDir = config.workDir
             lang = workDir.resolve("lang_${todayWithYear}.7z")
-            dest = workDir.resolve("destinations_${todayWithYear}.7z")
-            ttc = workDir.resolve("tamrielTradeCentre_${todayWithYear}.7z")
 
             for (x in dirs) if (Files.notExists(x)) Files.createDirectories(x)
             if (config.isLinux) if (Files.notExists(Paths.get("/root/.ssh/id_rsa"))) {
@@ -67,7 +62,6 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
                 error = true
             }
 
-            addons()
             logger.info("LANG 생성")
             makeLANG()
             if (compress()) sfx()
@@ -81,25 +75,14 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
         }
     }
 
-    private fun addons() {
-        // 데스티네이션
-        AddonManager().destination()
-        AddonManager().destination("kb", beta = true)
-        AddonManager().destination("tr", writeFileName = true)
-        AddonManager().tamrielTradeCentre()
-        AddonManager().tamrielTradeCentre("kb", beta = true)
-        AddonManager().tamrielTradeCentre("tr", writeFileName = true)
-    }
-
     private fun compress(): Boolean {
         System.gc() // 외부 프로세스 사용 시 jvm oom이 안뜨므로 명시적 gc
-        val needSfx = Files.notExists(lang) or Files.notExists(dest) or Files.notExists(ttc)
+        val needSfx = Files.notExists(lang)
         vars.run {
             logger.info("대상 압축")
             //Utils.kt.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang") // 최대압축/메모리 -1.5G, 아카이브 17mb
-            if (Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
-            if (Files.notExists(dest)) Utils.processRun(workDir, "7za a -mx=9 $dest $workAddonDir/Destinations/*")
-            if (Files.notExists(ttc)) Utils.processRun(workDir, "7za a -mx=9 $ttc $workAddonDir/TamrielTradeCentre/*")
+            //if (Files.notExists(lang)) Utils.processRun(workDir, "7za a -mmt=1 -m0=LZMA2:d32m:fb64 -mx=5 $lang $workDir/*.lang") // 적당히, 메모리 380m, 아카이브 30m, only 1 threads.
+            if (Files.notExists(lang)) Utils.processRun(workDir, "7za a -m0=LZMA2:d96m:fb64 -mx=5 $lang $workDir/*.lang")
         }
         if (!needSfx) logger.info("압축 스킵")
         return needSfx
@@ -110,8 +93,6 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
             logger.info("SFX 생성")
             val sfx = javaClass.classLoader.getResource("./7zCon.sfx").path
             Utils.processRun(workDir, "cat $sfx $lang", ProcessBuilder.Redirect.to(Paths.get("$lang.exe").toFile()))
-            Utils.processRun(workDir, "cat $sfx $dest", ProcessBuilder.Redirect.to(Paths.get("$dest.exe").toFile()))
-            Utils.processRun(workDir, "cat $sfx $ttc", ProcessBuilder.Redirect.to(Paths.get("$ttc.exe").toFile()))
         }
     }
 
@@ -128,7 +109,7 @@ class ServerMain(private val config: ServerConfig) : ESOMain {
             // 버전 문서
             Utils.processRun(workDir, "chmod 600 /root/.ssh/id_rsa")
             Utils.processRun(workDir, "git init")
-            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe $dest.exe $ttc.exe po")
+            Utils.processRun(workDir, "git add ${workDir.resolve("version")} $lang.exe")
             Utils.processRun(workDir, "git commit -m $todayWithYear")
             Utils.processRun(workDir, "git remote add origin git@github.com:Whya5448/EsoKR-LANG.git")
             Utils.processRun(workDir, "git push -u origin master --force")

@@ -6,4 +6,5 @@ open module org.metalscraps.eso.lang.server {
     requires spring.boot;
     requires spring.beans;
     requires spring.context;
+    requires org.slf4j;
 }

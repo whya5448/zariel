@@ -344,7 +344,10 @@ class Utils {
                             out.transferFrom(server, 0, Long.MAX_VALUE)
                         } catch (e: IOException) {
                             val msg = e.message as String
-                            if (msg.contains("response code: 429") || msg.contains("Premature EOF") || msg.contains("connection closed locally")) {
+                            if (msg.contains("response code: 429")
+                                    || msg.contains("response code: 502")
+                                    || msg.contains("Premature EOF")
+                                    || msg.contains("connection closed locally")) {
                                 remainFiles.add(it)
                                 logger.warn("오류, 재시도 $it $msg")
                                 if (Files.exists(pPO)) try {
